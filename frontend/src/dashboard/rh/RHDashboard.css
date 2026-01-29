@@ -1,0 +1,226 @@
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #F9FAFB;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 260px; /* Sidebar width */
+    min-width: 0;
+}
+
+.dashboard-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* --- KPI Grid --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.kpi-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #E5E7EB;
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-title {
+    color: #6B7280;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-change {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.text-green-500 { color: #10B981; }
+.text-blue-500 { color: #3B82F6; }
+.text-gray-500 { color: #6B7280; }
+
+/* --- Charts Grid --- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #E5E7EB;
+}
+
+.chart-card h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+/* --- Bottom Grid --- */
+.dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.content-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #E5E7EB;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+.btn-text {
+    background: none;
+    border: 1px solid #E5E7EB;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+/* Table Styles */
+.leaves-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaves-table th {
+    text-align: left;
+    padding-bottom: 1rem;
+    color: #6B7280;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.leaves-table td {
+    padding: 0.8rem 0;
+    border-top: 1px solid #F3F4F6;
+    font-size: 0.95rem;
+}
+
+.font-medium { font-weight: 500; }
+.text-gray { color: #4B5563; }
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-pending { background: #FFF7ED; color: #C2410C; }
+.status-approved { background: #ECFDF5; color: #047857; }
+
+/* AI Recommendations */
+.badge-ai {
+    background: #F3E8FF;
+    color: #7E22CE;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rec-item {
+    border: 1px solid #F3F4F6;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.rec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.8rem;
+}
+
+.rec-name { margin: 0; font-size: 0.95rem; color: #111827; }
+.rec-role { font-size: 0.85rem; color: #6B7280; }
+
+.match-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+}
+.match-high { background-color: #ECFDF5; color: #059669; }
+.match-med { background-color: #F0F9FF; color: #0284C7; }
+
+.rec-skills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+}
+
+.skill-tag {
+    background: #F3F4F6;
+    color: #374151;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #E5E7EB;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #1E2258;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+@media (max-width: 1200px) {
+    .charts-grid, .dashboard-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}

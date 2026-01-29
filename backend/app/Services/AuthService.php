@@ -73,6 +73,19 @@ class AuthService
         ]);
     }
 
+    public function updateProfile(array $data): Utilisateur
+    {
+        $user = JWTAuth::user();
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+
+        // Use repository to update
+        $this->utilisateurRepository->update($user->id, $data);
+
+        return $user->refresh();
+    }
+
     protected function respondWithToken(string $token, Utilisateur $utilisateur): array
     {
         return [

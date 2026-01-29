@@ -102,4 +102,38 @@ class AuthController extends Controller
             'message' => 'Mot de passe changé avec succès.',
         ]);
     }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+
+        $rules = [
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'email' => 'required|email|unique:utilisateurs,email,' . $user->id,
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string|max:255',
+        ];
+
+        // Authorization for RH only fields
+        if ($user->role === \App\Enums\Role::RH) {
+            $rules['matricule'] = 'required|string|unique:utilisateurs,matricule,' . $user->id;
+            $rules['role'] = 'required|string|in:RH,CHEF_EQUIPE,EMPLOYE';
+            $rules['date_embauche'] = 'nullable|date';
+            $rules['salaire_base'] = 'nullable|numeric|min:0';
+        }
+
+        $validated = $request->validate($rules);
+
+        $updatedUser = $this->authService->updateProfile($validated);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $updatedUser
+        ]);
+    }
 }
+

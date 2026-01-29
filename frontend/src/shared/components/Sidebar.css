@@ -1,0 +1,138 @@
+:root {
+    --sidebar-bg: #1E2258;
+    --sidebar-text: #E0E7FF;
+    --sidebar-active-bg: #3730A3;
+    --sidebar-hover-bg: #2D2A85;
+}
+
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    margin-bottom: 2rem;
+    padding-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+}
+
+.sidebar-header .subtitle {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-y: auto;
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.sidebar-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-item:hover {
+    background-color: var(--sidebar-hover-bg);
+    transform: translateX(3px);
+}
+
+.nav-item.active {
+    background-color: var(--sidebar-active-bg);
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.nav-icon {
+    margin-right: 12px;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
+.logout-btn {
+    color: #F87171; /* Slight red tint for logout */
+}
+
+.logout-btn:hover {
+    background-color: rgba(248, 113, 113, 0.1);
+    color: #FCA5A5;
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 80px;
+        padding: 1rem 0.5rem;
+    }
+
+    .sidebar-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-left: 0;
+    }
+
+    .sidebar-header h2,
+    .sidebar-header .subtitle,
+    .nav-item span {
+        display: none;
+    }
+
+    .nav-item {
+        justify-content: center;
+        padding: 0.8rem;
+    }
+
+    .nav-icon {
+        margin-right: 0;
+    }
+
+    .sidebar-footer {
+        display: flex;
+        justify-content: center;
+    }
+}
+

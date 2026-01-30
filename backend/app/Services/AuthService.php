@@ -28,6 +28,8 @@ class AuthService
         $token = JWTAuth::fromUser($utilisateur);
         $this->utilisateurRepository->updateLastConnection($utilisateur->id);
 
+        ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id);
+
         return $this->respondWithToken($token, $utilisateur);
     }
 
@@ -44,6 +46,10 @@ class AuthService
 
     public function logout(): void
     {
+        $user = JWTAuth::user();
+        if ($user) {
+            ActivityLogger::log('LOGOUT', 'User logged out', $user->id);
+        }
         JWTAuth::invalidate(JWTAuth::getToken());
     }
 

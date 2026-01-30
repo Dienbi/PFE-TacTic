@@ -101,12 +101,9 @@ const EditProfile: React.FC = () => {
   return (
     <div className="dashboard-container">
       {isLoading && <Loader fullScreen={true} />}
-      <Sidebar role={user.role.toLowerCase() as any} />
+      <Sidebar />
       <div className="main-content">
-        <Navbar
-          userName={`${user.prenom} ${user.nom}`}
-          userRole={user.role}
-        />
+        <Navbar userName={`${user.prenom} ${user.nom}`} userRole={user.role} />
 
         <div className="dashboard-content profile-wrapper">
           <form onSubmit={handleSubmit} className="profile-card">

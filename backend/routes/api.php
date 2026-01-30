@@ -28,6 +28,13 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
 });
 
+// Account request public routes
+Route::prefix('account-requests')->group(function () {
+    Route::post('/', [App\Http\Controllers\Api\AccountRequestController::class, 'store']);
+    Route::get('/validate-token/{token}', [App\Http\Controllers\Api\AccountRequestController::class, 'validateToken']);
+    Route::post('/set-password', [App\Http\Controllers\Api\AccountRequestController::class, 'setPassword']);
+});
+
 // Protected routes
 Route::middleware('jwt.auth')->group(function () {
 
@@ -46,18 +53,34 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/search', [UtilisateurController::class, 'search']);
         Route::get('/disponibles', [UtilisateurController::class, 'disponibles']);
         Route::get('/role/{role}', [UtilisateurController::class, 'byRole']);
-        Route::get('/{id}', [UtilisateurController::class, 'show']);
 
-        // RH only routes
+        // RH only routes (must be before /{id} to avoid conflict)
         Route::middleware('role:rh')->group(function () {
+            Route::get('/archived', [UtilisateurController::class, 'archived']);
+            Route::get('/logs', [App\Http\Controllers\Api\ActivityLogController::class, 'index']);
             Route::post('/', [UtilisateurController::class, 'store']);
             Route::put('/{id}', [UtilisateurController::class, 'update']);
             Route::delete('/{id}', [UtilisateurController::class, 'destroy']);
             Route::post('/{id}/activate', [UtilisateurController::class, 'activate']);
+            Route::post('/{id}/restore', [UtilisateurController::class, 'restore']);
+            Route::delete('/{id}/force', [UtilisateurController::class, 'forceDelete']);
             Route::put('/{id}/status', [UtilisateurController::class, 'updateStatus']);
             Route::put('/{id}/equipe', [UtilisateurController::class, 'assignToEquipe']);
             Route::put('/{id}/competences', [UtilisateurController::class, 'updateCompetences']);
         });
+
+        // This must come after /archived to avoid conflict
+        Route::get('/{id}', [UtilisateurController::class, 'show']);
+    });
+
+    // Account requests (RH only)
+    Route::prefix('account-requests')->middleware('role:rh')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\AccountRequestController::class, 'index']);
+        Route::get('/pending', [App\Http\Controllers\Api\AccountRequestController::class, 'pending']);
+        Route::get('/pending-count', [App\Http\Controllers\Api\AccountRequestController::class, 'pendingCount']);
+        Route::get('/{id}', [App\Http\Controllers\Api\AccountRequestController::class, 'show']);
+        Route::post('/{id}/approve', [App\Http\Controllers\Api\AccountRequestController::class, 'approve']);
+        Route::post('/{id}/reject', [App\Http\Controllers\Api\AccountRequestController::class, 'reject']);
     });
 
     // Equipe routes

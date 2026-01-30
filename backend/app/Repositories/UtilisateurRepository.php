@@ -20,6 +20,11 @@ class UtilisateurRepository extends BaseRepository
         return $this->model->where('email', $email)->first();
     }
 
+    public function findByEmailIncludingArchived(string $email): ?Utilisateur
+    {
+        return $this->model->withTrashed()->where('email', $email)->first();
+    }
+
     public function findByMatricule(string $matricule): ?Utilisateur
     {
         return $this->model->where('matricule', $matricule)->first();
@@ -70,6 +75,61 @@ class UtilisateurRepository extends BaseRepository
         return $this->update($id, ['actif' => true]);
     }
 
+    /**
+     * Soft delete (archive) a user
+     */
+    public function archive(int $id): bool
+    {
+        $user = $this->model->find($id);
+        if ($user) {
+            return $user->delete(); // This performs soft delete
+        }
+        return false;
+    }
+
+    /**
+     * Restore an archived user
+     */
+    public function restore(int $id): bool
+    {
+        $user = $this->model->withTrashed()->find($id);
+        if ($user && $user->trashed()) {
+            return $user->restore();
+        }
+        return false;
+    }
+
+    /**
+     * Permanently delete a user
+     */
+    public function forceDelete(int $id): bool
+    {
+        $user = $this->model->withTrashed()->find($id);
+        if ($user) {
+            return $user->forceDelete();
+        }
+        return false;
+    }
+
+    /**
+     * Get all archived users
+     */
+    public function getArchived(): Collection
+    {
+        return $this->model->onlyTrashed()
+            ->with('equipe')
+            ->select(['id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif', 'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at'])
+            ->get();
+    }
+
+    /**
+     * Get archived user by ID
+     */
+    public function getArchivedById(int $id): ?Utilisateur
+    {
+        return $this->model->onlyTrashed()->with('equipe')->find($id);
+    }
+
     public function updateSoldeConge(int $id, int $jours): bool
     {
         $utilisateur = $this->findOrFail($id);
@@ -78,7 +138,7 @@ class UtilisateurRepository extends BaseRepository
 
     public function generateMatricule(): string
     {
-        $lastUser = $this->model->orderBy('id', 'desc')->first();
+        $lastUser = $this->model->withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $lastUser ? $lastUser->id + 1 : 1;
         return 'EMP' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
     }
@@ -95,11 +155,14 @@ class UtilisateurRepository extends BaseRepository
 
     public function getWithRelations(int $id): ?Utilisateur
     {
-        return $this->model->with(['equipe', 'competences', 'affectations.poste'])->find($id);
+        return $this->model->with(['equipe'])->find($id);
     }
 
     public function getAllWithRelations(): Collection
     {
-        return $this->model->with(['equipe', 'competences'])->actif()->get();
+        return $this->model->with('equipe')
+            ->select(['id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif', 'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at'])
+            ->whereNull('deleted_at')
+            ->get();
     }
 }

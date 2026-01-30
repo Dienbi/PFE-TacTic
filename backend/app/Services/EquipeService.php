@@ -16,6 +16,11 @@ class EquipeService
 
     public function getAll(): Collection
     {
+        return $this->equipeRepository->getAllSimple();
+    }
+
+    public function getAllWithRelations(): Collection
+    {
         return $this->equipeRepository->getAllWithRelations();
     }
 

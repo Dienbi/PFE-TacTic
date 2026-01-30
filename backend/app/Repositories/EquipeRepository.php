@@ -22,6 +22,14 @@ class EquipeRepository extends BaseRepository
         return $this->model->with(['chefEquipe', 'membres'])->get();
     }
 
+    /**
+     * Get all teams for dropdown (only id and name)
+     */
+    public function getAllSimple(): Collection
+    {
+        return $this->model->select(['id', 'nom'])->get();
+    }
+
     public function findByChef(int $chefId): ?Equipe
     {
         return $this->model->where('chef_equipe_id', $chefId)->first();

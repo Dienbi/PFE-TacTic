@@ -79,10 +79,55 @@ class UtilisateurController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $this->utilisateurService->delete($id);
+        $this->utilisateurService->archive($id);
 
         return response()->json([
-            'message' => 'Utilisateur désactivé avec succès.',
+            'message' => 'Utilisateur archivé avec succès.',
+        ]);
+    }
+
+    /**
+     * Get archived users
+     */
+    public function archived(): JsonResponse
+    {
+        $users = $this->utilisateurService->getArchived();
+        return response()->json($users);
+    }
+
+    /**
+     * Restore an archived user
+     */
+    public function restore(int $id): JsonResponse
+    {
+        $success = $this->utilisateurService->restore($id);
+
+        if (!$success) {
+            return response()->json([
+                'message' => 'Utilisateur non trouvé ou non archivé.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Utilisateur restauré avec succès.',
+        ]);
+    }
+
+    /**
+     * Permanently delete a user
+     */
+    public function forceDelete(int $id): JsonResponse
+    {
+        $success = $this->utilisateurService->forceDelete($id);
+
+        if (!$success) {
+            return response()->json([
+                'message' => 'Utilisateur non trouvé.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Utilisateur supprimé définitivement.',
         ]);
     }
 
@@ -148,6 +193,9 @@ class UtilisateurController extends Controller
     public function assignToEquipe(Request $request, int $id): JsonResponse
     {
         $this->utilisateurService->assignToEquipe($id, $request->equipe_id);
+
+        // Log the activity
+        \App\Services\ActivityLogger::log('ASSIGN_TEAM', "Assigned user #{$id} to team #{$request->equipe_id}");
 
         return response()->json([
             'message' => 'Utilisateur assigné à l\'équipe.',

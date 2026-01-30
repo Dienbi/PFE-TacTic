@@ -1,0 +1,499 @@
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+}
+
+.dashboard-content {
+  padding: 1.5rem 2rem;
+}
+
+/* KPI Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.kpi-icon-mini {
+  color: #9ca3af;
+  background: transparent;
+}
+
+.kpi-main-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-sub-text {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.kpi-sub-text.success {
+  color: #10b981;
+}
+
+/* Attendance Full Width Section */
+.attendance-section-full {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1.5rem;
+}
+
+.attendance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+}
+
+.last-action-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.action-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.action-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.check-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-check {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-check.in {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.btn-check.in:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-check.out {
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-check.out:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.btn-check:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attendance-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.stat-box {
+  padding: 1.25rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.stat-box.blue-box { background: #eff6ff; }
+.stat-box.purple-box { background: #f5f3ff; }
+.stat-box.orange-box { background: #fff7ed; }
+
+.box-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.box-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Widgets Grid (Split) */
+.widgets-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.widget-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Leave History */
+.leave-history-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.section-header-row .section-title {
+  margin-bottom: 0;
+}
+
+.btn-new-request {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-new-request:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.leave-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 1rem; /* Space between rows */
+}
+
+.leave-table th {
+  padding: 0 0.75rem 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid #f3f4f6;
+  background: transparent;
+}
+
+.leave-table td {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border: none;
+  background: white;
+}
+
+.fw-500 {
+  font-weight: 600;
+  color: #111827;
+}
+
+.text-gray {
+  color: #6b7280;
+}
+
+.leave-status {
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  min-width: 80px;
+}
+
+.leave-status.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.leave-status.pending {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.leave-status.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Performance Section */
+.performance-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.performance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.performance-item {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.performance-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.performance-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.performance-value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e5e7eb; /* Light track color */
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background-color: #1e3a8a; /* Dark blue from image */
+  transition: width 0.3s ease;
+}
+
+.performance-subtext {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.check-icon {
+  margin: 0 0.125rem;
+}
+
+/* Salary Full Section */
+.salary-section-full {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.salary-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.salary-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.salary-card.green-bg {
+  background: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.salary-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.salary-amount {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.salary-amount.black {
+  color: #111827;
+}
+
+.salary-amount.green {
+  color: #166534;
+}
+
+.salary-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-outline-small {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline-small:hover {
+  background: #f9fafb;
+}
+
+/* Bottom Actions */
+.bottom-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn.primary {
+  background: #1e3a8a; /* Dark blue primary */
+  color: white;
+  border: none;
+}
+
+.action-btn.primary:hover {
+  background: #1e40af;
+}
+
+.action-btn.outline {
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.action-btn.outline:hover {
+  background: #f9fafb;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .widgets-grid, .salary-cards-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .attendance-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .check-buttons {
+    width: 100%;
+  }
+  
+  .btn-check {
+    flex: 1;
+  }
+  
+  .attendance-stats-row {
+    grid-template-columns: 1fr;
+  }
+}

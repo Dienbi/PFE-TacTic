@@ -45,18 +45,14 @@ const Profile: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar role={user.role.toLowerCase() as any} />
+      <Sidebar />
       <div className="main-content">
-        <Navbar
-          userName={`${user.prenom} ${user.nom}`}
-          userRole={user.role}
-        />
+        <Navbar userName={`${user.prenom} ${user.nom}`} userRole={user.role} />
 
         <div className="dashboard-content profile-wrapper">
           <div className="profile-header-card">
             <div className="profile-cover"></div>
             <div className="profile-avatar-section">
-              
               <div className="profile-title">
                 <h2>
                   {user.prenom} {user.nom}

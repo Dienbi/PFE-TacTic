@@ -81,6 +81,11 @@
     color: #111827;
 }
 
+/* --- Middle Section (Account Requests) --- */
+.dashboard-middle-section {
+    margin-bottom: 1rem;
+}
+
 /* --- Bottom Grid --- */
 .dashboard-bottom-grid {
     display: grid;
@@ -224,3 +229,17 @@
         grid-template-columns: 1fr;
     }
 }
+
+.dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

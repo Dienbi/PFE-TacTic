@@ -8,6 +8,9 @@ import {
   Target,
   BarChart3,
   LogOut,
+  UserCircle,
+  Briefcase,
+  ClipboardList,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import client from "../../api/client";
@@ -15,13 +18,35 @@ import Loader from "./Loader";
 import "./Sidebar.css";
 
 interface SidebarProps {
-  role?: "rh" | "manager" | "employee";
+  role?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ role = "rh" }) => {
+const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Get user from local storage for role fallback
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // Determine effective role: prop > user.role > default "rh"
+  const rawRole = (role || user.role || "rh").toUpperCase();
+
+  // Map database roles to application roles
+  const mapRole = (dbRole: string): string => {
+    switch (dbRole) {
+      case "CHEF_EQUIPE":
+      case "MANAGER":
+        return "manager";
+      case "EMPLOYE":
+      case "EMPLOYEE":
+        return "employee";
+      case "RH":
+      default:
+        return "rh";
+    }
+  };
+
+  const effectiveRole = mapRole(rawRole);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -39,16 +64,61 @@ const Sidebar: React.FC<SidebarProps> = ({ role = "rh" }) => {
     }
   };
 
-  // Define menu items based on role if needed, currently implementing for RH as per screenshot
-  const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
-    { icon: Users, label: "Employees", path: "/employees" },
-    { icon: CalendarCheck, label: "Attendance", path: "/attendance" },
-    { icon: DollarSign, label: "Payroll", path: "/payroll" },
-    { icon: FileText, label: "Leave Management", path: "/leave" },
-    { icon: Target, label: "Posts & Matching", path: "/posts" },
-    { icon: BarChart3, label: "Reports", path: "/reports" },
-  ];
+  // Define menu items based on role
+  const getMenuItems = () => {
+    switch (effectiveRole) {
+      case "manager":
+        return [
+          {
+            icon: LayoutDashboard,
+            label: "Dashboard",
+            path: "/dashboard/manager",
+          },
+          { icon: UserCircle, label: "My Profile", path: "/profile" },
+          { icon: Users, label: "My Team", path: "/manager/team" },
+          {
+            icon: CalendarCheck,
+            label: "Attendance",
+            path: "/manager/attendance",
+          },
+          { icon: ClipboardList, label: "Requests", path: "/manager/requests" },
+          { icon: Briefcase, label: "Posts", path: "/manager/posts" },
+        ];
+      case "employee":
+        return [
+          {
+            icon: LayoutDashboard,
+            label: "Dashboard",
+            path: "/dashboard/employee",
+          },
+          { icon: UserCircle, label: "My Profile", path: "/profile" },
+          {
+            icon: CalendarCheck,
+            label: "Attendance",
+            path: "/employee/attendance",
+          },
+          { icon: FileText, label: "Leave", path: "/employee/leave" },
+          { icon: DollarSign, label: "Salary", path: "/employee/salary" },
+          {
+            icon: BarChart3,
+            label: "My Indicators",
+            path: "/employee/indicators",
+          },
+        ];
+      default: // RH
+        return [
+          { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
+          { icon: Users, label: "Employees", path: "/employees" },
+          { icon: CalendarCheck, label: "Attendance", path: "/attendance" },
+          { icon: DollarSign, label: "Payroll", path: "/payroll" },
+          { icon: FileText, label: "Leave Management", path: "/leave" },
+          { icon: Target, label: "Posts & Matching", path: "/posts" },
+          { icon: BarChart3, label: "Reports", path: "/reports" },
+        ];
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <aside className="sidebar">

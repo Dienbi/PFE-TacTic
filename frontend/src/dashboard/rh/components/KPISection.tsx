@@ -27,14 +27,7 @@ const KPISection = () => {
       color: "text-blue-500",
       bg: "bg-purple-50",
     },
-    {
-      title: "Engagement",
-      value: "8.4/10",
-      change: "+0.3",
-      icon: Award,
-      color: "text-green-500",
-      bg: "bg-yellow-50",
-    },
+   
     {
       title: "Masse Salariale",
       value: "2.4M€",

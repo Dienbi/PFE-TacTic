@@ -22,7 +22,7 @@ class UtilisateurRequest extends FormRequest
         $rules = [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => 'required|email|unique:utilisateurs,email,' . $userId,
+            'email' => 'required|email|unique:utilisateurs,email' . ($userId ? ',' . $userId : ''),
             'telephone' => 'nullable|string|max:20',
             'adresse' => 'nullable|string|max:255',
             'date_embauche' => 'nullable|date',

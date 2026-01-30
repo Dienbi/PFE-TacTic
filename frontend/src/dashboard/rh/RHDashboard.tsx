@@ -12,7 +12,10 @@ const ActivityLogs = lazy(() => import("./components/ActivityLogs"));
 const AccountRequests = lazy(() => import("./components/AccountRequests"));
 
 const LoadingFallback = () => (
-  <div className="content-card" style={{ padding: "2rem", textAlign: "center", color: "#6b7280" }}>
+  <div
+    className="content-card"
+    style={{ padding: "2rem", textAlign: "center", color: "#6b7280" }}
+  >
     Chargement...
   </div>
 );

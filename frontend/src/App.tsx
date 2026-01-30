@@ -16,6 +16,7 @@ import Employees from "./dashboard/rh/employees/Employees";
 import UserProfile from "./dashboard/rh/employees/UserProfile";
 import Profile from "./shared/pages/Profile";
 import EditProfile from "./shared/pages/EditProfile";
+import AttendanceHistory from "./attendance/pages/AttendanceHistory";
 import ProtectedRoute, {
   getDefaultDashboard,
 } from "./shared/components/ProtectedRoute";
@@ -99,6 +100,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
                 <EditProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute allowedRoles={["manager", "employee"]}>
+                <AttendanceHistory />
               </ProtectedRoute>
             }
           />

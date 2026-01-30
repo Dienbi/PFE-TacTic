@@ -1,0 +1,94 @@
+.leave-history-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.btn-new-request {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-new-request:hover {
+  background: #2563eb;
+}
+
+.leave-table {
+  overflow-x: auto;
+}
+
+.leave-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leave-table th {
+  text-align: left;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.leave-table td {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.leave-table .fw-500 {
+  font-weight: 500;
+}
+
+.leave-table .text-gray {
+  color: #64748b;
+}
+
+.leave-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.leave-status.approved {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.leave-status.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.leave-status.rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}

@@ -35,12 +35,40 @@ class PointageService
 
     public function pointerEntree(int $utilisateurId): Pointage
     {
-        return $this->pointageRepository->pointer($utilisateurId, 'entree');
+        $pointage = $this->pointageRepository->pointer($utilisateurId, 'entree');
+        
+        // Log the check-in activity
+        $user = \App\Models\Utilisateur::find($utilisateurId);
+        if ($user) {
+            ActivityLogger::log(
+                'CHECK_IN',
+                "{$user->prenom} {$user->nom} a pointé son entrée à " . Carbon::now()->format('H:i'),
+                $utilisateurId
+            );
+        }
+        
+        return $pointage;
     }
 
-    public function pointerSortie(int $utilisateurId): Pointage
+    public function pointerSortie(int $utilisateurId, bool $isAutoCheckout = false): Pointage
     {
-        return $this->pointageRepository->pointer($utilisateurId, 'sortie');
+        $pointage = $this->pointageRepository->pointer($utilisateurId, 'sortie');
+        
+        // Log the check-out activity
+        $user = \App\Models\Utilisateur::find($utilisateurId);
+        if ($user) {
+            $message = $isAutoCheckout 
+                ? "{$user->prenom} {$user->nom} - checkout automatique à " . Carbon::now()->format('H:i')
+                : "{$user->prenom} {$user->nom} a pointé sa sortie à " . Carbon::now()->format('H:i');
+            
+            ActivityLogger::log(
+                $isAutoCheckout ? 'AUTO_CHECK_OUT' : 'CHECK_OUT',
+                $message,
+                $utilisateurId
+            );
+        }
+        
+        return $pointage;
     }
 
     public function marquerAbsence(int $utilisateurId, Carbon $date, bool $justifiee = false): Pointage

@@ -81,6 +81,12 @@ const ActivityLogs: React.FC = () => {
         return "#F97316"; // Orange
       case "ASSIGN_TEAM":
         return "#3B82F6"; // Blue
+      case "CHECK_IN":
+        return "#22C55E"; // Green
+      case "CHECK_OUT":
+        return "#6366F1"; // Indigo
+      case "AUTO_CHECK_OUT":
+        return "#F59E0B"; // Amber
       default:
         return "#6B7280"; // Gray
     }
@@ -108,6 +114,12 @@ const ActivityLogs: React.FC = () => {
         return "Désaffectation";
       case "ASSIGN_TEAM":
         return "Affectation";
+      case "CHECK_IN":
+        return "Pointage Entrée";
+      case "CHECK_OUT":
+        return "Pointage Sortie";
+      case "AUTO_CHECK_OUT":
+        return "Checkout Auto";
       default:
         return action;
     }

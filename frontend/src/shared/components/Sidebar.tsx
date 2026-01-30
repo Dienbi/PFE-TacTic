@@ -79,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           {
             icon: CalendarCheck,
             label: "Attendance",
-            path: "/manager/attendance",
+            path: "/attendance",
           },
           { icon: ClipboardList, label: "Requests", path: "/manager/requests" },
           { icon: Briefcase, label: "Posts", path: "/manager/posts" },
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           {
             icon: CalendarCheck,
             label: "Attendance",
-            path: "/employee/attendance",
+            path: "/attendance",
           },
           { icon: FileText, label: "Leave", path: "/employee/leave" },
           { icon: DollarSign, label: "Salary", path: "/employee/salary" },
@@ -109,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         return [
           { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
           { icon: Users, label: "Employees", path: "/employees" },
-          { icon: CalendarCheck, label: "Attendance", path: "/attendance" },
+          { icon: CalendarCheck, label: "Attendance", path: "/rh/attendance" },
           { icon: DollarSign, label: "Payroll", path: "/payroll" },
           { icon: FileText, label: "Leave Management", path: "/leave" },
           { icon: Target, label: "Posts & Matching", path: "/posts" },

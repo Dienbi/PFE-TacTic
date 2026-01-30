@@ -73,7 +73,8 @@ class PointageController extends Controller
      */
     public function pointerSortie(Request $request): JsonResponse
     {
-        $pointage = $this->pointageService->pointerSortie($request->user()->id);
+        $isAutoCheckout = $request->get('auto', false);
+        $pointage = $this->pointageService->pointerSortie($request->user()->id, $isAutoCheckout);
 
         return response()->json([
             'message' => 'Sortie enregistrée.',

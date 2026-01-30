@@ -1,0 +1,41 @@
+.bottom-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn.primary {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+}
+
+.action-btn.primary:hover {
+  background: #2563eb;
+}
+
+.action-btn.outline {
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.action-btn.outline:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+@media (max-width: 768px) {
+  .bottom-actions {
+    flex-direction: column;
+  }
+}

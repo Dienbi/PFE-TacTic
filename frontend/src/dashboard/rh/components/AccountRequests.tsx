@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { UserPlus, Check, X, Clock, Mail, Bell } from "lucide-react";
 import client from "../../../api/client";
-import socketService from "../../../shared/services/socketService";
+import echoService from "../../../shared/services/echoService";
 import "./AccountRequests.css";
 
 interface AccountRequest {
@@ -47,16 +47,8 @@ const AccountRequests: React.FC = () => {
   useEffect(() => {
     fetchPendingRequests();
 
-    // Connect to socket and join RH room
-    socketService.connect();
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      socketService.joinRHRoom(user.id);
-    }
-
-    // Subscribe to new account request notifications
-    const unsubscribe = socketService.onNewAccountRequest((data) => {
+    // Subscribe to RH notifications via Laravel Reverb
+    const unsubscribe = echoService.subscribeToRHNotifications((data) => {
       console.log("New account request received:", data);
 
       // Show notification
@@ -75,7 +67,7 @@ const AccountRequests: React.FC = () => {
       fetchPendingRequests();
     });
 
-    // Fallback polling every 60 seconds (in case socket fails)
+    // Fallback polling every 60 seconds (in case websocket fails)
     const interval = setInterval(fetchPendingRequests, 60000);
 
     return () => {

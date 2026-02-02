@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\NewAccountRequest;
 use App\Http\Controllers\Controller;
 use App\Models\AccountRequest;
 use App\Models\Utilisateur;
 use App\Mail\WelcomeNewUser;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -35,8 +36,8 @@ class AccountRequestController extends Controller
             'status' => AccountRequest::STATUS_PENDING,
         ]);
 
-        // Emit socket event for RH notification
-        $this->notifyRHViaSocket($accountRequest);
+        // Broadcast event for RH notification via Laravel Reverb
+        $this->broadcastNewAccountRequest($accountRequest);
 
         return response()->json([
             'message' => 'Votre demande a été soumise avec succès. Vous recevrez un email lorsqu\'elle sera traitée.',
@@ -45,25 +46,21 @@ class AccountRequestController extends Controller
     }
 
     /**
-     * Notify RH users via Socket.IO server
+     * Broadcast new account request event via Laravel Reverb
      */
-    private function notifyRHViaSocket(AccountRequest $accountRequest): void
+    private function broadcastNewAccountRequest(AccountRequest $accountRequest): void
     {
         try {
-            $socketServerUrl = env('SOCKET_SERVER_URL', 'http://localhost:3001');
-
-            Http::timeout(5)->post("{$socketServerUrl}/emit/new-account-request", [
-                'accountRequest' => [
-                    'id' => $accountRequest->id,
-                    'nom' => $accountRequest->nom,
-                    'prenom' => $accountRequest->prenom,
-                    'personal_email' => $accountRequest->personal_email,
-                    'created_at' => $accountRequest->created_at->toISOString(),
-                ],
-            ]);
+            event(new NewAccountRequest([
+                'id' => $accountRequest->id,
+                'nom' => $accountRequest->nom,
+                'prenom' => $accountRequest->prenom,
+                'personal_email' => $accountRequest->personal_email,
+                'created_at' => $accountRequest->created_at->toISOString(),
+            ]));
         } catch (\Exception $e) {
             // Log error but don't fail the request
-            Log::warning('Failed to notify RH via socket: ' . $e->getMessage());
+            Log::warning('Failed to broadcast new account request: ' . $e->getMessage());
         }
     }
 
@@ -157,6 +154,12 @@ class AccountRequestController extends Controller
         // Send welcome email with token link
         Mail::to($accountRequest->personal_email)->send(new WelcomeNewUser($accountRequest, $utilisateur));
 
+        // Log the activity
+        ActivityLogger::log(
+            'USER_CREATED',
+            "Compte créé pour {$utilisateur->prenom} {$utilisateur->nom} ({$generatedEmail}) avec le rôle {$request->role}"
+        );
+
         return response()->json([
             'message' => 'La demande a été approuvée. Un email a été envoyé à l\'utilisateur.',
             'generated_email' => $generatedEmail,
@@ -186,6 +189,12 @@ class AccountRequestController extends Controller
             'approved_by' => auth()->id(),
             'processed_at' => now(),
         ]);
+
+        // Log the activity
+        ActivityLogger::log(
+            'USER_REJECTED',
+            "Demande de compte refusée pour {$accountRequest->prenom} {$accountRequest->nom}"
+        );
 
         return response()->json([
             'message' => 'La demande a été refusée.',

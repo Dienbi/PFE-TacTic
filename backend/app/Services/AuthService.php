@@ -94,18 +94,14 @@ class AuthService
 
     protected function respondWithToken(string $token, Utilisateur $utilisateur): array
     {
+        // Load competences relationship
+        $utilisateur->load('competences');
+
         return [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
-            'user' => [
-                'id' => $utilisateur->id,
-                'matricule' => $utilisateur->matricule,
-                'nom' => $utilisateur->nom,
-                'prenom' => $utilisateur->prenom,
-                'email' => $utilisateur->email,
-                'role' => $utilisateur->role,
-            ],
+            'user' => $utilisateur,
         ];
     }
 }

@@ -45,6 +45,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('change-password', [AuthController::class, 'changePassword']);
         Route::put('update-profile', [AuthController::class, 'updateProfile']);
+        Route::put('update-skills', [AuthController::class, 'updateSkills']);
     });
 
     // User routes (accessible by all authenticated users)

@@ -11,12 +11,19 @@ import {
   ArrowLeft,
   Edit3,
   Users,
+  Award,
 } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
 import Loader from "../../../shared/components/Loader";
 import "./UserProfile.css";
+
+interface Competence {
+  id: number;
+  nom: string;
+  niveau: number;
+}
 
 interface UserData {
   id: number;
@@ -36,6 +43,7 @@ interface UserData {
     id: number;
     nom: string;
   };
+  competences?: Competence[];
 }
 
 const UserProfile: React.FC = () => {
@@ -52,10 +60,8 @@ const UserProfile: React.FC = () => {
     if (storedUser) {
       setRhUser(JSON.parse(storedUser));
     }
-    // Only fetch if user data wasn't passed via navigation state
-    if (!location.state?.user) {
-      fetchUser();
-    }
+    // Always fetch user data to ensure we have the latest details (including competences)
+    fetchUser();
   }, [id]);
 
   const fetchUser = async () => {
@@ -227,6 +233,25 @@ const UserProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Skills & Expertise */}
+            <div className="profile-card skills-card">
+              <h3>Compétences</h3>
+              {user.competences && user.competences.length > 0 ? (
+                <div className="skills-list-display">
+                  {user.competences.map((skill) => (
+                    <span key={skill.id} className="skill-badge-display">
+                      {skill.nom}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <Award className="empty-icon" />
+                  <p>Aucune compétence ajoutée.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Services\AuthService;
+use App\Models\Competence;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -74,6 +75,10 @@ class AuthController extends Controller
     {
         $user = $this->authService->me();
 
+        if ($user) {
+            $user->load('competences');
+        }
+
         return response()->json([
             'user' => $user,
         ]);
@@ -133,6 +138,46 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             'user' => $updatedUser
+        ]);
+    }
+
+    /**
+     * Update user skills
+     */
+    public function updateSkills(Request $request): JsonResponse
+    {
+        $request->validate([
+            'skills' => 'array',
+            'skills.*' => 'string|max:50',
+        ]);
+
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $skills = $request->input('skills', []);
+        $skillIds = [];
+
+        foreach ($skills as $skillName) {
+            $competence = Competence::firstOrCreate(
+                ['nom' => $skillName],
+                ['niveau' => 1]
+            );
+            $skillIds[] = $competence->id;
+        }
+
+        // Use sync to update pivot table without detaching existing ones could be an option, 
+        // but typically skills update replaces the list. Here we follow LinkedIn style: 
+        // if user sends a list, we assume it's the current desired list.
+        $user->competences()->sync($skillIds);
+        
+        // Reload user with competences
+        $user->load('competences');
+
+        return response()->json([
+            'message' => 'Compétences mises à jour avec succès',
+            'user' => $user
         ]);
     }
 }

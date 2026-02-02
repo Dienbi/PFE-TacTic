@@ -1,8 +1,20 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Calendar, Clock, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Filter,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
-import { getMesPointages, getStats, Pointage, PointageStats } from "../api/attendanceApi";
+import {
+  getMesPointages,
+  getStats,
+  Pointage,
+  PointageStats,
+} from "../api/attendanceApi";
 import "./AttendanceHistory.css";
 
 const AttendanceHistory: React.FC = () => {
@@ -77,7 +89,9 @@ const AttendanceHistory: React.FC = () => {
   };
 
   // Get status for a pointage entry
-  const getStatus = (pointage: Pointage): { label: string; className: string } => {
+  const getStatus = (
+    pointage: Pointage,
+  ): { label: string; className: string } => {
     if (!pointage.heure_entree && pointage.absence_justifiee) {
       return { label: "Absence justifiée", className: "status-justified" };
     }
@@ -109,11 +123,15 @@ const AttendanceHistory: React.FC = () => {
 
   // Navigate months
   const prevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
+    );
   };
 
   const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
+    );
   };
 
   const monthYearLabel = currentMonth.toLocaleDateString("fr-FR", {
@@ -149,7 +167,9 @@ const AttendanceHistory: React.FC = () => {
                 <Clock size={24} />
               </div>
               <div className="stat-info">
-                <span className="stat-value">{formatHours(stats?.total_heures)}</span>
+                <span className="stat-value">
+                  {formatHours(stats?.total_heures)}
+                </span>
                 <span className="stat-label">Heures Ce Mois</span>
               </div>
             </div>
@@ -167,7 +187,9 @@ const AttendanceHistory: React.FC = () => {
                 <Calendar size={24} />
               </div>
               <div className="stat-info">
-                <span className="stat-value">{stats?.absences_justifiees || 0}</span>
+                <span className="stat-value">
+                  {stats?.absences_justifiees || 0}
+                </span>
                 <span className="stat-label">Absences Justifiées</span>
               </div>
             </div>
@@ -232,15 +254,21 @@ const AttendanceHistory: React.FC = () => {
                       <tr key={pointage.id}>
                         <td className="date-cell">
                           <span className="date-day">
-                            {new Date(pointage.date).toLocaleDateString("fr-FR", {
-                              weekday: "short",
-                            })}
+                            {new Date(pointage.date).toLocaleDateString(
+                              "fr-FR",
+                              {
+                                weekday: "short",
+                              },
+                            )}
                           </span>
                           <span className="date-full">
-                            {new Date(pointage.date).toLocaleDateString("fr-FR", {
-                              day: "numeric",
-                              month: "short",
-                            })}
+                            {new Date(pointage.date).toLocaleDateString(
+                              "fr-FR",
+                              {
+                                day: "numeric",
+                                month: "short",
+                              },
+                            )}
                           </span>
                         </td>
                         <td>

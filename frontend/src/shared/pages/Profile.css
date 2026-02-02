@@ -8,14 +8,15 @@
 
 .profile-header-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 }
 
 .profile-cover {
-    height: 150px;
-    background: linear-gradient(135deg, #1E2258 0%, #3730A3 100%);
+    height: 180px;
+    background: linear-gradient(135deg, #1E2258 0%, #3730A3 50%, #6366F1 100%);
 }
 
 .profile-avatar-section {
@@ -90,78 +91,294 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
+    align-items: start;
+}
+
+.profile-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.skills-card {
+    min-height: 200px;
+}
+
+.skills-list-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.skill-badge-display {
+    padding: 12px 28px;
+    border: 2px solid #2c2c2c;
+    background-color: #ffffff;
+    color: #2c2c2c;
+    font-size: 1rem;
+    cursor: default;
+    border-radius: 30px;
+    transition: all 0.4s ease;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.skill-badge-display::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.25) 0%,
+        rgba(255, 255, 255, 0) 70%
+    );
+    transform: scale(0);
+    transition: transform 0.5s ease;
+}
+
+.skill-badge-display:hover::after {
+    transform: scale(4);
+}
+
+.skill-badge-display:hover {
+    border-color: #1e2258;
+    background: #1e2258;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(30, 34, 88, 0.25);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+    color: #9CA3AF;
+}
+
+.empty-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Edit Profile Styles */
+.nav-tabs {
+    display: flex;
+    border-bottom: 1px solid #E5E7EB;
+    margin-bottom: 2rem;
+}
+
+.nav-tab {
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    color: #6B7280;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-tab:hover {
+    color: #374151;
+}
+
+.nav-tab.active {
+    color: #4F46E5;
+    border-bottom-color: #4F46E5;
+}
+
+.skills-input-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.add-skill-btn {
+    background-color: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0 1.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.add-skill-btn:hover {
+    background-color: #4338CA;
+}
+
+.skills-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    min-height: 100px;
+    padding: 1.5rem;
+    background-color: #F9FAFB;
+    border-radius: 20px;
+    border: 1px solid #E5E7EB;
+}
+
+.skill-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 6px 16px;
+    border: 1.5px solid #2c2c2c;
+    background-color: #ffffff;
+    color: #2c2c2c;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: default;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.skill-tag::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle,
+            rgba(255, 255, 255, 0.25) 0%,
+            rgba(255, 255, 255, 0) 70%);
+    transform: scale(0);
+    transition: transform 0.5s ease;
+    pointer-events: none;
+}
+
+.skill-tag:hover::after {
+    transform: scale(4);
+}
+
+.skill-tag:hover {
+    border-color: #1e2258;
+    background: #1e2258;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(30, 34, 88, 0.25);
+}
+
+.remove-skill-btn {
+    border: none;
+    background: none;
+    color: #2c2c2c;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.skill-tag:hover .remove-skill-btn {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.remove-skill-btn:hover {
+    color: #ef4444 !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
 }
 
 .profile-card {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    transition: all 0.3s ease;
+    height: 100%;
 }
 
-.profile-card h3 {
-    margin: 0 0 1.5rem 0;
-    color: #111827;
-    font-size: 1.1rem;
-    border-bottom: 1px solid #E5E7EB;
-    padding-bottom: 1rem;
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
 }
 
+/* Horizontal Data Layout Styles */
 .info-list {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    margin-top: 1rem;
 }
 
 .info-item {
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.5rem;
+    border-radius: 12px;
+    transition: background-color 0.2s;
+}
+
+.info-item:hover {
+    background-color: #F8FAFC;
 }
 
 .info-icon {
-    color: #6B7280;
-    margin-top: 0.25rem;
+    width: 24px;
+    height: 24px;
+    color: #4F46E5;
+    background-color: #EEF2FF;
+    padding: 12px;
+    border-radius: 16px;
+    flex-shrink: 0;
+    box-sizing: content-box;
+}
+
+.info-item div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left !important;
 }
 
 .info-item label {
-    display: block;
     font-size: 0.875rem;
     color: #6B7280;
+    font-weight: 500;
     margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-size: 0.75rem;
 }
 
 .info-item p {
+    font-size: 1rem;
+    color: #1F2937;
+    font-weight: 600;
     margin: 0;
-    color: #111827;
-    font-weight: 500;
+    line-height: 1.4;
 }
 
-.form-group {
+.profile-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
     margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #E5E7EB;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #D1D5DB;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 0.95rem;
-    color: #111827;
-    transition: border-color 0.2s;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #4F46E5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
 

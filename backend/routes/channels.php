@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+// RH notifications channel - public channel for all RH users
+// Using a public channel since we handle auth via JWT in frontend

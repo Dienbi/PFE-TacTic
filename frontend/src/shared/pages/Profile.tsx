@@ -9,10 +9,17 @@ import {
   Calendar,
   CreditCard,
   Edit3,
+  Award,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import "./Profile.css";
+
+interface Competence {
+  id: number;
+  nom: string;
+  niveau: number;
+}
 
 interface UserData {
   id: number;
@@ -26,6 +33,7 @@ interface UserData {
   date_embauche: string;
   salaire_base: number;
   solde_conge: number;
+  competences?: Competence[];
 }
 
 const Profile: React.FC = () => {
@@ -110,30 +118,50 @@ const Profile: React.FC = () => {
               </div>
             </div>
 
-            <div className="profile-card work-card">
-              <h3>Professional Details</h3>
-              <div className="info-list">
-                <div className="info-item">
-                  <Briefcase className="info-icon" />
-                  <div>
-                    <label>Matricule</label>
-                    <p>{user.matricule}</p>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <Calendar className="info-icon" />
-                  <div>
-                    <label>Hire Date</label>
-                    <p>{new Date(user.date_embauche).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                {user.role === "RH" && (
+            <div className="profile-column">
+              <div className="profile-card work-card">
+                <h3>Professional Details</h3>
+                <div className="info-list">
                   <div className="info-item">
-                    <CreditCard className="info-icon" />
+                    <Briefcase className="info-icon" />
                     <div>
-                      <label>Base Salary</label>
-                      <p>{user.salaire_base} MAD</p>
+                      <label>Matricule</label>
+                      <p>{user.matricule}</p>
                     </div>
+                  </div>
+                  <div className="info-item">
+                    <Calendar className="info-icon" />
+                    <div>
+                      <label>Hire Date</label>
+                      <p>{new Date(user.date_embauche).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  {user.role === "RH" && (
+                    <div className="info-item">
+                      <CreditCard className="info-icon" />
+                      <div>
+                        <label>Base Salary</label>
+                        <p>{user.salaire_base} MAD</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="profile-card skills-card" style={{ marginTop: '1.5rem' }}>
+                <h3>Skills & Expertise</h3>
+                {user.competences && user.competences.length > 0 ? (
+                  <div className="skills-list-display">
+                    {user.competences.map((skill) => (
+                      <span key={skill.id} className="skill-badge-display">
+                        {skill.nom}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <Award className="empty-icon" />
+                    <p>No skills added yet.</p>
                   </div>
                 )}
               </div>

@@ -155,7 +155,7 @@ class UtilisateurRepository extends BaseRepository
 
     public function getWithRelations(int $id): ?Utilisateur
     {
-        return $this->model->with(['equipe'])->find($id);
+        return $this->model->with(['equipe', 'competences'])->find($id);
     }
 
     public function getAllWithRelations(): Collection

@@ -87,6 +87,8 @@ const ActivityLogs: React.FC = () => {
         return "#6366F1"; // Indigo
       case "AUTO_CHECK_OUT":
         return "#F59E0B"; // Amber
+      case "USER_REJECTED":
+        return "#EF4444"; // Red
       default:
         return "#6B7280"; // Gray
     }
@@ -120,6 +122,8 @@ const ActivityLogs: React.FC = () => {
         return "Pointage Sortie";
       case "AUTO_CHECK_OUT":
         return "Checkout Auto";
+      case "USER_REJECTED":
+        return "Refusé";
       default:
         return action;
     }

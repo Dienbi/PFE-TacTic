@@ -22,21 +22,25 @@ const AttendanceSection: React.FC = () => {
   const [autoCheckoutCancelled, setAutoCheckoutCancelled] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const isCheckedIn = todayPointage?.heure_entree && !todayPointage?.heure_sortie;
+  const isCheckedIn =
+    todayPointage?.heure_entree && !todayPointage?.heure_sortie;
 
   // Parse time string from backend (can be "HH:mm", "HH:mm:ss" or full datetime)
-  const parseTimeString = (timeStr: string | null, dateStr?: string): Date | null => {
+  const parseTimeString = (
+    timeStr: string | null,
+    dateStr?: string,
+  ): Date | null => {
     if (!timeStr) return null;
-    
+
     // If it's already a full datetime string (contains 'T' or has date part)
-    if (timeStr.includes('T') || timeStr.includes('-')) {
+    if (timeStr.includes("T") || timeStr.includes("-")) {
       return new Date(timeStr);
     }
-    
+
     // It's just a time string like "08:30" or "08:30:00"
     // Combine with today's date or provided date
     const today = dateStr ? new Date(dateStr) : new Date();
-    const [hours, minutes, seconds = 0] = timeStr.split(':').map(Number);
+    const [hours, minutes, seconds = 0] = timeStr.split(":").map(Number);
     today.setHours(hours, minutes, seconds, 0);
     return today;
   };
@@ -44,15 +48,15 @@ const AttendanceSection: React.FC = () => {
   // Format time from datetime string
   const formatTime = (timeStr: string | null): string => {
     if (!timeStr) return "--:--";
-    
+
     // If it's just a time string like "08:30", return it directly
-    if (!timeStr.includes('T') && !timeStr.includes('-')) {
+    if (!timeStr.includes("T") && !timeStr.includes("-")) {
       return timeStr.substring(0, 5); // Return "HH:mm"
     }
-    
+
     const date = new Date(timeStr);
     if (isNaN(date.getTime())) return "--:--";
-    
+
     return date.toLocaleTimeString("fr-FR", {
       hour: "2-digit",
       minute: "2-digit",
@@ -63,9 +67,12 @@ const AttendanceSection: React.FC = () => {
   const calculateElapsedTime = useCallback(() => {
     if (!todayPointage?.heure_entree) return "0h 0m 0s";
 
-    const checkInTime = parseTimeString(todayPointage.heure_entree, todayPointage.date);
+    const checkInTime = parseTimeString(
+      todayPointage.heure_entree,
+      todayPointage.date,
+    );
     if (!checkInTime) return "0h 0m 0s";
-    
+
     const endTime = todayPointage.heure_sortie
       ? parseTimeString(todayPointage.heure_sortie, todayPointage.date)
       : new Date();
@@ -74,7 +81,7 @@ const AttendanceSection: React.FC = () => {
 
     const diffMs = endTime.getTime() - checkInTime.getTime();
     if (diffMs < 0) return "0h 0m 0s";
-    
+
     const hours = Math.floor(diffMs / 3600000);
     const minutes = Math.floor((diffMs % 3600000) / 60000);
     const seconds = Math.floor((diffMs % 60000) / 1000);
@@ -206,7 +213,7 @@ const AttendanceSection: React.FC = () => {
 
   const formatHours = (hours: number | string | null | undefined): string => {
     if (hours === null || hours === undefined) return "0h";
-    const numHours = typeof hours === 'string' ? parseFloat(hours) : hours;
+    const numHours = typeof hours === "string" ? parseFloat(hours) : hours;
     if (isNaN(numHours)) return "0h";
     return `${numHours.toFixed(1)}h`;
   };

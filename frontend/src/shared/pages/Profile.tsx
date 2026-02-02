@@ -147,8 +147,11 @@ const Profile: React.FC = () => {
                   )}
                 </div>
               </div>
-              
-              <div className="profile-card skills-card" style={{ marginTop: '1.5rem' }}>
+
+              <div
+                className="profile-card skills-card"
+                style={{ marginTop: "1.5rem" }}
+              >
                 <h3>Skills & Expertise</h3>
                 {user.competences && user.competences.length > 0 ? (
                   <div className="skills-list-display">

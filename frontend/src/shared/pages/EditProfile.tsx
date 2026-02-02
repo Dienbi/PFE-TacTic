@@ -8,16 +8,53 @@ import Loader from "../components/Loader";
 import "./Profile.css";
 
 const SUGGESTED_SKILLS = [
-  "JavaScript", "TypeScript", "Python", "Java", "PHP", "C#", "C++", "Go", "Rust",
-  "React", "Angular", "Vue.js", "Next.js", "Svelte",
-  "Laravel", "Spring Boot", "Django", "Flask", "ASP.NET",
-  "Node.js", "Express", "NestJS",
-  "HTML", "CSS", "Tailwind CSS", "Bootstrap", "SASS",
-  "SQL", "PostgreSQL", "MySQL", "MongoDB", "Redis",
-  "Git", "Docker", "Kubernetes", "Jenkins", "GitLab CI",
-  "AWS", "Azure", "Google Cloud",
-  "Linux", "DevOps", "Microservices",
-  "Agile", "Scrum", "Jira", "Project Management"
+  "JavaScript",
+  "TypeScript",
+  "Python",
+  "Java",
+  "PHP",
+  "C#",
+  "C++",
+  "Go",
+  "Rust",
+  "React",
+  "Angular",
+  "Vue.js",
+  "Next.js",
+  "Svelte",
+  "Laravel",
+  "Spring Boot",
+  "Django",
+  "Flask",
+  "ASP.NET",
+  "Node.js",
+  "Express",
+  "NestJS",
+  "HTML",
+  "CSS",
+  "Tailwind CSS",
+  "Bootstrap",
+  "SASS",
+  "SQL",
+  "PostgreSQL",
+  "MySQL",
+  "MongoDB",
+  "Redis",
+  "Git",
+  "Docker",
+  "Kubernetes",
+  "Jenkins",
+  "GitLab CI",
+  "AWS",
+  "Azure",
+  "Google Cloud",
+  "Linux",
+  "DevOps",
+  "Microservices",
+  "Agile",
+  "Scrum",
+  "Jira",
+  "Project Management",
 ];
 
 interface Competence {
@@ -44,7 +81,7 @@ const EditProfile: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'personal' | 'skills'>('personal');
+  const [activeTab, setActiveTab] = useState<"personal" | "skills">("personal");
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -67,7 +104,7 @@ const EditProfile: React.FC = () => {
         const response = await client.get("/auth/me");
         const userData = response.data.user;
         setUser(userData);
-        
+
         setFormData({
           nom: userData.nom || "",
           prenom: userData.prenom || "",
@@ -113,7 +150,7 @@ const EditProfile: React.FC = () => {
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
-    setSkills(skills.filter(skill => skill !== skillToRemove));
+    setSkills(skills.filter((skill) => skill !== skillToRemove));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,21 +160,21 @@ const EditProfile: React.FC = () => {
     setSuccess("");
 
     try {
-      if (activeTab === 'personal') {
+      if (activeTab === "personal") {
         const response = await client.put("/auth/update-profile", formData);
-        
+
         // Update local storage
         if (response.data.user) {
           localStorage.setItem("user", JSON.stringify(response.data.user));
           setUser({ ...user, ...response.data.user } as UserData);
         }
         setSuccess("Profile updated successfully!");
-        
+
         // Short delay before redirecting if it was a save & exit
-        // navigate("/profile"); 
+        // navigate("/profile");
       } else {
         const response = await client.put("/auth/update-skills", { skills });
-        
+
         if (response.data.user) {
           localStorage.setItem("user", JSON.stringify(response.data.user));
           setUser(response.data.user);
@@ -165,40 +202,63 @@ const EditProfile: React.FC = () => {
           <div className="profile-card">
             <div className="profile-title">
               <h2>Edit Profile</h2>
-              <p style={{ color: "#6B7280" }}>Manage your personal information and skills.</p>
+              <p style={{ color: "#6B7280" }}>
+                Manage your personal information and skills.
+              </p>
             </div>
 
             <div className="nav-tabs">
-              <div 
-                className={`nav-tab ${activeTab === 'personal' ? 'active' : ''}`}
-                onClick={() => setActiveTab('personal')}
+              <div
+                className={`nav-tab ${activeTab === "personal" ? "active" : ""}`}
+                onClick={() => setActiveTab("personal")}
               >
                 Personal Information
               </div>
-              <div 
-                className={`nav-tab ${activeTab === 'skills' ? 'active' : ''}`}
-                onClick={() => setActiveTab('skills')}
+              <div
+                className={`nav-tab ${activeTab === "skills" ? "active" : ""}`}
+                onClick={() => setActiveTab("skills")}
               >
                 Skills & Expertise
               </div>
             </div>
 
             {error && (
-              <div className="error-message" style={{ color: "#EF4444", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#FEE2E2", borderRadius: "8px" }}>
+              <div
+                className="error-message"
+                style={{
+                  color: "#EF4444",
+                  marginBottom: "1rem",
+                  padding: "0.75rem",
+                  backgroundColor: "#FEE2E2",
+                  borderRadius: "8px",
+                }}
+              >
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="success-message" style={{ color: "#065F46", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#D1FAE5", borderRadius: "8px" }}>
+              <div
+                className="success-message"
+                style={{
+                  color: "#065F46",
+                  marginBottom: "1rem",
+                  padding: "0.75rem",
+                  backgroundColor: "#D1FAE5",
+                  borderRadius: "8px",
+                }}
+              >
                 {success}
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
-              {activeTab === 'personal' ? (
+              {activeTab === "personal" ? (
                 <div className="info-list">
-                  <div className="form-row" style={{ display: "flex", gap: "2rem" }}>
+                  <div
+                    className="form-row"
+                    style={{ display: "flex", gap: "2rem" }}
+                  >
                     <div className="form-group" style={{ flex: 1 }}>
                       <label>First Name</label>
                       <input
@@ -261,12 +321,20 @@ const EditProfile: React.FC = () => {
 
                   {user.role === "RH" && (
                     <>
-                      <div className="profile-title" style={{ marginTop: "2rem" }}>
+                      <div
+                        className="profile-title"
+                        style={{ marginTop: "2rem" }}
+                      >
                         <h2>RH Administration</h2>
-                        <p style={{ color: "#6B7280" }}>Sensitive employee data.</p>
+                        <p style={{ color: "#6B7280" }}>
+                          Sensitive employee data.
+                        </p>
                       </div>
 
-                      <div className="form-row" style={{ display: "flex", gap: "2rem" }}>
+                      <div
+                        className="form-row"
+                        style={{ display: "flex", gap: "2rem" }}
+                      >
                         <div className="form-group" style={{ flex: 1 }}>
                           <label>Matricule</label>
                           <input
@@ -292,7 +360,10 @@ const EditProfile: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="form-row" style={{ display: "flex", gap: "2rem" }}>
+                      <div
+                        className="form-row"
+                        style={{ display: "flex", gap: "2rem" }}
+                      >
                         <div className="form-group" style={{ flex: 1 }}>
                           <label>Hire Date</label>
                           <input
@@ -329,17 +400,20 @@ const EditProfile: React.FC = () => {
                         className="form-input"
                         placeholder="Ex: React, Project Management, Leadership..."
                         onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             e.preventDefault();
-                            if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+                            if (
+                              newSkill.trim() &&
+                              !skills.includes(newSkill.trim())
+                            ) {
                               setSkills([...skills, newSkill.trim()]);
                               setNewSkill("");
                             }
-                          };
+                          }
                         }}
                       />
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={handleAddSkill}
                         className="add-skill-btn"
                         disabled={!newSkill.trim()}
@@ -351,36 +425,57 @@ const EditProfile: React.FC = () => {
 
                   {/* Suggested Skills Section */}
                   <div className="form-group">
-                    <label style={{ fontSize: '0.9rem', color: '#6B7280' }}>Suggested Skills</label>
-                    <div className="skills-tags-container" style={{ minHeight: 'auto', background: 'transparent', border: 'none', padding: '0.5rem 0', marginTop: 0 }}>
+                    <label style={{ fontSize: "0.9rem", color: "#6B7280" }}>
+                      Suggested Skills
+                    </label>
+                    <div
+                      className="skills-tags-container"
+                      style={{
+                        minHeight: "auto",
+                        background: "transparent",
+                        border: "none",
+                        padding: "0.5rem 0",
+                        marginTop: 0,
+                      }}
+                    >
                       {SUGGESTED_SKILLS.filter(
-                        skill => !skills.includes(skill) && 
-                        (newSkill === "" || skill.toLowerCase().includes(newSkill.toLowerCase()))
-                      ).slice(0, 15).map((skill) => (
-                        <button
-                          key={skill}
-                          type="button"
-                          onClick={() => {
-                            if (!skills.includes(skill)) {
-                              setSkills([...skills, skill]);
-                              setNewSkill(""); // Clear search if filtered
+                        (skill) =>
+                          !skills.includes(skill) &&
+                          (newSkill === "" ||
+                            skill
+                              .toLowerCase()
+                              .includes(newSkill.toLowerCase())),
+                      )
+                        .slice(0, 15)
+                        .map((skill) => (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => {
+                              if (!skills.includes(skill)) {
+                                setSkills([...skills, skill]);
+                                setNewSkill(""); // Clear search if filtered
+                              }
+                            }}
+                            className="skill-tag"
+                            style={{
+                              background: "white",
+                              border: "1px solid #D1D5DB",
+                              color: "#374151",
+                              cursor: "pointer",
+                              transition: "all 0.2s",
+                            }}
+                            onMouseOver={(e) =>
+                              (e.currentTarget.style.borderColor = "#4F46E5")
                             }
-                          }}
-                          className="skill-tag"
-                          style={{ 
-                            background: 'white', 
-                            border: '1px solid #D1D5DB', 
-                            color: '#374151',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseOver={(e) => e.currentTarget.style.borderColor = '#4F46E5'}
-                          onMouseOut={(e) => e.currentTarget.style.borderColor = '#D1D5DB'}
-                        >
-                          <Plus size={14} />
-                          {skill}
-                        </button>
-                      ))}
+                            onMouseOut={(e) =>
+                              (e.currentTarget.style.borderColor = "#D1D5DB")
+                            }
+                          >
+                            <Plus size={14} />
+                            {skill}
+                          </button>
+                        ))}
                     </div>
                   </div>
 
@@ -389,8 +484,8 @@ const EditProfile: React.FC = () => {
                       skills.map((skill, index) => (
                         <div key={index} className="skill-tag">
                           <span>{skill}</span>
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => handleRemoveSkill(skill)}
                             className="remove-skill-btn"
                           >
@@ -399,15 +494,25 @@ const EditProfile: React.FC = () => {
                         </div>
                       ))
                     ) : (
-                      <p style={{ color: "#9CA3AF", width: "100%", textAlign: "center" }}>
-                        No skills added yet. Add skills to highlight your expertise.
+                      <p
+                        style={{
+                          color: "#9CA3AF",
+                          width: "100%",
+                          textAlign: "center",
+                        }}
+                      >
+                        No skills added yet. Add skills to highlight your
+                        expertise.
                       </p>
                     )}
                   </div>
                 </div>
               )}
 
-              <div className="button-group" style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
+              <div
+                className="button-group"
+                style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}
+              >
                 <button
                   type="submit"
                   className="edit-profile-btn"

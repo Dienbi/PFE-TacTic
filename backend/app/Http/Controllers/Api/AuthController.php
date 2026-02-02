@@ -167,11 +167,11 @@ class AuthController extends Controller
             $skillIds[] = $competence->id;
         }
 
-        // Use sync to update pivot table without detaching existing ones could be an option, 
-        // but typically skills update replaces the list. Here we follow LinkedIn style: 
+        // Use sync to update pivot table without detaching existing ones could be an option,
+        // but typically skills update replaces the list. Here we follow LinkedIn style:
         // if user sends a list, we assume it's the current desired list.
         $user->competences()->sync($skillIds);
-        
+
         // Reload user with competences
         $user->load('competences');
 

@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Users,
-  Clock,
-  UserX,
-  UserCheck,
-  Calendar,
-  Search,
-} from "lucide-react";
+import { Users, Clock, UserX, UserCheck, Calendar, Search } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
@@ -92,7 +85,9 @@ const AttendanceDashboard: React.FC = () => {
         </span>
       </div>
       {ShowTime && user.heure_entree && (
-        <div className={`time-badge ${user.status === "LATE" ? "late-time" : ""}`}>
+        <div
+          className={`time-badge ${user.status === "LATE" ? "late-time" : ""}`}
+        >
           {user.heure_entree}
         </div>
       )}
@@ -120,16 +115,18 @@ const AttendanceDashboard: React.FC = () => {
                 Track employee attendance, late arrivals, and absences
               </p>
             </div>
-            
-            <div style={{marginTop: '1rem'}}>
-               <label style={{marginRight: '0.5rem', fontWeight: 500}}>Date:</label>
-               <input 
-                 type="date" 
-                 value={date} 
-                 onChange={(e) => setDate(e.target.value)}
-                 className="form-input"
-                 style={{width: 'auto', display: 'inline-block'}}
-               />
+
+            <div style={{ marginTop: "1rem" }}>
+              <label style={{ marginRight: "0.5rem", fontWeight: 500 }}>
+                Date:
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="form-input"
+                style={{ width: "auto", display: "inline-block" }}
+              />
             </div>
           </div>
 
@@ -149,7 +146,9 @@ const AttendanceDashboard: React.FC = () => {
                 <div className="stat-card stat-working">
                   <div className="stat-content">
                     <h3>Currently In</h3>
-                    <div className="stat-value">{data.stats.currently_in_count}</div>
+                    <div className="stat-value">
+                      {data.stats.currently_in_count}
+                    </div>
                   </div>
                   <div className="stat-icon">
                     <Clock />
@@ -192,7 +191,9 @@ const AttendanceDashboard: React.FC = () => {
                         <UserListItem key={u.id} user={u} ShowTime={true} />
                       ))
                     ) : (
-                      <div className="empty-list">No users currently checked in</div>
+                      <div className="empty-list">
+                        No users currently checked in
+                      </div>
                     )}
                   </div>
                 </div>

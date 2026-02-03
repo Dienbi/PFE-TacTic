@@ -21,7 +21,7 @@ class PointageService
         $allUsers = $this->utilisateurRepository->getActifs();
 
         $presentIds = $todayPointages->pluck('utilisateur_id')->toArray();
-        
+
         $present = [];
         $late = [];
         $absent = [];
@@ -115,7 +115,7 @@ class PointageService
     public function pointerEntree(int $utilisateurId): Pointage
     {
         $pointage = $this->pointageRepository->pointer($utilisateurId, 'entree');
-        
+
         // Log the check-in activity
         $user = \App\Models\Utilisateur::find($utilisateurId);
         if ($user) {
@@ -125,28 +125,28 @@ class PointageService
                 $utilisateurId
             );
         }
-        
+
         return $pointage;
     }
 
     public function pointerSortie(int $utilisateurId, bool $isAutoCheckout = false): Pointage
     {
         $pointage = $this->pointageRepository->pointer($utilisateurId, 'sortie');
-        
+
         // Log the check-out activity
         $user = \App\Models\Utilisateur::find($utilisateurId);
         if ($user) {
-            $message = $isAutoCheckout 
+            $message = $isAutoCheckout
                 ? "{$user->prenom} {$user->nom} - checkout automatique à " . Carbon::now()->format('H:i')
                 : "{$user->prenom} {$user->nom} a pointé sa sortie à " . Carbon::now()->format('H:i');
-            
+
             ActivityLogger::log(
                 $isAutoCheckout ? 'AUTO_CHECK_OUT' : 'CHECK_OUT',
                 $message,
                 $utilisateurId
             );
         }
-        
+
         return $pointage;
     }
 

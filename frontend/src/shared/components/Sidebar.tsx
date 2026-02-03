@@ -110,7 +110,11 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
           { icon: Users, label: "Employees", path: "/employees" },
           { icon: Briefcase, label: "Teams", path: "/teams" },
-          { icon: CalendarCheck, label: "Attendance", path: "/attendance-dashboard" },
+          {
+            icon: CalendarCheck,
+            label: "Attendance",
+            path: "/attendance-dashboard",
+          },
           { icon: DollarSign, label: "Payroll", path: "/payroll" },
           { icon: FileText, label: "Leave Management", path: "/leave" },
           { icon: Target, label: "Posts & Matching", path: "/posts" },

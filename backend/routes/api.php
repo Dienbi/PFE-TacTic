@@ -89,7 +89,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/', [EquipeController::class, 'index']);
 
         // Manager route
-        Route::get('/my-team', [EquipeController::class, 'myTeam'])->middleware('role:chef_equipe,rh'); 
+        Route::get('/my-team', [EquipeController::class, 'myTeam'])->middleware('role:chef_equipe,rh');
 
         Route::get('/{id}', [EquipeController::class, 'show']);
         Route::get('/{id}/membres', [EquipeController::class, 'membres']);

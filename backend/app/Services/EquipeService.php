@@ -91,7 +91,7 @@ class EquipeService
     public function getAvailableManagers(): array
     {
         $managers = $this->utilisateurRepository->getByRole(Role::CHEF_EQUIPE);
-        
+
         return $this->filterAvailableUsers($managers);
     }
 
@@ -102,7 +102,7 @@ class EquipeService
     public function getAvailableEmployees(): array
     {
         $employees = $this->utilisateurRepository->getByRole(Role::EMPLOYE);
-        
+
         return $this->filterAvailableUsers($employees);
     }
 
@@ -140,7 +140,7 @@ class EquipeService
 
             if ($activeLeave) {
                 $leaveDuration = $activeLeave->date_debut->diffInDays($activeLeave->date_fin) + 1;
-                
+
                 // If leave is more than 7 days, skip this user
                 if ($leaveDuration > 7) {
                     continue;
@@ -155,7 +155,7 @@ class EquipeService
                 ];
             } elseif ($upcomingLeave) {
                 $leaveDuration = $upcomingLeave->date_debut->diffInDays($upcomingLeave->date_fin) + 1;
-                
+
                 // Show notice for upcoming short leave
                 if ($leaveDuration <= 7) {
                     $leaveInfo = [

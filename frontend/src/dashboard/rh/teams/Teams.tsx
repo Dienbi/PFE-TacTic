@@ -70,9 +70,9 @@ const Teams: React.FC = () => {
         description: teamData.description,
         chef_id: teamData.chef_id,
       });
-      
+
       const newTeamId = response.data.id;
-      
+
       // Add members to the team if any were selected
       if (teamData.membre_ids && teamData.membre_ids.length > 0) {
         for (const memberId of teamData.membre_ids) {
@@ -81,7 +81,7 @@ const Teams: React.FC = () => {
           });
         }
       }
-      
+
       setShowCreateModal(false);
       fetchTeams();
     } catch (error) {

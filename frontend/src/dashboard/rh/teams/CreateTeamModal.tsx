@@ -24,7 +24,12 @@ interface AvailableUser {
 
 interface CreateTeamModalProps {
   onClose: () => void;
-  onSubmit: (data: { nom: string; description?: string; chef_id?: number; membre_ids?: number[] }) => Promise<void>;
+  onSubmit: (data: {
+    nom: string;
+    description?: string;
+    chef_id?: number;
+    membre_ids?: number[];
+  }) => Promise<void>;
 }
 
 const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
@@ -37,8 +42,12 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
   });
   const [selectedManager, setSelectedManager] = useState<number | null>(null);
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
-  const [availableManagers, setAvailableManagers] = useState<AvailableUser[]>([]);
-  const [availableEmployees, setAvailableEmployees] = useState<AvailableUser[]>([]);
+  const [availableManagers, setAvailableManagers] = useState<AvailableUser[]>(
+    [],
+  );
+  const [availableEmployees, setAvailableEmployees] = useState<AvailableUser[]>(
+    [],
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -75,7 +84,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
     setSelectedEmployees((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
+        : [...prev, userId],
     );
   };
 
@@ -92,7 +101,8 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
       await onSubmit({
         ...formData,
         chef_id: selectedManager || undefined,
-        membre_ids: selectedEmployees.length > 0 ? selectedEmployees : undefined,
+        membre_ids:
+          selectedEmployees.length > 0 ? selectedEmployees : undefined,
       });
     } catch (err) {
       setError("Failed to create team");
@@ -121,7 +131,10 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-content modal-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h2>Create New Team</h2>
           <button className="btn-close" onClick={onClose}>
@@ -165,26 +178,36 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
               <select
                 id="manager"
                 value={selectedManager || ""}
-                onChange={(e) => setSelectedManager(e.target.value ? parseInt(e.target.value) : null)}
+                onChange={(e) =>
+                  setSelectedManager(
+                    e.target.value ? parseInt(e.target.value) : null,
+                  )
+                }
                 className="form-input"
               >
                 <option value="">Select a manager...</option>
                 {availableManagers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
                     {manager.prenom} {manager.nom} ({manager.matricule})
-                    {manager.leave_info ? ` - ⚠️ ${manager.leave_info.message}` : ""}
+                    {manager.leave_info
+                      ? ` - ⚠️ ${manager.leave_info.message}`
+                      : ""}
                   </option>
                 ))}
               </select>
               {availableManagers.length === 0 && (
-                <p className="info-text">No managers available for assignment</p>
+                <p className="info-text">
+                  No managers available for assignment
+                </p>
               )}
             </div>
 
             <div className="form-group">
               <label>Team Members (Employees)</label>
               {availableEmployees.length === 0 ? (
-                <p className="info-text">No employees available for assignment</p>
+                <p className="info-text">
+                  No employees available for assignment
+                </p>
               ) : (
                 <div className="checkbox-list">
                   {availableEmployees.map((employee) => (

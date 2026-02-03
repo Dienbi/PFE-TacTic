@@ -50,10 +50,16 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   onRefresh,
 }) => {
   const [membres, setMembres] = useState<Utilisateur[]>([]);
-  const [availableManagers, setAvailableManagers] = useState<AvailableUser[]>([]);
-  const [availableEmployees, setAvailableEmployees] = useState<AvailableUser[]>([]);
+  const [availableManagers, setAvailableManagers] = useState<AvailableUser[]>(
+    [],
+  );
+  const [availableEmployees, setAvailableEmployees] = useState<AvailableUser[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedManagerId, setSelectedManagerId] = useState<number | null>(null);
+  const [selectedManagerId, setSelectedManagerId] = useState<number | null>(
+    null,
+  );
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -71,11 +77,19 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
         client.get("/equipes/available-employees"),
       ]);
       setMembres(membresRes.data);
-      
+
       // Filter out users already in this team
       const membreIds = membresRes.data.map((m: Utilisateur) => m.id);
-      setAvailableManagers(managersRes.data.filter((u: AvailableUser) => !membreIds.includes(u.id)));
-      setAvailableEmployees(employeesRes.data.filter((u: AvailableUser) => !membreIds.includes(u.id)));
+      setAvailableManagers(
+        managersRes.data.filter(
+          (u: AvailableUser) => !membreIds.includes(u.id),
+        ),
+      );
+      setAvailableEmployees(
+        employeesRes.data.filter(
+          (u: AvailableUser) => !membreIds.includes(u.id),
+        ),
+      );
     } catch (err) {
       console.error("Error fetching team data:", err);
       setError("Failed to load team data");
@@ -115,14 +129,14 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
     try {
       setError("");
       setSuccess("");
-      
+
       // Add each selected employee
       for (const employeeId of selectedEmployeeIds) {
         await client.post(`/equipes/${team.id}/membres`, {
           utilisateur_id: employeeId,
         });
       }
-      
+
       setSelectedEmployeeIds([]);
       setSuccess(`${selectedEmployeeIds.length} employee(s) added to team`);
       await fetchTeamData();
@@ -150,17 +164,20 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   };
 
   const toggleEmployeeSelection = (employeeId: number) => {
-    setSelectedEmployeeIds(prev => 
+    setSelectedEmployeeIds((prev) =>
       prev.includes(employeeId)
-        ? prev.filter(id => id !== employeeId)
-        : [...prev, employeeId]
+        ? prev.filter((id) => id !== employeeId)
+        : [...prev, employeeId],
     );
   };
 
   const renderLeaveWarning = (user: AvailableUser) => {
     if (user.leave_info?.on_short_leave) {
       return (
-        <span className="leave-badge" title={`On ${user.leave_info.leave_type} until ${user.leave_info.leave_end_date}`}>
+        <span
+          className="leave-badge"
+          title={`On ${user.leave_info.leave_type} until ${user.leave_info.leave_end_date}`}
+        >
           <AlertTriangle size={14} />
           Short leave
         </span>
@@ -203,7 +220,7 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
                     value={selectedManagerId || ""}
                     onChange={(e) =>
                       setSelectedManagerId(
-                        e.target.value ? parseInt(e.target.value) : null
+                        e.target.value ? parseInt(e.target.value) : null,
                       )
                     }
                     className="form-input"
@@ -212,7 +229,9 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
                     {availableManagers.map((user) => (
                       <option key={user.id} value={user.id}>
                         {user.prenom} {user.nom} ({user.email})
-                        {user.leave_info?.on_short_leave ? " ⚠️ On short leave" : ""}
+                        {user.leave_info?.on_short_leave
+                          ? " ⚠️ On short leave"
+                          : ""}
                       </option>
                     ))}
                   </select>
@@ -220,16 +239,16 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
                     type="button"
                     className="btn-primary"
                     onClick={handleAddManager}
-                    disabled={!selectedManagerId || availableManagers.length === 0}
+                    disabled={
+                      !selectedManagerId || availableManagers.length === 0
+                    }
                   >
                     <Plus size={18} />
                     Add Manager
                   </button>
                 </div>
                 {availableManagers.length === 0 && (
-                  <p className="info-text">
-                    No available managers to add
-                  </p>
+                  <p className="info-text">No available managers to add</p>
                 )}
               </div>
 

@@ -60,9 +60,28 @@ const Teams: React.FC = () => {
   const handleCreateTeam = async (teamData: {
     nom: string;
     description?: string;
+    chef_id?: number;
+    membre_ids?: number[];
   }) => {
     try {
-      await client.post("/equipes", teamData);
+      // Create the team first
+      const response = await client.post("/equipes", {
+        nom: teamData.nom,
+        description: teamData.description,
+        chef_id: teamData.chef_id,
+      });
+      
+      const newTeamId = response.data.id;
+      
+      // Add members to the team if any were selected
+      if (teamData.membre_ids && teamData.membre_ids.length > 0) {
+        for (const memberId of teamData.membre_ids) {
+          await client.post(`/equipes/${newTeamId}/membres`, {
+            utilisateur_id: memberId,
+          });
+        }
+      }
+      
       setShowCreateModal(false);
       fetchTeams();
     } catch (error) {

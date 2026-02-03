@@ -142,4 +142,24 @@ class EquipeController extends Controller
 
         return response()->json($membres);
     }
+
+    /**
+     * Get available managers for team assignment
+     */
+    public function availableManagers(): JsonResponse
+    {
+        $managers = $this->equipeService->getAvailableManagers();
+
+        return response()->json($managers);
+    }
+
+    /**
+     * Get available employees for team assignment
+     */
+    public function availableEmployees(): JsonResponse
+    {
+        $employees = $this->equipeService->getAvailableEmployees();
+
+        return response()->json($employees);
+    }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, AlertTriangle } from "lucide-react";
 import client from "../../../api/client";
 import "./TeamsModal.css";
 
@@ -10,6 +10,20 @@ interface Utilisateur {
   email: string;
   role: string;
   matricule: string;
+}
+
+interface AvailableUser {
+  id: number;
+  prenom: string;
+  nom: string;
+  email: string;
+  role: string;
+  matricule: string;
+  leave_info?: {
+    on_short_leave: boolean;
+    leave_end_date: string;
+    leave_type: string;
+  };
 }
 
 interface Equipe {
@@ -36,9 +50,11 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   onRefresh,
 }) => {
   const [membres, setMembres] = useState<Utilisateur[]>([]);
-  const [availableUsers, setAvailableUsers] = useState<Utilisateur[]>([]);
+  const [availableManagers, setAvailableManagers] = useState<AvailableUser[]>([]);
+  const [availableEmployees, setAvailableEmployees] = useState<AvailableUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedManagerId, setSelectedManagerId] = useState<number | null>(null);
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -49,12 +65,17 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   const fetchTeamData = async () => {
     try {
       setIsLoading(true);
-      const [membresRes, usersRes] = await Promise.all([
+      const [membresRes, managersRes, employeesRes] = await Promise.all([
         client.get(`/equipes/${team.id}/membres`),
-        client.get("/utilisateurs"),
+        client.get("/equipes/available-managers"),
+        client.get("/equipes/available-employees"),
       ]);
       setMembres(membresRes.data);
-      setAvailableUsers(usersRes.data);
+      
+      // Filter out users already in this team
+      const membreIds = membresRes.data.map((m: Utilisateur) => m.id);
+      setAvailableManagers(managersRes.data.filter((u: AvailableUser) => !membreIds.includes(u.id)));
+      setAvailableEmployees(employeesRes.data.filter((u: AvailableUser) => !membreIds.includes(u.id)));
     } catch (err) {
       console.error("Error fetching team data:", err);
       setError("Failed to load team data");
@@ -63,9 +84,9 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
     }
   };
 
-  const handleAddMember = async () => {
-    if (!selectedUserId) {
-      setError("Please select a user");
+  const handleAddManager = async () => {
+    if (!selectedManagerId) {
+      setError("Please select a manager");
       return;
     }
 
@@ -73,14 +94,41 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
       setError("");
       setSuccess("");
       await client.post(`/equipes/${team.id}/membres`, {
-        utilisateur_id: selectedUserId,
+        utilisateur_id: selectedManagerId,
       });
-      setSelectedUserId(null);
-      setSuccess("User added to team");
+      setSelectedManagerId(null);
+      setSuccess("Manager added to team");
       await fetchTeamData();
       onRefresh();
     } catch (err) {
-      setError("Failed to add user to team");
+      setError("Failed to add manager to team");
+      console.error(err);
+    }
+  };
+
+  const handleAddEmployees = async () => {
+    if (selectedEmployeeIds.length === 0) {
+      setError("Please select at least one employee");
+      return;
+    }
+
+    try {
+      setError("");
+      setSuccess("");
+      
+      // Add each selected employee
+      for (const employeeId of selectedEmployeeIds) {
+        await client.post(`/equipes/${team.id}/membres`, {
+          utilisateur_id: employeeId,
+        });
+      }
+      
+      setSelectedEmployeeIds([]);
+      setSuccess(`${selectedEmployeeIds.length} employee(s) added to team`);
+      await fetchTeamData();
+      onRefresh();
+    } catch (err) {
+      setError("Failed to add employees to team");
       console.error(err);
     }
   };
@@ -101,11 +149,25 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
     }
   };
 
-  // Get users not already in the team
-  const membreIds = membres.map((m) => m.id);
-  const usersNotInTeam = availableUsers.filter(
-    (u) => !membreIds.includes(u.id),
-  );
+  const toggleEmployeeSelection = (employeeId: number) => {
+    setSelectedEmployeeIds(prev => 
+      prev.includes(employeeId)
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
+  };
+
+  const renderLeaveWarning = (user: AvailableUser) => {
+    if (user.leave_info?.on_short_leave) {
+      return (
+        <span className="leave-badge" title={`On ${user.leave_info.leave_type} until ${user.leave_info.leave_end_date}`}>
+          <AlertTriangle size={14} />
+          Short leave
+        </span>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -133,42 +195,81 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
             {success && <div className="success-message">{success}</div>}
 
             <div className="modal-body">
+              {/* Add Manager Section */}
               <div className="add-member-section">
-                <h3>Add Members</h3>
+                <h3>Add Manager (Chef d'équipe)</h3>
                 <div className="add-member-form">
                   <select
-                    value={selectedUserId || ""}
+                    value={selectedManagerId || ""}
                     onChange={(e) =>
-                      setSelectedUserId(
-                        e.target.value ? parseInt(e.target.value) : null,
+                      setSelectedManagerId(
+                        e.target.value ? parseInt(e.target.value) : null
                       )
                     }
                     className="form-input"
                   >
-                    <option value="">Select a user to add...</option>
-                    {usersNotInTeam.map((user) => (
+                    <option value="">Select a manager to add...</option>
+                    {availableManagers.map((user) => (
                       <option key={user.id} value={user.id}>
                         {user.prenom} {user.nom} ({user.email})
+                        {user.leave_info?.on_short_leave ? " ⚠️ On short leave" : ""}
                       </option>
                     ))}
                   </select>
                   <button
                     type="button"
                     className="btn-primary"
-                    onClick={handleAddMember}
-                    disabled={!selectedUserId || usersNotInTeam.length === 0}
+                    onClick={handleAddManager}
+                    disabled={!selectedManagerId || availableManagers.length === 0}
                   >
                     <Plus size={18} />
-                    Add Member
+                    Add Manager
                   </button>
                 </div>
-                {usersNotInTeam.length === 0 && (
+                {availableManagers.length === 0 && (
                   <p className="info-text">
-                    All users are already in this team
+                    No available managers to add
                   </p>
                 )}
               </div>
 
+              {/* Add Employees Section */}
+              <div className="add-member-section">
+                <h3>Add Employees</h3>
+                {availableEmployees.length === 0 ? (
+                  <p className="info-text">No available employees to add</p>
+                ) : (
+                  <>
+                    <div className="checkbox-list">
+                      {availableEmployees.map((user) => (
+                        <label key={user.id} className="checkbox-item">
+                          <input
+                            type="checkbox"
+                            checked={selectedEmployeeIds.includes(user.id)}
+                            onChange={() => toggleEmployeeSelection(user.id)}
+                          />
+                          <span className="checkbox-label">
+                            {user.prenom} {user.nom} ({user.email})
+                            {renderLeaveWarning(user)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      onClick={handleAddEmployees}
+                      disabled={selectedEmployeeIds.length === 0}
+                      style={{ marginTop: "10px" }}
+                    >
+                      <Plus size={18} />
+                      Add Selected Employees ({selectedEmployeeIds.length})
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Current Members Section */}
               <div className="membres-section">
                 <h3>Team Members ({membres.length})</h3>
                 {membres.length === 0 ? (

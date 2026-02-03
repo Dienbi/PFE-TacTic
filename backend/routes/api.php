@@ -91,17 +91,24 @@ Route::middleware('jwt.auth')->group(function () {
         // Manager route
         Route::get('/my-team', [EquipeController::class, 'myTeam'])->middleware('role:chef_equipe,rh');
 
-        Route::get('/{id}', [EquipeController::class, 'show']);
-        Route::get('/{id}/membres', [EquipeController::class, 'membres']);
+        // RH-only routes (must be before /{id} routes)
+        Route::middleware('role:rh')->group(function () {
+            Route::get('/available-managers', [EquipeController::class, 'availableManagers']);
+            Route::get('/available-employees', [EquipeController::class, 'availableEmployees']);
+            Route::post('/', [EquipeController::class, 'store']);
+        });
+
+        // Routes with ID parameter (after specific routes)
+        Route::get('/{id}', [EquipeController::class, 'show'])->where('id', '[0-9]+');
+        Route::get('/{id}/membres', [EquipeController::class, 'membres'])->where('id', '[0-9]+');
 
         Route::middleware('role:rh')->group(function () {
-            Route::post('/', [EquipeController::class, 'store']);
-            Route::put('/{id}', [EquipeController::class, 'update']);
-            Route::delete('/{id}', [EquipeController::class, 'destroy']);
-            Route::post('/{id}/chef', [EquipeController::class, 'assignChef']);
-            Route::delete('/{id}/chef', [EquipeController::class, 'removeChef']);
-            Route::post('/{id}/membres', [EquipeController::class, 'addMembre']);
-            Route::delete('/{id}/membres/{utilisateur_id}', [EquipeController::class, 'removeMembre']);
+            Route::put('/{id}', [EquipeController::class, 'update'])->where('id', '[0-9]+');
+            Route::delete('/{id}', [EquipeController::class, 'destroy'])->where('id', '[0-9]+');
+            Route::post('/{id}/chef', [EquipeController::class, 'assignChef'])->where('id', '[0-9]+');
+            Route::delete('/{id}/chef', [EquipeController::class, 'removeChef'])->where('id', '[0-9]+');
+            Route::post('/{id}/membres', [EquipeController::class, 'addMembre'])->where('id', '[0-9]+');
+            Route::delete('/{id}/membres/{utilisateur_id}', [EquipeController::class, 'removeMembre'])->where('id', '[0-9]+');
         });
     });
 

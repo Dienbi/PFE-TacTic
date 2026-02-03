@@ -87,10 +87,13 @@ Route::middleware('jwt.auth')->group(function () {
     // Equipe routes
     Route::prefix('equipes')->group(function () {
         Route::get('/', [EquipeController::class, 'index']);
+
+        // Manager route
+        Route::get('/my-team', [EquipeController::class, 'myTeam'])->middleware('role:chef_equipe,rh'); 
+
         Route::get('/{id}', [EquipeController::class, 'show']);
         Route::get('/{id}/membres', [EquipeController::class, 'membres']);
 
-        // RH only routes
         Route::middleware('role:rh')->group(function () {
             Route::post('/', [EquipeController::class, 'store']);
             Route::put('/{id}', [EquipeController::class, 'update']);
@@ -98,7 +101,7 @@ Route::middleware('jwt.auth')->group(function () {
             Route::post('/{id}/chef', [EquipeController::class, 'assignChef']);
             Route::delete('/{id}/chef', [EquipeController::class, 'removeChef']);
             Route::post('/{id}/membres', [EquipeController::class, 'addMembre']);
-            Route::delete('/{id}/membres', [EquipeController::class, 'removeMembre']);
+            Route::delete('/{id}/membres/{utilisateur_id}', [EquipeController::class, 'removeMembre']);
         });
     });
 
@@ -113,6 +116,7 @@ Route::middleware('jwt.auth')->group(function () {
 
         // RH & Chef Equipe routes
         Route::middleware('role:rh,chef_equipe')->group(function () {
+            Route::get('/summary', [PointageController::class, 'summary']);
             Route::get('/date', [PointageController::class, 'byDate']);
             Route::get('/utilisateur/{utilisateurId}', [PointageController::class, 'byUtilisateur']);
             Route::post('/absence', [PointageController::class, 'marquerAbsence']);

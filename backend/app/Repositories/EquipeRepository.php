@@ -22,6 +22,11 @@ class EquipeRepository extends BaseRepository
         return $this->model->with(['chefEquipe', 'membres'])->get();
     }
 
+    public function getAllWithCounts(): Collection
+    {
+        return $this->model->with('chefEquipe')->withCount('membres')->get();
+    }
+
     /**
      * Get all teams for dropdown (only id and name)
      */
@@ -33,6 +38,13 @@ class EquipeRepository extends BaseRepository
     public function findByChef(int $chefId): ?Equipe
     {
         return $this->model->where('chef_equipe_id', $chefId)->first();
+    }
+
+    public function getWithMembresByChef(int $chefId): ?Equipe
+    {
+        return $this->model->where('chef_equipe_id', $chefId)
+            ->with(['membres', 'chefEquipe'])
+            ->first();
     }
 
     public function assignChef(int $equipeId, int $chefId): bool

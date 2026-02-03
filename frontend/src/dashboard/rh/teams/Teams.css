@@ -1,0 +1,271 @@
+.teams-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.teams-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+}
+
+.teams-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.25rem 0;
+}
+
+.teams-header .subtitle {
+  color: #6B7280;
+  font-size: 0.95rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-color: #4F46E5;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #4338CA;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #D1D5DB;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #E5E7EB;
+  background-color: white;
+  border-radius: 6px;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
+.btn-icon.btn-danger {
+  color: #EF4444;
+  border-color: #FCA5A5;
+}
+
+.btn-icon.btn-danger:hover {
+  background-color: #FEF2F2;
+  border-color: #EF4444;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 0.75rem 1rem;
+  background-color: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: #D1D5DB;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: #F9FAFB;
+  border: 1px dashed #E5E7EB;
+  border-radius: 12px;
+  color: #6B7280;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  color: #D1D5DB;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+  margin-bottom: 1.5rem;
+  color: #6B7280;
+}
+
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
+  gap: 2.5rem;
+  justify-items: center;
+}
+
+.card {
+  width: 252px;
+  height: 265px;
+  background: white;
+  border-radius: 30px;
+  box-shadow: 15px 15px 30px #bebebe,
+              -15px -15px 30px #ffffff;
+  transition: 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.img {
+  width: 100%;
+  height: 50%;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  background: linear-gradient(#4750cd, #1e2258);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.save {
+  transition: 0.2s ease-in-out;
+  border-radius: 10px;
+  margin: 15px;
+  width: 32px;
+  height: 32px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  z-index: 2;
+}
+
+.text {
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 50%;
+  justify-content: space-between;
+}
+
+.save .svg {
+  transition: 0.2s ease-in-out;
+  width: 18px;
+  height: 18px;
+  color: #EF4444;
+}
+
+.icon-box {
+  width: auto;
+  padding: 10px 15px;
+  background-color: #e3fff9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.icon-box:hover {
+  background-color: #ccfbf2;
+}
+
+.text .h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 5px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text .p {
+  font-family: 'Inter', sans-serif;
+  color: #6B7280;
+  font-size: 13px;
+  margin: 0;
+}
+
+.icon-box .span {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4F46E5;
+  margin: 0;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.save:hover {
+  transform: scale(1.1) rotate(10deg);
+  background-color: #FEF2F2;
+}
+

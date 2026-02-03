@@ -75,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
             path: "/dashboard/manager",
           },
           { icon: UserCircle, label: "My Profile", path: "/profile" },
-          { icon: Users, label: "My Team", path: "/manager/team" },
+          { icon: Users, label: "My Team", path: "/dashboard/manager/my-team" },
           {
             icon: CalendarCheck,
             label: "Attendance",
@@ -109,7 +109,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         return [
           { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
           { icon: Users, label: "Employees", path: "/employees" },
-          { icon: CalendarCheck, label: "Attendance", path: "/rh/attendance" },
+          { icon: Briefcase, label: "Teams", path: "/teams" },
+          { icon: CalendarCheck, label: "Attendance", path: "/attendance-dashboard" },
           { icon: DollarSign, label: "Payroll", path: "/payroll" },
           { icon: FileText, label: "Leave Management", path: "/leave" },
           { icon: Target, label: "Posts & Matching", path: "/posts" },

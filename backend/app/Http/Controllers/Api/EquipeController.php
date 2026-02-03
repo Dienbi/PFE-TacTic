@@ -25,6 +25,17 @@ class EquipeController extends Controller
     }
 
     /**
+     * Get manager's team
+     */
+    public function myTeam(): JsonResponse
+    {
+        $equipe = $this->equipeService->getMyTeam(auth()->id());
+
+        // Return null if no team found, but with 200 OK to avoid console errors
+        return response()->json($equipe);
+    }
+
+    /**
      * Get team by ID
      */
     public function show(int $id): JsonResponse
@@ -113,9 +124,9 @@ class EquipeController extends Controller
     /**
      * Remove member from team
      */
-    public function removeMembre(Request $request, int $id): JsonResponse
+    public function removeMembre(int $id, int $utilisateur_id): JsonResponse
     {
-        $this->equipeService->removeMembre($request->utilisateur_id);
+        $this->equipeService->removeMembre($utilisateur_id);
 
         return response()->json([
             'message' => 'Membre retiré de l\'équipe.',

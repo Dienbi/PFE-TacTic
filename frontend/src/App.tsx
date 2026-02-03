@@ -11,9 +11,12 @@ import Register from "./auth/Register";
 import SetPassword from "./auth/SetPassword";
 import RHDashboard from "./dashboard/rh/RHDashboard";
 import ManagerDashboard from "./dashboard/manager/ManagerDashboard";
+import MyTeam from "./dashboard/manager/my-team/MyTeam";
 import EmployeeDashboard from "./dashboard/employee/EmployeeDashboard";
 import Employees from "./dashboard/rh/employees/Employees";
 import UserProfile from "./dashboard/rh/employees/UserProfile";
+import Teams from "./dashboard/rh/teams/Teams";
+import AttendanceDashboard from "./dashboard/rh/attendance/AttendanceDashboard";
 import Profile from "./shared/pages/Profile";
 import EditProfile from "./shared/pages/EditProfile";
 import AttendanceHistory from "./attendance/pages/AttendanceHistory";
@@ -65,6 +68,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/teams"
+            element={
+              <ProtectedRoute allowedRoles={["rh"]}>
+                <Teams />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["rh"]}>
+                <AttendanceDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Manager Only Routes */}
           <Route
@@ -72,6 +91,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["manager"]}>
                 <ManagerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/manager/my-team"
+            element={
+              <ProtectedRoute allowedRoles={["manager"]}>
+                <MyTeam />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/employees/:id"
+            element={
+              <ProtectedRoute allowedRoles={["manager"]}>
+                <UserProfile />
               </ProtectedRoute>
             }
           />

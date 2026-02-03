@@ -56,6 +56,17 @@ class PointageController extends Controller
     }
 
     /**
+     * Get attendance summary for dashboard
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $date = $request->has('date') ? Carbon::parse($request->date) : Carbon::today();
+        $summary = $this->pointageService->getSummary($date);
+
+        return response()->json($summary);
+    }
+
+    /**
      * Clock in
      */
     public function pointerEntree(Request $request): JsonResponse

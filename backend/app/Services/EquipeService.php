@@ -16,7 +16,7 @@ class EquipeService
 
     public function getAll(): Collection
     {
-        return $this->equipeRepository->getAllSimple();
+        return $this->equipeRepository->getAllWithCounts();
     }
 
     public function getAllWithRelations(): Collection
@@ -27,6 +27,11 @@ class EquipeService
     public function getById(int $id): ?Equipe
     {
         return $this->equipeRepository->getWithMembres($id);
+    }
+
+    public function getMyTeam(int $chefId): ?Equipe
+    {
+        return $this->equipeRepository->getWithMembresByChef($chefId);
     }
 
     public function create(array $data): Equipe

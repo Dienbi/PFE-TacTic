@@ -113,9 +113,18 @@ const UserProfile: React.FC = () => {
 
         <div className="dashboard-content user-profile-wrapper">
           {/* Back Button */}
-          <button className="back-btn" onClick={() => navigate("/employees")}>
+          <button
+            className="back-btn"
+            onClick={() => {
+              const role = rhUser?.role?.toLowerCase();
+              const isManager = role === "manager" || role === "chef_equipe";
+              navigate(isManager ? "/dashboard/manager/my-team" : "/employees");
+            }}
+          >
             <ArrowLeft size={20} />
-            Retour aux employés
+            {["manager", "chef_equipe"].includes(rhUser?.role?.toLowerCase())
+              ? "Retour à mon équipe"
+              : "Retour aux employés"}
           </button>
 
           {/* Profile Header */}
@@ -215,25 +224,29 @@ const UserProfile: React.FC = () => {
             </div>
 
             {/* Financial Information */}
-            <div className="profile-card">
-              <h3>Informations Financières</h3>
-              <div className="info-list">
-                <div className="info-item">
-                  <CreditCard className="info-icon" />
-                  <div>
-                    <label>Salaire de Base</label>
-                    <p>{user.salaire_base?.toLocaleString("fr-FR") || 0} MAD</p>
+            {rhUser?.role?.toLowerCase() === "rh" && (
+              <div className="profile-card">
+                <h3>Informations Financières</h3>
+                <div className="info-list">
+                  <div className="info-item">
+                    <CreditCard className="info-icon" />
+                    <div>
+                      <label>Salaire de Base</label>
+                      <p>
+                        {user.salaire_base?.toLocaleString("fr-FR") || 0} MAD
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="info-item">
-                  <Calendar className="info-icon" />
-                  <div>
-                    <label>Solde de Congés</label>
-                    <p>{user.solde_conge || 0} jours</p>
+                  <div className="info-item">
+                    <Calendar className="info-icon" />
+                    <div>
+                      <label>Solde de Congés</label>
+                      <p>{user.solde_conge || 0} jours</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Skills & Expertise */}
             <div className="profile-card skills-card">

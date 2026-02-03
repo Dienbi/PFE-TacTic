@@ -17,6 +17,8 @@ import Employees from "./dashboard/rh/employees/Employees";
 import UserProfile from "./dashboard/rh/employees/UserProfile";
 import Teams from "./dashboard/rh/teams/Teams";
 import AttendanceDashboard from "./dashboard/rh/attendance/AttendanceDashboard";
+import LeaveRequest from "./leave/pages/LeaveRequest";
+import LeaveManagement from "./leave/pages/LeaveManagement";
 import Profile from "./shared/pages/Profile";
 import EditProfile from "./shared/pages/EditProfile";
 import AttendanceHistory from "./attendance/pages/AttendanceHistory";
@@ -84,6 +86,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/leave"
+            element={
+              <ProtectedRoute allowedRoles={["rh"]}>
+                <LeaveManagement />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Manager Only Routes */}
           <Route
@@ -110,6 +120,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/manager/leave"
+            element={
+              <ProtectedRoute allowedRoles={["manager"]}>
+                <LeaveRequest />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Employee Only Routes */}
           <Route
@@ -117,6 +135,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["employee"]}>
                 <EmployeeDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/leave"
+            element={
+              <ProtectedRoute allowedRoles={["employee"]}>
+                <LeaveRequest />
               </ProtectedRoute>
             }
           />

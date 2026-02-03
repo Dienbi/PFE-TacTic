@@ -81,8 +81,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
             label: "Attendance",
             path: "/attendance",
           },
+          { icon: FileText, label: "Leave", path: "/manager/leave" },
           { icon: ClipboardList, label: "Requests", path: "/manager/requests" },
-          { icon: Briefcase, label: "Posts", path: "/manager/posts" },
         ];
       case "employee":
         return [

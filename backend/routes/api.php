@@ -131,7 +131,6 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/mes-conges', [CongeController::class, 'mesConges']);
         Route::post('/', [CongeController::class, 'store']);
         Route::delete('/{id}/annuler', [CongeController::class, 'annuler']);
-        Route::get('/{id}', [CongeController::class, 'show']);
 
         // RH & Chef Equipe routes
         Route::middleware('role:rh,chef_equipe')->group(function () {
@@ -142,6 +141,9 @@ Route::middleware('jwt.auth')->group(function () {
             Route::post('/{id}/approuver', [CongeController::class, 'approuver']);
             Route::post('/{id}/refuser', [CongeController::class, 'refuser']);
         });
+
+        // This must be last to avoid catching routes like /en-attente
+        Route::get('/{id}', [CongeController::class, 'show'])->where('id', '[0-9]+');
     });
 
     // Paie routes

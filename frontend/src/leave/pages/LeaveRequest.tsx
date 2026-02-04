@@ -194,20 +194,11 @@ const LeaveRequest: React.FC = () => {
         />
 
         <div className="dashboard-content leave-request-page">
-          <div className="leave-header">
-            <div>
-              <h1>Mes Congés</h1>
-              <p className="subtitle">
-                Gérez vos demandes de congé et consultez votre solde
-              </p>
-            </div>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowForm(!showForm)}
-            >
-              <Calendar size={18} />
-              {showForm ? "Annuler" : "Nouvelle demande"}
-            </button>
+          <div className="leave-header-centered">
+            <h1>Mes Congés</h1>
+            <p className="subtitle">
+              Gérez vos demandes de congé et consultez votre solde
+            </p>
           </div>
 
           {/* Solde Card */}
@@ -224,6 +215,19 @@ const LeaveRequest: React.FC = () => {
             <p className="solde-note">
               Vous accumulez 2 jours de congé par mois travaillé.
             </p>
+          </div>
+
+          {/* New Request Button */}
+          <div className="button-container">
+            <button
+              className="button-custom"
+              onClick={() => setShowForm(!showForm)}
+            >
+              <Calendar />
+              <div className="text">
+                {showForm ? "Annuler" : "Nouvelle demande"}
+              </div>
+            </button>
           </div>
 
           {/* Messages */}

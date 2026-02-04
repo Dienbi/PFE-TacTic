@@ -45,6 +45,14 @@ const MyTeam: React.FC = () => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No authentication token found");
+      navigate("/login");
+      return;
+    }
+
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
@@ -54,15 +62,30 @@ const MyTeam: React.FC = () => {
   const fetchMyTeam = async () => {
     setIsLoading(true);
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token missing before request");
+        navigate("/login");
+        return;
+      }
+
       const response = await client.get("/equipes/my-team");
+      console.log("Team data received:", response.data);
+
       // If response.data is null or empty (manager has no team)
       if (!response.data) {
+        console.log("No team data - setting team to null");
         setTeam(null);
       } else {
+        console.log("Setting team:", response.data);
         setTeam(response.data);
       }
     } catch (error: any) {
       console.error("Error fetching team:", error);
+      if (error.response?.status === 401) {
+        console.error("Unauthorized - Token may be invalid or expired");
+        navigate("/login");
+      }
       // Fallback in case of error
       setTeam(null);
     } finally {
@@ -127,9 +150,15 @@ const MyTeam: React.FC = () => {
           {team ? (
             <>
               <div className="team-info-card">
-                <h2>{team.nom}</h2>
-                {team.description && <p>{team.description}</p>}
-                <p>{team.membres?.length || 0} Members</p>
+                <h2>{team.nom || "Unnamed Team"}</h2>
+                {team.description && (
+                  <p className="team-description">{team.description}</p>
+                )}
+                <p className="team-member-count">
+                  <Users size={20} />
+                  {team.membres?.length || 0}{" "}
+                  {team.membres?.length === 1 ? "Member" : "Members"}
+                </p>
               </div>
 
               <div className="controls-section">

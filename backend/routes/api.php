@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PaieController;
 use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
 use App\Http\Controllers\Api\UtilisateurController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +28,9 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
 });
+
+// Broadcasting auth route (must be before other authenticated routes)
+Broadcast::routes(['middleware' => ['auth:api']]);
 
 // Account request public routes
 Route::prefix('account-requests')->group(function () {
@@ -147,6 +151,7 @@ Route::middleware('jwt.auth')->group(function () {
             Route::get('/period', [CongeController::class, 'byPeriod']);
             Route::post('/{id}/approuver', [CongeController::class, 'approuver']);
             Route::post('/{id}/refuser', [CongeController::class, 'refuser']);
+            Route::get('/{id}/medical-file', [CongeController::class, 'downloadMedicalFile'])->where('id', '[0-9]+');
         });
 
         // This must be last to avoid catching routes like /en-attente

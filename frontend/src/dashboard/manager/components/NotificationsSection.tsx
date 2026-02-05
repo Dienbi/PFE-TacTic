@@ -1,48 +1,140 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { AlertCircle, Bell, UserCheck } from "lucide-react";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 import "./NotificationsSection.css";
 
+// @ts-ignore
+window.Pusher = Pusher;
+
+// Enable Pusher logging for debugging
+Pusher.logToConsole = true;
+
 interface Notification {
-  id: number;
+  id: string;
   type: "warning" | "info" | "success";
+  title: string;
   message: string;
-  time: string;
+  timestamp: string;
+  data?: any;
 }
 
 interface NotificationsSectionProps {
   notifications?: Notification[];
 }
 
-const defaultNotifications: Notification[] = [
-  {
-    id: 1,
-    type: "warning",
-    message: "Conflit de congé: 2 membres demandent la même période",
-    time: "10 min",
-  },
-  {
-    id: 2,
-    type: "info",
-    message: "Nouvelle demande de poste interne disponible",
-    time: "1 heure",
-  },
-  {
-    id: 3,
-    type: "warning",
-    message: "Alice Martin: Alerte présence - Retard 3 fois cette semaine",
-    time: "2 heures",
-  },
-  {
-    id: 4,
-    type: "success",
-    message: "Bob Smith a complété sa formation Agile",
-    time: "1 jour",
-  },
-];
+// Keep Echo instance outside component to prevent recreation on re-renders
+let echoInstance: Echo<any> | null = null;
 
 const NotificationsSection: React.FC<NotificationsSectionProps> = ({
-  notifications = defaultNotifications,
+  notifications: propNotifications,
 }) => {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const isSubscribed = useRef(false);
+
+  useEffect(() => {
+    // Load notifications from localStorage
+    const stored = localStorage.getItem("notifications");
+    if (stored) {
+      try {
+        setNotifications(JSON.parse(stored));
+      } catch (e) {
+        console.error("Error parsing notifications:", e);
+      }
+    }
+
+    // Prevent duplicate subscriptions
+    if (isSubscribed.current) return;
+
+    // Get user info
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return;
+
+    const user = JSON.parse(userStr);
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
+    // Initialize Laravel Echo only once
+    if (!echoInstance) {
+      echoInstance = new Echo({
+        broadcaster: "reverb",
+        key: process.env.REACT_APP_REVERB_APP_KEY || "tactic-key",
+        wsHost: process.env.REACT_APP_REVERB_HOST || "localhost",
+        wsPort: parseInt(process.env.REACT_APP_REVERB_PORT || "6001"),
+        wssPort: parseInt(process.env.REACT_APP_REVERB_PORT || "6001"),
+        forceTLS: (process.env.REACT_APP_REVERB_SCHEME || "http") === "https",
+        enabledTransports: ["ws", "wss"],
+        authEndpoint: "http://localhost:8000/api/broadcasting/auth",
+        auth: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      });
+    }
+
+    isSubscribed.current = true;
+
+    // Subscribe to manager channel for managers
+    if (user.role === "CHEF_EQUIPE") {
+      echoInstance.private(`manager.${user.id}`).listen(".ManagerNotification", (data: any) => {
+        console.log("Manager notification received:", data);
+        const newNotification: Notification = {
+          id: Date.now().toString(),
+          type: data.type,
+          title: data.title,
+          message: data.message,
+          timestamp: data.timestamp,
+          data: data.data,
+        };
+
+        setNotifications((prev) => {
+          const updated = [newNotification, ...prev].slice(0, 20); // Keep last 20
+          localStorage.setItem("notifications", JSON.stringify(updated));
+          return updated;
+        });
+      });
+    }
+
+    // Subscribe to user channel for leave status updates
+    echoInstance.private(`user.${user.id}`).listen(".LeaveStatusNotification", (data: any) => {
+      console.log("Leave status notification received:", data);
+      const newNotification: Notification = {
+        id: Date.now().toString(),
+        type: data.type,
+        title: data.title,
+        message: data.message,
+        timestamp: data.timestamp,
+        data: data.data,
+      };
+
+      setNotifications((prev) => {
+        const updated = [newNotification, ...prev].slice(0, 20); // Keep last 20
+        localStorage.setItem("notifications", JSON.stringify(updated));
+        return updated;
+      });
+    });
+
+    // Cleanup only on actual unmount, not on StrictMode double-render
+    return () => {
+      // Don't disconnect immediately - let connection persist
+    };
+  }, []);
+
+  const getRelativeTime = (timestamp: string) => {
+    const now = new Date();
+    const notifTime = new Date(timestamp);
+    const diffMs = now.getTime() - notifTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""}`;
+    return `${diffDays} day${diffDays > 1 ? "s" : ""}`;
+  };
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "warning":
@@ -76,15 +168,22 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
     <div className="notifications-section">
       <h3 className="section-title">Notifications</h3>
       <div className="notifications-list">
-        {notifications.map((notif) => (
-          <div key={notif.id} className={`notification-item ${notif.type}`}>
-            {getNotificationIcon(notif.type)}
-            <div className="notif-content">
-              <p className="notif-message">{notif.message}</p>
-              <span className="notif-time">{notif.time}</span>
-            </div>
+        {notifications.length === 0 ? (
+          <div className="empty-notifications">
+            <Bell size={32} style={{ opacity: 0.3 }} />
+            <p>No notifications yet</p>
           </div>
-        ))}
+        ) : (
+          notifications.map((notif) => (
+            <div key={notif.id} className={`notification-item ${notif.type}`}>
+              {getNotificationIcon(notif.type)}
+              <div className="notif-content">
+                <p className="notif-message">{notif.message}</p>
+                <span className="notif-time">{getRelativeTime(notif.timestamp)}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

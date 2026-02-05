@@ -20,6 +20,7 @@ class CongeRequest extends FormRequest
             'date_debut' => 'required|date|after_or_equal:today',
             'date_fin' => 'required|date|after_or_equal:date_debut',
             'motif' => 'nullable|string|max:500',
+            'medical_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
         ];
     }
 

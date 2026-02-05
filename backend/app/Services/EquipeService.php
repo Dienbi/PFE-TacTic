@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Role;
 use App\Enums\StatutConge;
+use App\Events\ManagerNotification;
 use App\Models\Conge;
 use App\Models\Equipe;
 use App\Repositories\EquipeRepository;
@@ -71,7 +72,25 @@ class EquipeService
 
     public function addMembre(int $equipeId, int $utilisateurId): bool
     {
-        return $this->utilisateurRepository->update($utilisateurId, ['equipe_id' => $equipeId]);
+        $result = $this->utilisateurRepository->update($utilisateurId, ['equipe_id' => $equipeId]);
+
+        // Broadcast notification to team manager
+        if ($result) {
+            $equipe = $this->equipeRepository->find($equipeId);
+            $utilisateur = $this->utilisateurRepository->find($utilisateurId);
+            
+            if ($equipe && $equipe->chef_id && $utilisateur) {
+                event(new ManagerNotification(
+                    $equipe->chef_id,
+                    'info',
+                    'New Team Member',
+                    $utilisateur->prenom . ' ' . $utilisateur->nom . ' has been added to your team.',
+                    ['equipe_id' => $equipeId, 'utilisateur_id' => $utilisateurId]
+                ));
+            }
+        }
+
+        return $result;
     }
 
     public function removeMembre(int $utilisateurId): bool

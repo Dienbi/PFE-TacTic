@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EmployeStatus;
 use App\Enums\StatutConge;
+use App\Events\LeaveStatusNotification;
 use App\Models\Conge;
 use App\Repositories\CongeRepository;
 use App\Repositories\UtilisateurRepository;
@@ -60,12 +61,18 @@ class CongeService
             return ['error' => 'Solde de congé insuffisant.'];
         }
 
+        // Validate medical file for sick leave
+        if ($data['type'] === 'MALADIE' && empty($data['medical_file'])) {
+            return ['error' => 'Un certificat médical est requis pour les congés maladie.'];
+        }
+
         return $this->congeRepository->create([
             'utilisateur_id' => $utilisateurId,
             'type' => $data['type'],
             'date_debut' => $dateDebut,
             'date_fin' => $dateFin,
             'motif' => $data['motif'] ?? null,
+            'medical_file' => $data['medical_file'] ?? null,
             'statut' => StatutConge::EN_ATTENTE,
         ]);
     }
@@ -88,12 +95,46 @@ class CongeService
             EmployeStatus::EN_CONGE
         );
 
-        return $this->congeRepository->approuver($congeId, $approuveParId);
+        $result = $this->congeRepository->approuver($congeId, $approuveParId);
+
+        // Broadcast notification to user
+        if ($result) {
+            \Log::info('Broadcasting LeaveStatusNotification to user: ' . $conge->utilisateur_id);
+            
+            try {
+                event(new LeaveStatusNotification(
+                    $conge->utilisateur_id,
+                    'success',
+                    'Leave Approved',
+                    'Your leave request from ' . $conge->date_debut->format('d/m/Y') . ' to ' . $conge->date_fin->format('d/m/Y') . ' has been approved.',
+                    ['conge_id' => $congeId]
+                ));
+                \Log::info('LeaveStatusNotification dispatched successfully');
+            } catch (\Exception $e) {
+                \Log::error('Failed to broadcast: ' . $e->getMessage());
+            }
+        }
+
+        return $result;
     }
 
     public function refuser(int $congeId, int $approuveParId): bool
     {
-        return $this->congeRepository->refuser($congeId, $approuveParId);
+        $conge = $this->congeRepository->findOrFail($congeId);
+        $result = $this->congeRepository->refuser($congeId, $approuveParId);
+
+        // Broadcast notification to user
+        if ($result) {
+            event(new LeaveStatusNotification(
+                $conge->utilisateur_id,
+                'warning',
+                'Leave Rejected',
+                'Your leave request from ' . $conge->date_debut->format('d/m/Y') . ' to ' . $conge->date_fin->format('d/m/Y') . ' has been rejected.',
+                ['conge_id' => $congeId]
+            ));
+        }
+
+        return $result;
     }
 
     public function annuler(int $congeId): bool

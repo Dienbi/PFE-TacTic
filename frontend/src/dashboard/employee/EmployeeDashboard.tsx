@@ -7,6 +7,7 @@ import LeaveHistory from "./components/LeaveHistory";
 import PerformanceSection from "./components/PerformanceSection";
 import SalarySection from "./components/SalarySection";
 import BottomActions from "./components/BottomActions";
+import NotificationsSection from "../manager/components/NotificationsSection";
 import "./EmployeeDashboard.css";
 
 const EmployeeDashboard: React.FC = () => {
@@ -38,6 +39,7 @@ const EmployeeDashboard: React.FC = () => {
               <LeaveHistory />
             </div>
             <div className="widget-column right">
+              <NotificationsSection />
               <PerformanceSection />
             </div>
           </div>

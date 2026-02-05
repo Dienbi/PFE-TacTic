@@ -8,6 +8,7 @@ import {
   Filter,
   User,
   FileText,
+  Download,
 } from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
@@ -22,6 +23,7 @@ interface LeaveRequestData {
   date_fin: string;
   statut: string;
   motif: string | null;
+  medical_file: string | null;
   nombre_jours: number;
   created_at: string;
   utilisateur: {
@@ -106,6 +108,29 @@ const LeaveManagement: React.FC = () => {
       });
     } finally {
       setProcessing(null);
+    }
+  };
+
+  const handleDownloadMedicalFile = async (id: number, filename: string) => {
+    try {
+      const response = await client.get(`/conges/${id}/medical-file`, {
+        responseType: "blob",
+      });
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "Erreur lors du téléchargement du fichier.",
+      });
     }
   };
 
@@ -300,6 +325,7 @@ const LeaveManagement: React.FC = () => {
                       <th>Période</th>
                       <th>Durée</th>
                       <th>Motif</th>
+                      <th>Certificat</th>
                       <th>Statut</th>
                       {activeTab === "pending" && <th>Actions</th>}
                     </tr>
@@ -332,6 +358,22 @@ const LeaveManagement: React.FC = () => {
                         <td>{leave.nombre_jours} jour(s)</td>
                         <td className="motif-cell">
                           {leave.motif || <span className="text-muted">-</span>}
+                        </td>
+                        <td>
+                          {leave.medical_file ? (
+                            <button
+                              className="btn-download"
+                              onClick={() =>
+                                handleDownloadMedicalFile(leave.id, leave.medical_file!)
+                              }
+                              title="Télécharger le certificat médical"
+                            >
+                              <Download size={16} />
+                              Voir
+                            </button>
+                          ) : (
+                            <span className="text-muted">-</span>
+                          )}
                         </td>
                         <td>{getStatusBadge(leave.statut)}</td>
                         {activeTab === "pending" && (

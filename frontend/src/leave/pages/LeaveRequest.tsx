@@ -49,6 +49,7 @@ const LeaveRequest: React.FC = () => {
     date_fin: "",
     motif: "",
   });
+  const [medicalFile, setMedicalFile] = useState<File | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -86,10 +87,32 @@ const LeaveRequest: React.FC = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    // Validate medical file for sick leave
+    if (formData.type === "MALADIE" && !medicalFile) {
+      setError("Un certificat médical est requis pour les congés maladie.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await client.post("/conges", formData);
+      const submitData = new FormData();
+      submitData.append("type", formData.type);
+      submitData.append("date_debut", formData.date_debut);
+      submitData.append("date_fin", formData.date_fin);
+      if (formData.motif) {
+        submitData.append("motif", formData.motif);
+      }
+      if (medicalFile) {
+        submitData.append("medical_file", medicalFile);
+      }
+
+      await client.post("/conges", submitData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setSuccess("Votre demande de congé a été soumise avec succès!");
       setShowForm(false);
       setFormData({
@@ -98,6 +121,7 @@ const LeaveRequest: React.FC = () => {
         date_fin: "",
         motif: "",
       });
+      setMedicalFile(null);
       fetchLeaves();
       fetchUserInfo(); // Refresh solde
     } catch (err: any) {
@@ -318,6 +342,49 @@ const LeaveRequest: React.FC = () => {
                     rows={3}
                   />
                 </div>
+
+                {formData.type === "MALADIE" && (
+                  <div className="form-group">
+                    <label>
+                      Certificat médical * <span className="required-badge">Requis</span>
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // Check file size (max 5MB)
+                          if (file.size > 5 * 1024 * 1024) {
+                            setError("La taille du fichier ne doit pas dépasser 5 MB.");
+                            e.target.value = "";
+                            return;
+                          }
+                          setMedicalFile(file);
+                          setError(null);
+                        }
+                      }}
+                      required
+                      className="file-input"
+                    />
+                    {medicalFile && (
+                      <div className="file-preview">
+                        <FileText size={16} />
+                        <span>{medicalFile.name}</span>
+                        <button
+                          type="button"
+                          className="remove-file"
+                          onClick={() => setMedicalFile(null)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    <small className="help-text">
+                      Formats acceptés: PDF, JPG, PNG (max 5 MB)
+                    </small>
+                  </div>
+                )}
 
                 <div className="form-actions">
                   <button

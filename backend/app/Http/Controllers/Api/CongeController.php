@@ -84,9 +84,19 @@ class CongeController extends Controller
      */
     public function store(CongeRequest $request): JsonResponse
     {
+        $data = $request->validated();
+
+        // Handle medical file upload for sick leave
+        if ($request->hasFile('medical_file')) {
+            $file = $request->file('medical_file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('medical_files', $filename, 'public');
+            $data['medical_file'] = $filename;
+        }
+
         $result = $this->congeService->demander(
             $request->user()->id,
-            $request->validated()
+            $data
         );
 
         if (is_array($result) && isset($result['error'])) {
@@ -163,5 +173,29 @@ class CongeController extends Controller
         $conges = $this->congeService->getByPeriod($startDate, $endDate);
 
         return response()->json($conges);
+    }
+
+    /**
+     * Download medical file
+     */
+    public function downloadMedicalFile(int $id): \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+    {
+        $conge = $this->congeService->getById($id);
+
+        if (!$conge || !$conge->medical_file) {
+            return response()->json([
+                'message' => 'Fichier non trouvé.',
+            ], 404);
+        }
+
+        $filePath = storage_path('app/public/medical_files/' . $conge->medical_file);
+
+        if (!file_exists($filePath)) {
+            return response()->json([
+                'message' => 'Fichier non trouvé.',
+            ], 404);
+        }
+
+        return response()->download($filePath);
     }
 }

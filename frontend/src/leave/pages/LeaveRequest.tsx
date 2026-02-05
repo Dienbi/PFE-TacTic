@@ -346,7 +346,8 @@ const LeaveRequest: React.FC = () => {
                 {formData.type === "MALADIE" && (
                   <div className="form-group">
                     <label>
-                      Certificat médical * <span className="required-badge">Requis</span>
+                      Certificat médical *{" "}
+                      <span className="required-badge">Requis</span>
                     </label>
                     <input
                       type="file"
@@ -356,7 +357,9 @@ const LeaveRequest: React.FC = () => {
                         if (file) {
                           // Check file size (max 5MB)
                           if (file.size > 5 * 1024 * 1024) {
-                            setError("La taille du fichier ne doit pas dépasser 5 MB.");
+                            setError(
+                              "La taille du fichier ne doit pas dépasser 5 MB.",
+                            );
                             e.target.value = "";
                             return;
                           }

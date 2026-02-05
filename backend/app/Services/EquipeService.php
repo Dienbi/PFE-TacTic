@@ -78,7 +78,7 @@ class EquipeService
         if ($result) {
             $equipe = $this->equipeRepository->find($equipeId);
             $utilisateur = $this->utilisateurRepository->find($utilisateurId);
-            
+
             if ($equipe && $equipe->chef_id && $utilisateur) {
                 event(new ManagerNotification(
                     $equipe->chef_id,

@@ -78,8 +78,32 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 
     // Subscribe to manager channel for managers
     if (user.role === "CHEF_EQUIPE") {
-      echoInstance.private(`manager.${user.id}`).listen(".ManagerNotification", (data: any) => {
-        console.log("Manager notification received:", data);
+      echoInstance
+        .private(`manager.${user.id}`)
+        .listen(".ManagerNotification", (data: any) => {
+          console.log("Manager notification received:", data);
+          const newNotification: Notification = {
+            id: Date.now().toString(),
+            type: data.type,
+            title: data.title,
+            message: data.message,
+            timestamp: data.timestamp,
+            data: data.data,
+          };
+
+          setNotifications((prev) => {
+            const updated = [newNotification, ...prev].slice(0, 20); // Keep last 20
+            localStorage.setItem("notifications", JSON.stringify(updated));
+            return updated;
+          });
+        });
+    }
+
+    // Subscribe to user channel for leave status updates
+    echoInstance
+      .private(`user.${user.id}`)
+      .listen(".LeaveStatusNotification", (data: any) => {
+        console.log("Leave status notification received:", data);
         const newNotification: Notification = {
           id: Date.now().toString(),
           type: data.type,
@@ -95,26 +119,6 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
           return updated;
         });
       });
-    }
-
-    // Subscribe to user channel for leave status updates
-    echoInstance.private(`user.${user.id}`).listen(".LeaveStatusNotification", (data: any) => {
-      console.log("Leave status notification received:", data);
-      const newNotification: Notification = {
-        id: Date.now().toString(),
-        type: data.type,
-        title: data.title,
-        message: data.message,
-        timestamp: data.timestamp,
-        data: data.data,
-      };
-
-      setNotifications((prev) => {
-        const updated = [newNotification, ...prev].slice(0, 20); // Keep last 20
-        localStorage.setItem("notifications", JSON.stringify(updated));
-        return updated;
-      });
-    });
 
     // Cleanup only on actual unmount, not on StrictMode double-render
     return () => {
@@ -179,7 +183,9 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
               {getNotificationIcon(notif.type)}
               <div className="notif-content">
                 <p className="notif-message">{notif.message}</p>
-                <span className="notif-time">{getRelativeTime(notif.timestamp)}</span>
+                <span className="notif-time">
+                  {getRelativeTime(notif.timestamp)}
+                </span>
               </div>
             </div>
           ))

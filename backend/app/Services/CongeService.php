@@ -100,7 +100,7 @@ class CongeService
         // Broadcast notification to user
         if ($result) {
             \Log::info('Broadcasting LeaveStatusNotification to user: ' . $conge->utilisateur_id);
-            
+
             try {
                 event(new LeaveStatusNotification(
                     $conge->utilisateur_id,

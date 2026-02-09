@@ -27,5 +27,7 @@ Broadcast::channel('user.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-// RH notifications channel - public channel for all RH users
-// Using a public channel since we handle auth via JWT in frontend
+// RH attendance notifications channel
+Broadcast::channel('rh.attendance', function ($user) {
+    return $user->role->value === 'RH';
+});

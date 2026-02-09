@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { AlertCircle, Bell, UserCheck } from "lucide-react";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
+import { useToast } from "../../../shared/components/Toast";
 import "./NotificationsSection.css";
 
 // @ts-ignore
@@ -31,6 +32,7 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const isSubscribed = useRef(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     // Load notifications from localStorage
@@ -82,6 +84,10 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         .private(`manager.${user.id}`)
         .listen(".ManagerNotification", (data: any) => {
           console.log("Manager notification received:", data);
+          
+          // Show toast notification
+          showToast(data.type || "info", data.title, data.message);
+          
           const newNotification: Notification = {
             id: Date.now().toString(),
             type: data.type,
@@ -104,6 +110,10 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
       .private(`user.${user.id}`)
       .listen(".LeaveStatusNotification", (data: any) => {
         console.log("Leave status notification received:", data);
+        
+        // Show toast notification
+        showToast(data.type || "info", data.title, data.message);
+        
         const newNotification: Notification = {
           id: Date.now().toString(),
           type: data.type,
@@ -124,7 +134,7 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
     return () => {
       // Don't disconnect immediately - let connection persist
     };
-  }, []);
+  }, [showToast]);
 
   const getRelativeTime = (timestamp: string) => {
     const now = new Date();

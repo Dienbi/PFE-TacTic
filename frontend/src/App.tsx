@@ -25,6 +25,7 @@ import AttendanceHistory from "./attendance/pages/AttendanceHistory";
 import ProtectedRoute, {
   getDefaultDashboard,
 } from "./shared/components/ProtectedRoute";
+import { ToastProvider } from "./shared/components/Toast";
 
 // Component to handle dashboard redirect based on user role
 const DashboardRedirect: React.FC = () => {
@@ -37,148 +38,150 @@ const DashboardRedirect: React.FC = () => {
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Register />} />
-          <Route path="/set-password" element={<SetPassword />} />
+    <ToastProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Register />} />
+            <Route path="/set-password" element={<SetPassword />} />
 
-          {/* RH Only Routes */}
-          <Route
-            path="/dashboard/rh"
-            element={
-              <ProtectedRoute allowedRoles={["rh"]}>
-                <RHDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/employees"
-            element={
-              <ProtectedRoute allowedRoles={["rh"]}>
-                <Employees />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/employees/:id"
-            element={
-              <ProtectedRoute allowedRoles={["rh"]}>
-                <UserProfile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/teams"
-            element={
-              <ProtectedRoute allowedRoles={["rh"]}>
-                <Teams />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/attendance-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["rh"]}>
-                <AttendanceDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/leave"
-            element={
-              <ProtectedRoute allowedRoles={["rh"]}>
-                <LeaveManagement />
-              </ProtectedRoute>
-            }
-          />
+            {/* RH Only Routes */}
+            <Route
+              path="/dashboard/rh"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <RHDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employees"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <Employees />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employees/:id"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <UserProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teams"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <Teams />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <AttendanceDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/leave"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <LeaveManagement />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Manager Only Routes */}
-          <Route
-            path="/dashboard/manager"
-            element={
-              <ProtectedRoute allowedRoles={["manager"]}>
-                <ManagerDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/manager/my-team"
-            element={
-              <ProtectedRoute allowedRoles={["manager"]}>
-                <MyTeam />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manager/employees/:id"
-            element={
-              <ProtectedRoute allowedRoles={["manager"]}>
-                <UserProfile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manager/leave"
-            element={
-              <ProtectedRoute allowedRoles={["manager"]}>
-                <LeaveRequest />
-              </ProtectedRoute>
-            }
-          />
+            {/* Manager Only Routes */}
+            <Route
+              path="/dashboard/manager"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <ManagerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/manager/my-team"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <MyTeam />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manager/employees/:id"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <UserProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manager/leave"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <LeaveRequest />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Employee Only Routes */}
-          <Route
-            path="/dashboard/employee"
-            element={
-              <ProtectedRoute allowedRoles={["employee"]}>
-                <EmployeeDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/employee/leave"
-            element={
-              <ProtectedRoute allowedRoles={["employee"]}>
-                <LeaveRequest />
-              </ProtectedRoute>
-            }
-          />
+            {/* Employee Only Routes */}
+            <Route
+              path="/dashboard/employee"
+              element={
+                <ProtectedRoute allowedRoles={["employee"]}>
+                  <EmployeeDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/leave"
+              element={
+                <ProtectedRoute allowedRoles={["employee"]}>
+                  <LeaveRequest />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Shared Routes (all authenticated users) */}
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/edit"
-            element={
-              <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
-                <EditProfile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/attendance"
-            element={
-              <ProtectedRoute allowedRoles={["manager", "employee"]}>
-                <AttendanceHistory />
-              </ProtectedRoute>
-            }
-          />
+            {/* Shared Routes (all authenticated users) */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/edit"
+              element={
+                <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
+                  <EditProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance"
+              element={
+                <ProtectedRoute allowedRoles={["manager", "employee"]}>
+                  <AttendanceHistory />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Default redirects */}
-          <Route path="/dashboard" element={<DashboardRedirect />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </div>
-    </Router>
+            {/* Default redirects */}
+            <Route path="/dashboard" element={<DashboardRedirect />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </ToastProvider>
   );
 }
 

@@ -5,6 +5,7 @@ import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
 import AIRecommendations from "./components/AIRecommendations";
+import { useRealtimeNotifications } from "../../shared/hooks/useRealtimeNotifications";
 import "./RHDashboard.css";
 
 // Lazy load components that make API calls
@@ -22,6 +23,14 @@ const LoadingFallback = () => (
 
 const RHDashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
+
+  // Enable realtime notifications for RH
+  useRealtimeNotifications({
+    onAttendanceNotification: (data) => {
+      console.log("Attendance event:", data);
+      // You can trigger a refresh of attendance data here if needed
+    },
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");

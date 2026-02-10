@@ -22,6 +22,7 @@ interface LeaveRequest {
   date_fin: string;
   statut: string;
   motif: string | null;
+  motif_refus?: string | null;
   nombre_jours: number;
   created_at: string;
 }
@@ -445,7 +446,14 @@ const LeaveRequest: React.FC = () => {
                         <td className="motif-cell">
                           {leave.motif || <span className="text-muted">-</span>}
                         </td>
-                        <td>{getStatusBadge(leave.statut)}</td>
+                        <td>
+                          {getStatusBadge(leave.statut)}
+                          {leave.statut === "REFUSE" && leave.motif_refus && (
+                            <div className="rejection-reason" style={{ fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.25rem', maxWidth: '200px' }}>
+                              <span style={{ fontWeight: 600 }}>Raison:</span> {leave.motif_refus}
+                            </div>
+                          )}
+                        </td>
                         <td>
                           {leave.statut === "EN_ATTENTE" && (
                             <button

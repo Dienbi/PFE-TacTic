@@ -9,12 +9,19 @@ import {
   User,
   FileText,
   Download,
+  AlertTriangle,
 } from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import client from "../../api/client";
 import Loader from "../../shared/components/Loader";
 import "./LeaveManagement.css";
+
+interface Conflict {
+  type: string;
+  message: string;
+  severity: "high" | "warning";
+}
 
 interface LeaveRequestData {
   id: number;
@@ -26,6 +33,7 @@ interface LeaveRequestData {
   medical_file: string | null;
   nombre_jours: number;
   created_at: string;
+  conflicts?: Conflict[];
   utilisateur: {
     id: number;
     nom: string;
@@ -42,6 +50,7 @@ const LeaveManagement: React.FC = () => {
   const [pendingLeaves, setPendingLeaves] = useState<LeaveRequestData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"pending" | "all">("pending");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [processing, setProcessing] = useState<number | null>(null);
@@ -92,13 +101,13 @@ const LeaveManagement: React.FC = () => {
   };
 
   const handleReject = async (id: number) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir refuser cette demande?")) {
-      return;
-    }
+    const reason = window.prompt("Motif du refus (optionnel):");
+    if (reason === null) return;
+
     setProcessing(id);
     setMessage(null);
     try {
-      await client.post(`/conges/${id}/refuser`);
+      await client.post(`/conges/${id}/refuser`, { motif: reason });
       setMessage({ type: "success", text: "Demande refusée." });
       fetchData();
     } catch (error: any) {
@@ -182,6 +191,24 @@ const LeaveManagement: React.FC = () => {
       statusFilter === "ALL" || leave.statut === statusFilter;
 
     return matchesSearch && (activeTab === "pending" || matchesStatus);
+  }).sort((a, b) => {
+    // Sort by conflict
+    if (activeTab === "pending") {
+      const getSeverityScore = (l: LeaveRequestData) => {
+        if (!l.conflicts || l.conflicts.length === 0) return 0;
+        return l.conflicts.some(c => c.severity === "high") ? 2 : 1;
+      };
+      
+      const scoreA = getSeverityScore(a);
+      const scoreB = getSeverityScore(b);
+      
+      if (scoreA !== scoreB) return scoreB - scoreA;
+    }
+    
+    // Then sort by date
+    const dateA = new Date(a.created_at).getTime();
+    const dateB = new Date(b.created_at).getTime();
+    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
   });
 
   if (isLoading) {
@@ -291,6 +318,26 @@ const LeaveManagement: React.FC = () => {
                 />
               </div>
 
+              <button
+                type="button"
+                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.5rem 1rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  background: "white",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  color: "#4b5563"
+                }}
+              >
+                <Clock size={16} />
+                {sortOrder === "asc" ? "Ancien → Récent" : "Récent → Ancien"}
+              </button>
+
               {activeTab === "all" && (
                 <div className="filter-select">
                   <Filter size={18} />
@@ -378,7 +425,21 @@ const LeaveManagement: React.FC = () => {
                             <span className="text-muted">-</span>
                           )}
                         </td>
-                        <td>{getStatusBadge(leave.statut)}</td>
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                            {getStatusBadge(leave.statut)}
+                            {leave.conflicts && leave.conflicts.length > 0 && (
+                              <div className="conflicts-list">
+                                {leave.conflicts.map((conflict, idx) => (
+                                  <div key={idx} className={`conflict-badge ${conflict.severity}`}>
+                                    <AlertTriangle size={14} />
+                                    <span>{conflict.message}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
                         {activeTab === "pending" && (
                           <td>
                             <div className="action-buttons">

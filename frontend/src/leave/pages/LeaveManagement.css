@@ -394,3 +394,27 @@
   background-color: #d1d5db;
   cursor: not-allowed;
 }
+
+/* Conflict Badges */
+.conflict-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.conflict-badge.high {
+  color: #b91c1c;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.conflict-badge.warning {
+  color: #b45309;
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+}

@@ -131,7 +131,8 @@ class CongeController extends Controller
      */
     public function refuser(Request $request, int $id): JsonResponse
     {
-        $success = $this->congeService->refuser($id, $request->user()->id);
+        $motif = $request->input('motif');
+        $success = $this->congeService->refuser($id, $request->user()->id, $motif);
 
         if (!$success) {
             return response()->json([

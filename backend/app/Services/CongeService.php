@@ -15,18 +15,29 @@ class CongeService
 {
     public function __construct(
         protected CongeRepository $congeRepository,
-        protected UtilisateurRepository $utilisateurRepository
+        protected UtilisateurRepository $utilisateurRepository,
+        protected LeaveConflictService $leaveConflictService
     ) {}
 
     public function getAll(): Collection
     {
-        return $this->congeRepository->all();
+        // Enrich leaves with conflict data
+        $leaves = $this->congeRepository->all();
+        foreach ($leaves as $leave) {
+            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+        }
+        return $leaves;
     }
 
     public function getById(int $id): ?Conge
     {
-        return $this->congeRepository->find($id);
+        $leave = $this->congeRepository->find($id);
+        if ($leave) {
+            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+        }
+        return $leave;
     }
+
 
     public function getByUtilisateur(int $utilisateurId): Collection
     {
@@ -35,12 +46,20 @@ class CongeService
 
     public function getEnAttente(): Collection
     {
-        return $this->congeRepository->getEnAttente();
+        $leaves = $this->congeRepository->getEnAttente();
+        foreach ($leaves as $leave) {
+            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+        }
+        return $leaves;
     }
 
     public function getEnAttenteByEquipe(int $equipeId): Collection
     {
-        return $this->congeRepository->getEnAttenteByEquipe($equipeId);
+        $leaves = $this->congeRepository->getEnAttenteByEquipe($equipeId);
+        foreach ($leaves as $leave) {
+            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+        }
+        return $leaves;
     }
 
     public function demander(int $utilisateurId, array $data): Conge|array
@@ -118,9 +137,16 @@ class CongeService
         return $result;
     }
 
-    public function refuser(int $congeId, int $approuveParId): bool
+    public function refuser(int $congeId, int $approuveParId, ?string $motifRefus = null): bool
     {
         $conge = $this->congeRepository->findOrFail($congeId);
+        
+        // Update rejection reason
+        if ($motifRefus) {
+            $conge->motif_refus = $motifRefus;
+            $conge->save();
+        }
+
         $result = $this->congeRepository->refuser($congeId, $approuveParId);
 
         // Broadcast notification to user
@@ -129,8 +155,11 @@ class CongeService
                 $conge->utilisateur_id,
                 'warning',
                 'Leave Rejected',
-                'Your leave request from ' . $conge->date_debut->format('d/m/Y') . ' to ' . $conge->date_fin->format('d/m/Y') . ' has been rejected.',
-                ['conge_id' => $congeId]
+                'Your leave request has been rejected.' . ($motifRefus ? " Reason: $motifRefus" : ''),
+                [
+                    'conge_id' => $congeId,
+                    'reason' => $motifRefus
+                ]
             ));
         }
 

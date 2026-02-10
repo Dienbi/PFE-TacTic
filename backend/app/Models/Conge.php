@@ -22,6 +22,7 @@ class Conge extends Model
         'motif',
         'approuve_par',
         'medical_file',
+        'motif_refus',
     ];
 
     protected $casts = [

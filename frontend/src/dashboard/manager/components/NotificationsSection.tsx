@@ -131,7 +131,7 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
       })
       .listen(".SalaryPaid", (data: any) => {
         console.log("Salary Paid event received:", data);
-        
+
         showToast("success", "Salaire Versé", data.message);
 
         const newNotification: Notification = {
@@ -151,15 +151,19 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
       .notification((notification: any) => {
         console.log("Broadcasting Notification received:", notification);
         const msg = notification.message || notification.data?.message;
-        
+
         let type = notification.alert_type || notification.data?.alert_type;
         if (!type) {
-             const rawType = notification.type || notification.data?.type;
-             if (rawType && typeof rawType === 'string' && rawType.includes('\\')) {
-                 type = 'info';
-             } else {
-                 type = rawType || 'info';
-             }
+          const rawType = notification.type || notification.data?.type;
+          if (
+            rawType &&
+            typeof rawType === "string" &&
+            rawType.includes("\\")
+          ) {
+            type = "info";
+          } else {
+            type = rawType || "info";
+          }
         }
 
         if (msg) {

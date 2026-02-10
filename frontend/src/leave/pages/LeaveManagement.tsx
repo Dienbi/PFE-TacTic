@@ -175,41 +175,43 @@ const LeaveManagement: React.FC = () => {
     });
   };
 
-  const filteredLeaves = (
-    activeTab === "pending" ? pendingLeaves : leaves
-  ).filter((leave) => {
-    const matchesSearch =
-      leave.utilisateur.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      leave.utilisateur.prenom
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      leave.utilisateur.matricule
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+  const filteredLeaves = (activeTab === "pending" ? pendingLeaves : leaves)
+    .filter((leave) => {
+      const matchesSearch =
+        leave.utilisateur.nom
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        leave.utilisateur.prenom
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        leave.utilisateur.matricule
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === "ALL" || leave.statut === statusFilter;
+      const matchesStatus =
+        statusFilter === "ALL" || leave.statut === statusFilter;
 
-    return matchesSearch && (activeTab === "pending" || matchesStatus);
-  }).sort((a, b) => {
-    // Sort by conflict
-    if (activeTab === "pending") {
-      const getSeverityScore = (l: LeaveRequestData) => {
-        if (!l.conflicts || l.conflicts.length === 0) return 0;
-        return l.conflicts.some(c => c.severity === "high") ? 2 : 1;
-      };
-      
-      const scoreA = getSeverityScore(a);
-      const scoreB = getSeverityScore(b);
-      
-      if (scoreA !== scoreB) return scoreB - scoreA;
-    }
-    
-    // Then sort by date
-    const dateA = new Date(a.created_at).getTime();
-    const dateB = new Date(b.created_at).getTime();
-    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-  });
+      return matchesSearch && (activeTab === "pending" || matchesStatus);
+    })
+    .sort((a, b) => {
+      // Sort by conflict
+      if (activeTab === "pending") {
+        const getSeverityScore = (l: LeaveRequestData) => {
+          if (!l.conflicts || l.conflicts.length === 0) return 0;
+          return l.conflicts.some((c) => c.severity === "high") ? 2 : 1;
+        };
+
+        const scoreA = getSeverityScore(a);
+        const scoreB = getSeverityScore(b);
+
+        if (scoreA !== scoreB) return scoreB - scoreA;
+      }
+
+      // Then sort by date
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
 
   if (isLoading) {
     return <Loader fullScreen={true} />;
@@ -320,7 +322,9 @@ const LeaveManagement: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                onClick={() =>
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                }
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -331,7 +335,7 @@ const LeaveManagement: React.FC = () => {
                   background: "white",
                   cursor: "pointer",
                   fontSize: "0.875rem",
-                  color: "#4b5563"
+                  color: "#4b5563",
                 }}
               >
                 <Clock size={16} />
@@ -426,12 +430,22 @@ const LeaveManagement: React.FC = () => {
                           )}
                         </td>
                         <td>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "0.5rem",
+                              alignItems: "flex-start",
+                            }}
+                          >
                             {getStatusBadge(leave.statut)}
                             {leave.conflicts && leave.conflicts.length > 0 && (
                               <div className="conflicts-list">
                                 {leave.conflicts.map((conflict, idx) => (
-                                  <div key={idx} className={`conflict-badge ${conflict.severity}`}>
+                                  <div
+                                    key={idx}
+                                    className={`conflict-badge ${conflict.severity}`}
+                                  >
                                     <AlertTriangle size={14} />
                                     <span>{conflict.message}</span>
                                   </div>

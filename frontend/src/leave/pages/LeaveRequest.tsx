@@ -449,8 +449,17 @@ const LeaveRequest: React.FC = () => {
                         <td>
                           {getStatusBadge(leave.statut)}
                           {leave.statut === "REFUSE" && leave.motif_refus && (
-                            <div className="rejection-reason" style={{ fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.25rem', maxWidth: '200px' }}>
-                              <span style={{ fontWeight: 600 }}>Raison:</span> {leave.motif_refus}
+                            <div
+                              className="rejection-reason"
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "#b91c1c",
+                                marginTop: "0.25rem",
+                                maxWidth: "200px",
+                              }}
+                            >
+                              <span style={{ fontWeight: 600 }}>Raison:</span>{" "}
+                              {leave.motif_refus}
                             </div>
                           )}
                         </td>

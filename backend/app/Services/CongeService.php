@@ -140,7 +140,7 @@ class CongeService
     public function refuser(int $congeId, int $approuveParId, ?string $motifRefus = null): bool
     {
         $conge = $this->congeRepository->findOrFail($congeId);
-        
+
         // Update rejection reason
         if ($motifRefus) {
             $conge->motif_refus = $motifRefus;

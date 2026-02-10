@@ -12,7 +12,7 @@ class LeaveConflictService
 {
     /**
      * Check for conflicts for a specific leave request
-     * 
+     *
      * @param Conge $conge The leave request to check
      * @return array Array of conflicts found, each with 'type' and 'message'
      */
@@ -20,7 +20,7 @@ class LeaveConflictService
     {
         $conflicts = [];
         $user = $conge->utilisateur;
-        
+
         if (!$user || !$user->equipe_id) {
             return $conflicts;
         }
@@ -44,7 +44,7 @@ class LeaveConflictService
     private function checkTeamCapacity(Utilisateur $user, Carbon $start, Carbon $end, array &$conflicts): void
     {
         $teamId = $user->equipe_id;
-        
+
         // Get total team size (active members)
         $totalTeamSize = Utilisateur::where('equipe_id', $teamId)
             ->where('actif', true)
@@ -67,13 +67,13 @@ class LeaveConflictService
                     });
             })
             ->count();
-        
+
         // Add current request to the count (hypothetically if approved)
-        // Wait, if 30% ALREADY exceeded, this is a conflict. 
+        // Wait, if 30% ALREADY exceeded, this is a conflict.
         // If 29% + this one > 30%, is it a conflict? Usually yes.
         // Let's count existing + 1.
         $projectedAbsent = $membersOnLeave + 1;
-        
+
         $percentage = ($projectedAbsent / $totalTeamSize) * 100;
 
         if ($percentage > 30) {

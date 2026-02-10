@@ -1,0 +1,1024 @@
+/* ═══════════════════════════════════════════════════════════
+   PayrollDashboard.css – RH Payroll Module Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.payroll-page {
+  padding: 1.5rem;
+  max-width: 1400px;
+}
+
+.payroll-header {
+  margin-bottom: 1.5rem;
+}
+
+.payroll-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.payroll-header .subtitle {
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+}
+
+/* ── Tabs ────────────────────────────────────────────────── */
+.payroll-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.payroll-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.payroll-tab:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.payroll-tab.active {
+  background: white;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ── KPI Cards ───────────────────────────────────────────── */
+.payroll-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payroll-kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-blue .kpi-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.kpi-green .kpi-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.kpi-orange .kpi-icon {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.kpi-purple .kpi-icon {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* ── Breakdown Cards ─────────────────────────────────────── */
+.payroll-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.breakdown-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+}
+
+.breakdown-card h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.breakdown-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.breakdown-detail {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.status-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Pay Status Badges ──────────────────────────────────── */
+.pay-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.pay-status-generated {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.pay-status-validated {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.pay-status-paid {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+/* ── Tax Brackets ────────────────────────────────────────── */
+.tax-brackets-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+}
+
+.tax-brackets-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  color: #111827;
+}
+
+.tax-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tax-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tax-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tax-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Configuration Tab ───────────────────────────────────── */
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.config-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.config-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.btn-simulator {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+}
+
+.btn-simulator:hover {
+  background: #ede9fe;
+}
+
+/* ── Simulator Panel ─────────────────────────────────────── */
+.simulator-panel {
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.simulator-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  color: #7c3aed;
+}
+
+.sim-form {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.sim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sim-field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.sim-field input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  width: 160px;
+  font-size: 0.875rem;
+}
+
+.sim-results {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e9d5ff;
+}
+
+.sim-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sim-row:last-child {
+  border-bottom: none;
+}
+
+.sim-row.deduction {
+  color: #b91c1c;
+}
+
+.sim-row.total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #059669;
+  border-top: 2px solid #e5e7eb;
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Config Table ────────────────────────────────────────── */
+.config-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.payroll-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payroll-table th {
+  text-align: left;
+  padding: 0.875rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.payroll-table td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.payroll-table tr:last-child td {
+  border-bottom: none;
+}
+
+.emp-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.emp-avatar {
+  width: 36px;
+  height: 36px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.emp-name {
+  display: block;
+  font-weight: 500;
+}
+
+.emp-meta {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.contract-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.salary-input {
+  width: 120px;
+  padding: 0.375rem 0.5rem;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.net-positive {
+  color: #059669;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-config {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.btn-config:hover {
+  background: #dbeafe;
+}
+
+.btn-approve {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.btn-approve:hover {
+  background: #d1fae5;
+}
+
+.btn-reject {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.btn-reject:hover {
+  background: #fee2e2;
+}
+
+.btn-pay {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.btn-pay:hover {
+  background: #dbeafe;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
+.btn-lg {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+/* ── Payslips List ───────────────────────────────────────── */
+.payslips-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payslips-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.payslips-filters {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.status-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+}
+
+.payslips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.payslip-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.payslip-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.payslip-card.expanded {
+  border-color: #93c5fd;
+}
+
+.payslip-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.payslip-emp {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 200px;
+}
+
+.payslip-amounts {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.amount-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.amount-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.amount-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.net-highlight {
+  color: #059669;
+}
+
+.payslip-chevron {
+  color: #9ca3af;
+}
+
+/* ── Payslip Detail ──────────────────────────────────────── */
+.payslip-detail {
+  border-top: 1px solid #e5e7eb;
+  padding: 1.25rem;
+  background: #f9fafb;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.detail-section h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.375rem 0;
+  font-size: 0.8125rem;
+  color: #374151;
+}
+
+.detail-row.highlight {
+  color: #059669;
+}
+
+.detail-row.deduction {
+  color: #b91c1c;
+}
+
+.detail-row.total {
+  font-weight: 700;
+  border-top: 1px solid #d1d5db;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.detail-net {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.detail-net span {
+  font-size: 0.875rem;
+  color: #065f46;
+  font-weight: 500;
+}
+
+.detail-net strong {
+  font-size: 1.25rem;
+  color: #047857;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* ── Generate Tab ────────────────────────────────────────── */
+.payroll-generate-tab h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1.5rem;
+}
+
+.gen-form-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.gen-form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.gen-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gen-field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.gen-field input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.gen-actions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.gen-all,
+.gen-single {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gen-all h3,
+.gen-single h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.gen-all p,
+.gen-single p {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.gen-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #9ca3af;
+  padding-top: 2rem;
+}
+
+.gen-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.gen-info-card {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.gen-info-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: #b45309;
+  margin: 0 0 0.75rem;
+}
+
+.gen-info-card ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.gen-info-card li {
+  font-size: 0.8125rem;
+  color: #92400e;
+  margin-bottom: 0.375rem;
+  line-height: 1.5;
+}
+
+/* ── Empty State ─────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+}
+
+.empty-state svg {
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+/* ── Alerts ──────────────────────────────────────────────── */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.alert-success {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.alert-error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .payroll-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gen-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .gen-divider {
+    padding-top: 0;
+  }
+
+  .payslip-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .payslip-amounts {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .config-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Custom Save Button */
+.action_has {
+  --color: 0 0% 60%;
+  --color-has: 211deg 100% 48%;
+  --sz: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--sz) * 2.5);
+  width: calc(var(--sz) * 2.5);
+  padding: 0.4rem;
+  border-radius: 0.375rem;
+  border: none;
+  background: transparent;
+  transition: all 0.3s;
+}
+
+.has_saved:hover {
+  border-color: hsl(var(--color-has));
+}
+.has_liked:hover svg,
+.has_saved:hover svg {
+  color: hsl(var(--color-has));
+}
+
+.has_liked svg,
+.has_saved svg {
+  overflow: visible;
+  height: calc(var(--sz) * 1.75);
+  width: calc(var(--sz) * 1.75);
+  --ease: cubic-bezier(0.5, 0, 0.25, 1);
+  --zoom-from: 1.75;
+  --zoom-via: 0.75;
+  --zoom-to: 1;
+  --duration: 1s;
+}
+
+.has_saved:hover path[data-path="box"] {
+  transition: all 0.3s var(--ease);
+  animation: has-saved var(--duration) var(--ease) forwards;
+  fill: hsl(var(--color-has) / 0.35);
+}
+.has_saved:hover path[data-path="line-top"] {
+  animation: has-saved-line-top var(--duration) var(--ease) forwards;
+}
+.has_saved:hover path[data-path="line-bottom"] {
+  animation: has-saved-line-bottom var(--duration) var(--ease) forwards,
+    has-saved-line-bottom-2 calc(var(--duration) * 1) var(--ease)
+      calc(var(--duration) * 0.75);
+}
+
+@keyframes has-saved-line-top {
+  33.333% {
+    transform: rotate(0deg) translate(1px, 2px) scale(var(--zoom-from));
+    d: path("M 3 5 L 3 8 L 3 8");
+  }
+  66.666% {
+    transform: rotate(20deg) translate(2px, -2px) scale(var(--zoom-via));
+  }
+  99.999% {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+  }
+}
+@keyframes has-saved-line-bottom {
+  33.333% {
+    transform: rotate(0deg) translate(1px, 2px) scale(var(--zoom-from));
+    d: path("M 17 20 L 17 13 L 7 13 L 7 20");
+  }
+  66.666% {
+    transform: rotate(20deg) translate(2px, -2px) scale(var(--zoom-via));
+  }
+  99.999% {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+    d: path("M 17 21 L 17 21 L 7 21 L 7 21");
+  }
+}
+@keyframes has-saved-line-bottom-2 {
+  from {
+    d: path("M 17 21 L 17 21 L 7 21 L 7 21");
+  }
+  to {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+    d: path("M 17 20 L 17 13 L 7 13 L 7 20");
+    fill: white;
+  }
+}
+@keyframes has-saved {
+  33.333% {
+    transform: rotate(0deg) translate(1px, 2px) scale(var(--zoom-from));
+  }
+  66.666% {
+    transform: rotate(20deg) translate(2px, -2px) scale(var(--zoom-via));
+  }
+  99.999% {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+  }
+}
+

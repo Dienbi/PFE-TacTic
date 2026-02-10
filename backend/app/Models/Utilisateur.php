@@ -40,6 +40,14 @@ class Utilisateur extends Authenticatable implements JWTSubject
         'password',
     ];
 
+    /**
+     * The channels the user receives notification broadcasts on.
+     */
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'user.' . $this->id;
+    }
+
     protected $casts = [
         'date_embauche' => 'date',
         'date_derniere_connexion' => 'datetime',

@@ -1,0 +1,359 @@
+/* ═══════════════════════════════════════════════════════════
+   EmployeeSalary.css – Employee Salary View Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.salary-page {
+  padding: 1.5rem;
+  max-width: 1100px;
+}
+
+.salary-header {
+  margin-bottom: 1.5rem;
+}
+
+.salary-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.salary-header .subtitle {
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+}
+
+/* ── KPI Row ──────────────────────────────────────────────── */
+.salary-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.salary-kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.125rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.salary-kpi-card .kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.salary-kpi-card.kpi-green .kpi-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.salary-kpi-card.kpi-blue .kpi-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.salary-kpi-card.kpi-orange .kpi-icon {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.salary-kpi-card.kpi-purple .kpi-icon {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.salary-kpi-card .kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.salary-kpi-card .kpi-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.salary-kpi-card .kpi-label {
+  font-size: 0.775rem;
+  color: #6b7280;
+}
+
+/* ── Summary Cards ───────────────────────────────────────── */
+.salary-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+}
+
+.summary-card h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.summary-value.net-val {
+  color: #059669;
+}
+
+.summary-detail {
+  font-size: 0.775rem;
+  color: #9ca3af;
+}
+
+/* ── Payslip History ─────────────────────────────────────── */
+.salary-history {
+  margin-top: 0.5rem;
+}
+
+.salary-history h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1.25rem;
+}
+
+.salary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.salary-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.salary-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.salary-card.expanded {
+  border-color: #93c5fd;
+}
+
+.salary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.salary-card-period {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  min-width: 220px;
+}
+
+.salary-card-period svg {
+  color: #9ca3af;
+}
+
+.salary-card-amounts {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.sal-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.sal-amount-label {
+  font-size: 0.675rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+}
+
+.sal-amount span:not(.sal-amount-label) {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.sal-amount-net strong {
+  color: #059669;
+}
+
+.chevron-icon {
+  color: #9ca3af;
+  display: flex;
+}
+
+/* ── Badges ──────────────────────────────────────────────── */
+.sal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.725rem;
+  font-weight: 500;
+}
+
+.sal-pending {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.sal-validated {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.sal-paid {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+/* ── Card Detail ─────────────────────────────────────────── */
+.salary-card-detail {
+  border-top: 1px solid #e5e7eb;
+  padding: 1.25rem;
+  background: #f9fafb;
+}
+
+.detail-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.detail-col h4 {
+  font-size: 0.775rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+}
+
+.d-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  font-size: 0.8125rem;
+  color: #374151;
+}
+
+.d-row.d-positive {
+  color: #059669;
+}
+
+.d-row.d-negative {
+  color: #b91c1c;
+}
+
+.d-row.d-bold {
+  font-weight: 700;
+  border-top: 1px solid #d1d5db;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.salary-net-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.salary-net-banner span {
+  font-size: 0.875rem;
+  color: #065f46;
+  font-weight: 500;
+}
+
+.salary-net-banner strong {
+  font-size: 1.125rem;
+  color: #047857;
+}
+
+.payment-date {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* ── Empty State ─────────────────────────────────────────── */
+.salary-page .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+}
+
+.salary-page .empty-state svg {
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .salary-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .salary-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .salary-card-amounts {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

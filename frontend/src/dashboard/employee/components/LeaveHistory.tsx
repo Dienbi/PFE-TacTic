@@ -1,57 +1,73 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import client from "../../../api/client";
+import { Link } from "react-router-dom";
 import "./LeaveHistory.css";
 
 interface LeaveHistoryItem {
   id: number;
   type: string;
-  dates: string;
-  jours: number;
-  statut: "Approved" | "Pending" | "Rejected";
+  start_date: string;
+  end_date: string;
+  duree: number;
+  statut: "EN_ATTENTE" | "APPROUVE" | "REFUSE";
 }
 
 const LeaveHistory: React.FC = () => {
-  const leaveHistory: LeaveHistoryItem[] = [
-    {
-      id: 1,
-      type: "Congé Annuel",
-      dates: "10-15 Jan 2026",
-      jours: 5,
-      statut: "Approved",
-    },
-    {
-      id: 2,
-      type: "Maladie",
-      dates: "03 Déc 2025",
-      jours: 1,
-      statut: "Approved",
-    },
-    {
-      id: 3,
-      type: "Congé Personnel",
-      dates: "20-22 Nov 2025",
-      jours: 3,
-      statut: "Approved",
-    },
-    {
-      id: 4,
-      type: "Formation",
-      dates: "15 Oct 2025",
-      jours: 1,
-      statut: "Approved",
-    },
-  ];
+  const [leaves, setLeaves] = useState<LeaveHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      try {
+        const res = await client.get("/conges/mes-conges");
+        setLeaves(res.data.slice(0, 5)); // Show last 5
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaves();
+  }, []);
 
   const getStatusBadge = (statut: string) => {
-    return (
-      <span className={`leave-status ${statut.toLowerCase()}`}>{statut}</span>
-    );
+    let className = "";
+    let label = statut;
+
+    switch (statut) {
+      case "APPROUVE":
+        className = "approved";
+        label = "Approuvé";
+        break;
+      case "REFUSE":
+        className = "rejected";
+        label = "Refusé";
+        break;
+      default:
+        className = "pending";
+        label = "En attente";
+        break;
+    }
+
+    return <span className={`leave-status ${className}`}>{label}</span>;
   };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+    });
+  };
+
+  if (loading) return <div>Chargement...</div>;
 
   return (
     <div className="leave-history-section">
       <div className="section-header-row">
         <h3 className="section-title">Historique des Congés</h3>
-        <button className="btn-new-request">Nouvelle Demande</button>
+        <Link to="/employee/leaves" className="btn-new-request">
+          Voir tout
+        </Link>
       </div>
 
       <div className="leave-table">
@@ -65,14 +81,25 @@ const LeaveHistory: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {leaveHistory.map((leave) => (
-              <tr key={leave.id}>
-                <td className="fw-500">{leave.type}</td>
-                <td className="text-gray">{leave.dates}</td>
-                <td>{leave.jours}</td>
-                <td>{getStatusBadge(leave.statut)}</td>
+            {leaves.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ textAlign: "center" }}>
+                  Aucun congé récent
+                </td>
               </tr>
-            ))}
+            ) : (
+              leaves.map((leave) => (
+                <tr key={leave.id}>
+                  <td className="fw-500">{leave.type}</td>
+                  <td className="text-gray">
+                    {formatDate(leave.start_date)} -{" "}
+                    {formatDate(leave.end_date)}
+                  </td>
+                  <td>{leave.duree}</td>
+                  <td>{getStatusBadge(leave.statut)}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -1,0 +1,334 @@
+.manager-payroll-page {
+  padding: 24px;
+  max-width: 1200px;
+}
+
+.mgr-pay-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.mgr-pay-header .subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.mgr-error-card {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  padding: 16px 20px;
+  color: #b91c1c;
+  margin-bottom: 18px;
+}
+
+/* KPI Grid */
+.mgr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.mgr-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.mgr-kpi-card > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.mgr-kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mgr-kpi-blue .mgr-kpi-icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.mgr-kpi-green .mgr-kpi-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.mgr-kpi-emerald .mgr-kpi-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.mgr-kpi-purple .mgr-kpi-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.mgr-kpi-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.mgr-kpi-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Section Title */
+.mgr-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 14px;
+}
+
+/* Members List */
+.mgr-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mgr-member-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.mgr-member-card.expanded {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.mgr-member-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.mgr-member-header:hover {
+  background: #f8fafc;
+}
+
+.mgr-member-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mgr-member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mgr-member-name {
+  font-weight: 600;
+  color: #1e293b;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.mgr-member-meta {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.mgr-member-summary {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.mgr-sum-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.mgr-sum-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mgr-net-val {
+  color: #059669;
+}
+
+.mgr-no-payslip {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.mgr-chevron {
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+/* Badges */
+.mgr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mgr-paid {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.mgr-validated {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.mgr-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* Detail Section */
+.mgr-member-detail {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mgr-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.mgr-detail-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.mgr-detail-card h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.mgr-d-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 0.88rem;
+  color: #475569;
+}
+
+.mgr-d-row + .mgr-d-row {
+  border-top: 1px solid #e2e8f0;
+}
+
+.mgr-d-negative span:last-child {
+  color: #dc2626;
+}
+
+.mgr-d-bold {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Last Payslip */
+.mgr-last-payslip {
+  margin-top: 16px;
+  background: #eff6ff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.mgr-last-payslip h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 10px;
+}
+
+.mgr-lp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 24px;
+}
+
+/* Empty */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-state p {
+  margin-top: 12px;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .mgr-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mgr-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .mgr-lp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .mgr-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .mgr-member-summary {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

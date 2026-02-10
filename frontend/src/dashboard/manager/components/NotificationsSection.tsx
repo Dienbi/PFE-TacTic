@@ -84,10 +84,10 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         .private(`manager.${user.id}`)
         .listen(".ManagerNotification", (data: any) => {
           console.log("Manager notification received:", data);
-          
+
           // Show toast notification
           showToast(data.type || "info", data.title, data.message);
-          
+
           const newNotification: Notification = {
             id: Date.now().toString(),
             type: data.type,
@@ -110,10 +110,10 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
       .private(`user.${user.id}`)
       .listen(".LeaveStatusNotification", (data: any) => {
         console.log("Leave status notification received:", data);
-        
+
         // Show toast notification
         showToast(data.type || "info", data.title, data.message);
-        
+
         const newNotification: Notification = {
           id: Date.now().toString(),
           type: data.type,
@@ -128,6 +128,55 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
           localStorage.setItem("notifications", JSON.stringify(updated));
           return updated;
         });
+      })
+      .listen(".SalaryPaid", (data: any) => {
+        console.log("Salary Paid event received:", data);
+        
+        showToast("success", "Salaire Versé", data.message);
+
+        const newNotification: Notification = {
+          id: Date.now().toString(),
+          type: "success",
+          title: "Salaire Versé",
+          message: data.message,
+          timestamp: new Date().toISOString(),
+        };
+
+        setNotifications((prev) => {
+          const updated = [newNotification, ...prev].slice(0, 20);
+          localStorage.setItem("notifications", JSON.stringify(updated));
+          return updated;
+        });
+      })
+      .notification((notification: any) => {
+        console.log("Broadcasting Notification received:", notification);
+        const msg = notification.message || notification.data?.message;
+        
+        let type = notification.alert_type || notification.data?.alert_type;
+        if (!type) {
+             const rawType = notification.type || notification.data?.type;
+             if (rawType && typeof rawType === 'string' && rawType.includes('\\')) {
+                 type = 'info';
+             } else {
+                 type = rawType || 'info';
+             }
+        }
+
+        if (msg) {
+          showToast(type, "Notification", msg);
+          const newNotification: Notification = {
+            id: Date.now().toString() + Math.random(),
+            type: type,
+            title: "Notification",
+            message: msg,
+            timestamp: new Date().toISOString(),
+          };
+          setNotifications((prev) => {
+            const updated = [newNotification, ...prev].slice(0, 20);
+            localStorage.setItem("notifications", JSON.stringify(updated));
+            return updated;
+          });
+        }
       });
 
     // Cleanup only on actual unmount, not on StrictMode double-render

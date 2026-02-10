@@ -22,6 +22,9 @@ import LeaveManagement from "./leave/pages/LeaveManagement";
 import Profile from "./shared/pages/Profile";
 import EditProfile from "./shared/pages/EditProfile";
 import AttendanceHistory from "./attendance/pages/AttendanceHistory";
+import PayrollDashboard from "./payroll/PayrollDashboard";
+import EmployeeSalary from "./payroll/EmployeeSalary";
+import ManagerPayroll from "./payroll/ManagerPayroll";
 import ProtectedRoute, {
   getDefaultDashboard,
 } from "./shared/components/ProtectedRoute";
@@ -96,6 +99,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/payroll"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <PayrollDashboard />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Manager Only Routes */}
             <Route
@@ -130,6 +141,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/manager/salary"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <ManagerPayroll />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Employee Only Routes */}
             <Route
@@ -145,6 +164,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["employee"]}>
                   <LeaveRequest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/salary"
+              element={
+                <ProtectedRoute allowedRoles={["employee"]}>
+                  <EmployeeSalary />
                 </ProtectedRoute>
               }
             />

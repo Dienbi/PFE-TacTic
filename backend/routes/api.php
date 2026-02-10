@@ -162,16 +162,32 @@ Route::middleware('jwt.auth')->group(function () {
     Route::prefix('paies')->group(function () {
         Route::get('/mes-paies', [PaieController::class, 'mesPaies']);
         Route::get('/stats', [PaieController::class, 'stats']);
+        // Allow downloading payslip (Auth check inside controller)
+        Route::get('/{id}/download', [PaieController::class, 'download'])->where('id', '[0-9]+');
+
+        // Manager routes
+        Route::middleware('role:rh,chef_equipe')->group(function () {
+            Route::get('/team', [PaieController::class, 'teamPayroll']);
+        });
 
         // RH only routes
         Route::middleware('role:rh')->group(function () {
             Route::get('/', [PaieController::class, 'index']);
+            // Global salary increase
+            Route::post('/increase-salaries', [PaieController::class, 'increaseSalaries']);
+
             Route::get('/non-payees', [PaieController::class, 'nonPayees']);
             Route::get('/total-mensuel', [PaieController::class, 'totalMensuel']);
+            Route::get('/global-stats', [PaieController::class, 'globalStats']);
+            Route::get('/employees-config', [PaieController::class, 'employeesConfig']);
+            Route::post('/configurer-salaire', [PaieController::class, 'configurerSalaire']);
+            Route::post('/simuler', [PaieController::class, 'simuler']);
+            Route::post('/preview', [PaieController::class, 'preview']);
             Route::get('/utilisateur/{utilisateurId}', [PaieController::class, 'byUtilisateur']);
-            Route::get('/{id}', [PaieController::class, 'show']);
+            Route::get('/{id}', [PaieController::class, 'show'])->where('id', '[0-9]+');
             Route::post('/generer', [PaieController::class, 'generer']);
             Route::post('/generer-tous', [PaieController::class, 'genererPourTous']);
+            Route::post('/{id}/valider', [PaieController::class, 'valider']);
             Route::post('/{id}/payer', [PaieController::class, 'marquerPayee']);
             Route::put('/{id}', [PaieController::class, 'update']);
             Route::delete('/{id}', [PaieController::class, 'destroy']);

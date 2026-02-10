@@ -89,6 +89,8 @@ const ActivityLogs: React.FC = () => {
         return "#F59E0B"; // Amber
       case "USER_REJECTED":
         return "#EF4444"; // Red
+      case "PAYROLL_PAID":
+        return "#10B981"; // Green
       default:
         return "#6B7280"; // Gray
     }
@@ -98,6 +100,8 @@ const ActivityLogs: React.FC = () => {
     switch (action) {
       case "LOGIN":
         return "Connexion";
+      case "PAYROLL_PAID":
+        return "Salaire Payé";
       case "LOGOUT":
         return "Déconnexion";
       case "USER_CREATED":

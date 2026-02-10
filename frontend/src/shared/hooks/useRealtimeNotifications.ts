@@ -63,6 +63,29 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         console.log("Leave status notification received:", data);
         showToast(data.type || "info", data.title, data.message);
         options.onLeaveStatusUpdate?.(data);
+      })
+      .listen(".SalaryPaid", (data: any) => {
+        console.log("Salary Paid event received:", data);
+        showToast("success", "Salaire Versé", data.message);
+      })
+      .notification((notification: any) => {
+        console.log("Broadcasting Notification received:", notification);
+        // Fallback for notifications that might come in slightly different formats
+        const msg = notification.message || notification.data?.message;
+        
+        let type = notification.alert_type || notification.data?.alert_type;
+        if (!type) {
+             const rawType = notification.type || notification.data?.type;
+             if (rawType && typeof rawType === 'string' && rawType.includes('\\')) {
+                 type = 'info';
+             } else {
+                 type = rawType || 'info';
+             }
+        }
+
+        if (msg) {
+          showToast(type, "Notification", msg);
+        }
       });
 
     // Subscribe to manager channel for managers

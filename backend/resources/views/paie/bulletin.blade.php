@@ -40,7 +40,7 @@
     <div class="bulletin-container">
         <div class="header">
             <div class="company-info">
-                <h1>TACTIC RH</h1>
+                <img src="{{ asset('images/logo.png') }}" alt="TACTIC RH" style="max-height: 80px; margin-bottom: 10px;">
                 <p>123 Avenue de la République<br>1000 Tunis, Tunisie</p>
             </div>
             <div class="paie-title">

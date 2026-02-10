@@ -32,15 +32,26 @@ const SalarySection: React.FC = () => {
 
   const handleDownload = async () => {
     if (!latestPay) return;
+
+    // Open window immediately
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write("Chargement...");
+    } else {
+      alert("Activation des pop-ups requise");
+      return;
+    }
+
     try {
       const response = await client.get(`/paies/${latestPay.id}/download`);
-      const printWindow = window.open("", "_blank");
       if (printWindow) {
+        printWindow.document.open();
         printWindow.document.write(response.data);
         printWindow.document.close();
       }
     } catch (e) {
       console.error(e);
+      if (printWindow) printWindow.close();
     }
   };
 

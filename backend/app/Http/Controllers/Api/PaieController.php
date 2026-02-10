@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PaieRequest;
 use App\Services\PaieService;
+use App\Enums\Role;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -283,7 +284,7 @@ class PaieController extends Controller
 
         // Ensure user can only download their own payslip or have RH permission
         $user = request()->user();
-        if ($user->id !== $paie->utilisateur_id && !$user->hasRole('admin') && !$user->hasRole('rh')) {
+        if ($user->id !== $paie->utilisateur_id && !$user->hasRole(Role::RH)) {
             abort(403, 'Accès interdit.');
         }
 

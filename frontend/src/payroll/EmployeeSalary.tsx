@@ -82,15 +82,34 @@ const EmployeeSalary: React.FC = () => {
   }, [fetchData]);
 
   const handleDownload = async (id: number) => {
+    // Open a new window immediately to avoid popup blockers
+    const printWindow = window.open("", "_blank");
+
+    if (printWindow) {
+      printWindow.document.write("Chargement de la fiche de paie...");
+    } else {
+      alert(
+        "Veuillez autoriser les pop-ups pour télécharger la fiche de paie.",
+      );
+      return;
+    }
+
     try {
       const response = await client.get(`/paies/${id}/download`);
-      const printWindow = window.open("", "_blank");
       if (printWindow) {
+        printWindow.document.open(); // Clear previous content
         printWindow.document.write(response.data);
         printWindow.document.close();
       }
     } catch (error) {
       console.error("Error downloading payslip:", error);
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(
+          "<h1>Erreur lors du téléchargement</h1><p>Impossible de récupérer la fiche de paie.</p>",
+        );
+        printWindow.document.close();
+      }
     }
   };
 

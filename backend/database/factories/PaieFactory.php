@@ -65,7 +65,7 @@ class PaieFactory extends Factory
             $salaireBrut = $attributes['salaire_brut'] + $montantHeuresSupp;
             $cnss = round($salaireBrut * 0.0918, 2);
             $deductions = $cnss + $attributes['impot_mensuel'];
-            
+
             return [
                 'heures_supp' => $heuresSupp,
                 'montant_heures_supp' => $montantHeuresSupp,

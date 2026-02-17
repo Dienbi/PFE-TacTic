@@ -47,7 +47,7 @@ class PayrollCalculator
 
             // Calculate the width of this tax bracket
             $bracketWidth = $bracket['max'] - $bracket['min'];
-            
+
             // Tax the minimum of remaining income or bracket width
             $taxableInBracket = min($revenuAnnuelImposable, $bracketWidth);
 

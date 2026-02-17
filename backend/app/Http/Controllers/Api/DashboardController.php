@@ -38,10 +38,10 @@ class DashboardController extends Controller
      */
     public function absenceDistribution(Request $request): JsonResponse
     {
-        $startDate = $request->input('start_date') 
+        $startDate = $request->input('start_date')
             ? Carbon::parse($request->input('start_date'))
             : Carbon::now()->startOfMonth();
-        
+
         $endDate = $request->input('end_date')
             ? Carbon::parse($request->input('end_date'))
             : Carbon::now()->endOfMonth();

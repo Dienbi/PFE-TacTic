@@ -32,11 +32,13 @@ const KPISection = () => {
 
   const formatCurrency = (value: number): string => {
     // Format as TND to match salary dashboard
-    return new Intl.NumberFormat('fr-TN', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value) + ' TND';
+    return (
+      new Intl.NumberFormat("fr-TN", {
+        style: "decimal",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(value) + " TND"
+    );
   };
 
   if (loading || !stats) {
@@ -62,15 +64,15 @@ const KPISection = () => {
         stats.employee_change > 0
           ? `+${stats.employee_change}% ce mois`
           : stats.employee_change < 0
-          ? `${stats.employee_change}% ce mois`
-          : "Aucun changement",
+            ? `${stats.employee_change}% ce mois`
+            : "Aucun changement",
       icon: Users,
       color:
         stats.employee_change > 0
           ? "text-green-500"
           : stats.employee_change < 0
-          ? "text-red-500"
-          : "text-gray-500",
+            ? "text-red-500"
+            : "text-gray-500",
       bg: "bg-green-50",
     },
     {
@@ -80,15 +82,15 @@ const KPISection = () => {
         stats.attendance_change > 0
           ? `+${stats.attendance_change}%`
           : stats.attendance_change < 0
-          ? `${stats.attendance_change}%`
-          : "Stable",
+            ? `${stats.attendance_change}%`
+            : "Stable",
       icon: Clock,
       color:
         stats.attendance_change > 0
           ? "text-green-500"
           : stats.attendance_change < 0
-          ? "text-red-500"
-          : "text-gray-500",
+            ? "text-red-500"
+            : "text-gray-500",
       bg: "bg-blue-50",
     },
     {

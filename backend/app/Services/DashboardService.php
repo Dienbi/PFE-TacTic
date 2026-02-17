@@ -25,15 +25,15 @@ class DashboardService
         $totalEmployees = DB::table('utilisateurs')
             ->whereNull('deleted_at')
             ->count();
-        
+
         // Get previous month count for comparison
         $previousMonthCount = DB::table('utilisateurs')
             ->whereNull('deleted_at')
             ->where('date_embauche', '<', Carbon::now()->startOfMonth())
             ->count();
-        
+
         $newEmployeesThisMonth = $totalEmployees - $previousMonthCount;
-        $employeeChange = $previousMonthCount > 0 
+        $employeeChange = $previousMonthCount > 0
             ? round(($newEmployeesThisMonth / $previousMonthCount) * 100, 1)
             : 0;
 
@@ -41,16 +41,16 @@ class DashboardService
         $startOfMonth = Carbon::now()->startOfMonth();
         $today = Carbon::now();
         $workingDays = $this->getWorkingDaysBetween($startOfMonth, $today);
-        
+
         // Only count active employees for attendance rate
         $activeEmployees = $this->utilisateurRepository->getActifs()->count();
         $totalPossibleAttendances = $activeEmployees * $workingDays;
-        
+
         $actualAttendances = DB::table('pointages')
             ->whereBetween('date', [$startOfMonth, $today])
             ->whereNotNull('heure_entree')
             ->count();
-        
+
         $attendanceRate = $totalPossibleAttendances > 0
             ? round(($actualAttendances / $totalPossibleAttendances) * 100, 1)
             : 100.0;
@@ -67,7 +67,7 @@ class DashboardService
         $prevAttendanceRate = $prevTotalPossible > 0
             ? ($prevActualAttendances / $prevTotalPossible) * 100
             : 0;
-        
+
         $attendanceChange = $prevAttendanceRate > 0
             ? round($attendanceRate - $prevAttendanceRate, 1)
             : 0;
@@ -78,9 +78,9 @@ class DashboardService
             ->whereBetween('date', [$startOfMonth, $today])
             ->whereNotNull('heure_entree')
             ->sum('duree_travail') ?? 0;
-        
+
         $heuresSupplementaires = max($totalHeuresTravaillees - $totalHeuresNormales, 0);
-        
+
         $overtimeRatio = $totalHeuresNormales > 0 && $totalHeuresTravaillees > 0
             ? round(($heuresSupplementaires / $totalHeuresNormales) * 100, 1)
             : 0;
@@ -121,7 +121,7 @@ class DashboardService
             $date = Carbon::now()->subMonths($i);
             $startOfMonth = $date->copy()->startOfMonth();
             $endOfMonth = $date->copy()->endOfMonth();
-            
+
             // Don't calculate beyond current date for current month
             if ($endOfMonth->isFuture()) {
                 $endOfMonth = Carbon::now();
@@ -129,7 +129,7 @@ class DashboardService
 
             $workingDays = $this->getWorkingDaysBetween($startOfMonth, $endOfMonth);
             $totalPossible = $totalEmployees * $workingDays;
-            
+
             $actualAttendances = DB::table('pointages')
                 ->whereBetween('date', [$startOfMonth, $endOfMonth])
                 ->whereNotNull('heure_entree')

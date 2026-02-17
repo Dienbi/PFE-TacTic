@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Paie;
+use App\Models\Utilisateur;
+use App\Observers\PaieObserver;
+use App\Observers\UtilisateurObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register model observers for cache invalidation
+        Utilisateur::observe(UtilisateurObserver::class);
+        Paie::observe(PaieObserver::class);
     }
 }

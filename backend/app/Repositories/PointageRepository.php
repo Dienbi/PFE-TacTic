@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Models\Pointage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
-class PointageRepository extends BaseRepository
+class PointageRepository extends BaseRepository implements PointageRepositoryInterface
 {
     public function __construct(Pointage $model)
     {
@@ -77,5 +78,51 @@ class PointageRepository extends BaseRepository
             'absences' => $pointages->whereNull('heure_entree')->count(),
             'absences_justifiees' => $pointages->where('absence_justifiee', true)->count(),
         ];
+    }
+
+    public function checkIn(int $utilisateurId): Pointage
+    {
+        $today = Carbon::today();
+        $pointage = $this->getTodayPointage($utilisateurId);
+
+        if (!$pointage) {
+            $pointage = $this->create([
+                'utilisateur_id' => $utilisateurId,
+                'date' => $today,
+                'heure_entree' => Carbon::now(),
+            ]);
+        } else if (!$pointage->heure_entree) {
+            $pointage->heure_entree = Carbon::now();
+            $pointage->save();
+        }
+
+        return $pointage;
+    }
+
+    public function checkOut(int $utilisateurId): bool
+    {
+        $pointage = $this->getTodayPointage($utilisateurId);
+
+        if ($pointage && $pointage->heure_entree && !$pointage->heure_sortie) {
+            $pointage->heure_sortie = Carbon::now();
+            $pointage->calculerDureeTravail();
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getHeuresSupp(int $utilisateurId, Carbon $startDate, Carbon $endDate): float
+    {
+        $pointages = $this->getByPeriod($utilisateurId, $startDate, $endDate);
+        $heuresSupp = 0.0;
+
+        foreach ($pointages as $pointage) {
+            if ($pointage->duree_travail && $pointage->duree_travail > 8) {
+                $heuresSupp += ($pointage->duree_travail - 8);
+            }
+        }
+
+        return $heuresSupp;
     }
 }

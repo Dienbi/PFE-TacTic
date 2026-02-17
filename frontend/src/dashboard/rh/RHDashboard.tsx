@@ -4,7 +4,6 @@ import Navbar from "../../../src/shared/components/Navbar";
 import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
-import AIRecommendations from "./components/AIRecommendations";
 import { useRealtimeNotifications } from "../../shared/hooks/useRealtimeNotifications";
 import "./RHDashboard.css";
 
@@ -64,7 +63,6 @@ const RHDashboard: React.FC = () => {
               <ActivityLogs />
             </Suspense>
             <RecentLeaves />
-            <AIRecommendations />
           </div>
         </div>
       </div>

@@ -2,13 +2,14 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\CongeRepositoryInterface;
 use App\Enums\StatutConge;
 use App\Enums\TypeConge;
 use App\Models\Conge;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
-class CongeRepository extends BaseRepository
+class CongeRepository extends BaseRepository implements CongeRepositoryInterface
 {
     public function __construct(Conge $model)
     {

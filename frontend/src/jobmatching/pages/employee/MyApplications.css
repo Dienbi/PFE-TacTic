@@ -1,0 +1,231 @@
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #F9FAFB;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    min-width: 0;
+}
+
+.dashboard-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.page-header p {
+  color: #6B7280;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background: #2563EB;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1D4ED8;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  border: 1px solid #2563EB;
+  color: #2563EB;
+  margin-top: 16px;
+}
+
+.btn-outline-primary:hover {
+  background: #EFF6FF;
+}
+
+.empty-state-modern {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: 16px;
+  border: 1px dashed #E5E7EB;
+}
+
+.empty-illustration {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.applications-timeline-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 10px;
+}
+
+.application-entry {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  padding-bottom: 32px;
+}
+
+.entry-status-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  padding-top: 24px;
+}
+
+.status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 1px #E5E7EB;
+  z-index: 2;
+}
+
+.badge-warning { background-color: #F59E0B; color: #92400E; }
+.badge-info { background-color: #3B82F6; color: #1E40AF; }
+.badge-success { background-color: #10B981; color: #065F46; }
+.badge-danger { background-color: #EF4444; color: #991B1B; }
+.badge-secondary { background-color: #6B7280; color: #374151; }
+
+.status-line {
+  flex: 1;
+  width: 2px;
+  background-color: #E5E7EB;
+  margin-top: 4px;
+  margin-bottom: -36px; /* Extend to next item */
+}
+
+.application-entry:last-child .status-line {
+  display: none;
+}
+
+.application-card-modern {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.application-card-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-color: #BFDBFE;
+}
+
+.card-header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.header-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.team-text {
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+
+.status-badge-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Badge colors for text/bg styles specifically */
+.status-badge-modern.badge-warning { background: #FEF3C7; color: #92400E; }
+.status-badge-modern.badge-info { background: #DBEAFE; color: #1E40AF; }
+.status-badge-modern.badge-success { background: #D1FAE5; color: #065F46; }
+.status-badge-modern.badge-danger { background: #FEE2E2; color: #991B1B; }
+.status-badge-modern.badge-secondary { background: #F3F4F6; color: #4B5563; }
+
+.card-content-clean {
+  font-size: 0.9rem;
+  color: #4B5563;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.description-preview {
+  margin-bottom: 8px;
+}
+
+.motivation-snippet {
+  background: #F9FAFB;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 2px solid #E5E7EB;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.card-actions-clean {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #F3F4F6;
+  padding-top: 12px;
+}
+
+.btn-link-danger {
+  background: none;
+  border: none;
+  color: #EF4444;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-link-danger:hover {
+  text-decoration: underline;
+}
+
+.btn-link-danger:disabled {
+  color: #F87171;
+  cursor: not-allowed;
+  text-decoration: none;
+}

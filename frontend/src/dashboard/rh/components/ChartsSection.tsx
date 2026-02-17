@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -12,31 +12,87 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import client from "../../../api/client";
 
-const dataTrend = [
-  { name: "Jan", value: 94 },
-  { name: "Feb", value: 93 },
-  { name: "Mar", value: 97 },
-  { name: "Apr", value: 94 },
-  { name: "May", value: 96 },
-  { name: "Jun", value: 98 },
-];
+interface TrendData {
+  name: string;
+  value: number;
+  month: string;
+}
 
-const dataAbsence = [
-  { name: "Congé", value: 45, color: "#3B82F6" },
-  { name: "Maladie", value: 25, color: "#10B981" },
-  { name: "Autre", value: 15, color: "#EF4444" },
-  { name: "Absence", value: 15, color: "#F59E0B" },
-];
+interface AbsenceData {
+  name: string;
+  value: number;
+  color: string;
+}
 
 const ChartsSection = () => {
+  const [trendData, setTrendData] = useState<TrendData[]>([]);
+  const [absenceData, setAbsenceData] = useState<AbsenceData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchChartData();
+  }, []);
+
+  const fetchChartData = async () => {
+    try {
+      const [trendResponse, absenceResponse] = await Promise.all([
+        client.get("/dashboard/attendance-trend?months=6"),
+        client.get("/dashboard/absence-distribution"),
+      ]);
+
+      setTrendData(trendResponse.data);
+      setAbsenceData(absenceResponse.data);
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="charts-grid">
+        <div className="chart-card">
+          <h3>Tendance de Présence (6 mois)</h3>
+          <div
+            style={{
+              width: "100%",
+              height: 300,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <p>Chargement...</p>
+          </div>
+        </div>
+        <div className="chart-card">
+          <h3>Distribution des Absences</h3>
+          <div
+            style={{
+              width: "100%",
+              height: 300,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <p>Chargement...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="charts-grid">
       <div className="chart-card">
         <h3>Tendance de Présence (6 mois)</h3>
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer>
-            <LineChart data={dataTrend}>
+            <LineChart data={trendData}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
@@ -52,7 +108,7 @@ const ChartsSection = () => {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "#6B7280" }}
-                domain={[90, 100]}
+                domain={[0, 100]}
               />
               <Tooltip />
               <Line
@@ -73,7 +129,7 @@ const ChartsSection = () => {
           <ResponsiveContainer>
             <PieChart>
               <Pie
-                data={dataAbsence}
+                data={absenceData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -81,7 +137,7 @@ const ChartsSection = () => {
                 paddingAngle={2}
                 dataKey="value"
               >
-                {dataAbsence.map((entry, index) => (
+                {absenceData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>

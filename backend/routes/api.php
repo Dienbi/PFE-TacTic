@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AffectationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\CongeController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EquipeController;
 use App\Http\Controllers\Api\PaieController;
 use App\Http\Controllers\Api\PointageController;
@@ -29,6 +30,11 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
 });
 
+// Test CORS endpoint
+Route::get('/test-cors', function () {
+    return response()->json(['message' => 'CORS is working!', 'timestamp' => now()]);
+});
+
 // Broadcasting auth route (must be before other authenticated routes)
 Broadcast::routes(['middleware' => ['auth:api']]);
 
@@ -50,6 +56,13 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('change-password', [AuthController::class, 'changePassword']);
         Route::put('update-profile', [AuthController::class, 'updateProfile']);
         Route::put('update-skills', [AuthController::class, 'updateSkills']);
+    });
+
+    // Dashboard routes
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/rh-stats', [DashboardController::class, 'rhStats']);
+        Route::get('/attendance-trend', [DashboardController::class, 'attendanceTrend']);
+        Route::get('/absence-distribution', [DashboardController::class, 'absenceDistribution']);
     });
 
     // User routes (accessible by all authenticated users)
@@ -237,6 +250,60 @@ Route::middleware('jwt.auth')->group(function () {
             Route::post('/', [CompetenceController::class, 'store']);
             Route::put('/{id}', [CompetenceController::class, 'update']);
             Route::delete('/{id}', [CompetenceController::class, 'destroy']);
+        });
+    });
+
+    // Job Request routes - managers create, HR reviews
+    Route::prefix('job-requests')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\JobRequestController::class, 'index']);
+        Route::get('/{id}', [App\Http\Controllers\Api\JobRequestController::class, 'show']);
+
+        // Manager routes
+        Route::middleware('role:chef_equipe')->group(function () {
+            Route::post('/', [App\Http\Controllers\Api\JobRequestController::class, 'store']);
+            Route::put('/{id}', [App\Http\Controllers\Api\JobRequestController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\JobRequestController::class, 'destroy']);
+        });
+
+        // HR routes
+        Route::middleware('role:rh')->group(function () {
+            Route::get('/pending/list', [App\Http\Controllers\Api\JobRequestController::class, 'pending']);
+            Route::post('/{id}/approve', [App\Http\Controllers\Api\JobRequestController::class, 'approve']);
+            Route::post('/{id}/reject', [App\Http\Controllers\Api\JobRequestController::class, 'reject']);
+        });
+    });
+
+    // Job Post routes - HR creates, all see published
+    Route::prefix('job-posts')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\JobPostController::class, 'index']);
+        Route::get('/open', [App\Http\Controllers\Api\JobPostController::class, 'open']);
+        Route::get('/{id}', [App\Http\Controllers\Api\JobPostController::class, 'show']);
+
+        // HR only routes
+        Route::middleware('role:rh')->group(function () {
+            Route::post('/', [App\Http\Controllers\Api\JobPostController::class, 'store']);
+            Route::put('/{id}', [App\Http\Controllers\Api\JobPostController::class, 'update']);
+            Route::post('/{id}/publish', [App\Http\Controllers\Api\JobPostController::class, 'publish']);
+            Route::post('/{id}/close', [App\Http\Controllers\Api\JobPostController::class, 'close']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\JobPostController::class, 'destroy']);
+        });
+    });
+
+    // Job Application routes - employees apply, HR reviews
+    Route::prefix('applications')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\JobApplicationController::class, 'index']);
+        Route::get('/job-post/{jobPostId}', [App\Http\Controllers\Api\JobApplicationController::class, 'byJobPost']);
+        Route::get('/{id}', [App\Http\Controllers\Api\JobApplicationController::class, 'show']);
+
+        // Employee routes
+        Route::middleware('role:employe')->group(function () {
+            Route::post('/', [App\Http\Controllers\Api\JobApplicationController::class, 'store']);
+            Route::post('/{id}/withdraw', [App\Http\Controllers\Api\JobApplicationController::class, 'withdraw']);
+        });
+
+        // HR routes
+        Route::middleware('role:rh')->group(function () {
+            Route::post('/{id}/review', [App\Http\Controllers\Api\JobApplicationController::class, 'review']);
         });
     });
 });

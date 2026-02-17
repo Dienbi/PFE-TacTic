@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\PointageRepositoryInterface;
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Models\Pointage;
-use App\Repositories\PointageRepository;
-use App\Repositories\UtilisateurRepository;
 use App\Events\AttendanceNotification;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Collection;
 class PointageService
 {
     public function __construct(
-        protected PointageRepository $pointageRepository,
-        protected UtilisateurRepository $utilisateurRepository
+        protected PointageRepositoryInterface $pointageRepository,
+        protected UtilisateurRepositoryInterface $utilisateurRepository
     ) {}
 
     public function getSummary(Carbon $date): array
@@ -131,18 +131,22 @@ class PointageService
             $isLate = Carbon::now()->gt($lateThreshold);
 
             // Broadcast to RH
-            event(new AttendanceNotification(
-                $isLate ? 'warning' : 'info',
-                $isLate ? 'Late Check-in' : 'Check-in',
-                "{$user->prenom} {$user->nom} checked in at " . Carbon::now()->format('H:i') . ($isLate ? ' (late)' : ''),
-                [
-                    'user_id' => $user->id,
-                    'user_name' => "{$user->prenom} {$user->nom}",
-                    'time' => Carbon::now()->format('H:i'),
-                    'is_late' => $isLate,
-                    'action' => 'check_in'
-                ]
-            ));
+            try {
+                event(new AttendanceNotification(
+                    $isLate ? 'warning' : 'info',
+                    $isLate ? 'Late Check-in' : 'Check-in',
+                    "{$user->prenom} {$user->nom} checked in at " . Carbon::now()->format('H:i') . ($isLate ? ' (late)' : ''),
+                    [
+                        'user_id' => $user->id,
+                        'user_name' => "{$user->prenom} {$user->nom}",
+                        'time' => Carbon::now()->format('H:i'),
+                        'is_late' => $isLate,
+                        'action' => 'check_in'
+                    ]
+                ));
+            } catch (\Exception $e) {
+                \Log::warning('Broadcast failed for AttendanceNotification: ' . $e->getMessage());
+            }
         }
 
         return $pointage;
@@ -166,18 +170,22 @@ class PointageService
             );
 
             // Broadcast to RH
-            event(new AttendanceNotification(
-                'info',
-                'Check-out',
-                "{$user->prenom} {$user->nom} checked out at " . Carbon::now()->format('H:i'),
-                [
-                    'user_id' => $user->id,
-                    'user_name' => "{$user->prenom} {$user->nom}",
-                    'time' => Carbon::now()->format('H:i'),
-                    'is_auto' => $isAutoCheckout,
-                    'action' => 'check_out'
-                ]
-            ));
+            try {
+                event(new AttendanceNotification(
+                    'info',
+                    'Check-out',
+                    "{$user->prenom} {$user->nom} checked out at " . Carbon::now()->format('H:i'),
+                    [
+                        'user_id' => $user->id,
+                        'user_name' => "{$user->prenom} {$user->nom}",
+                        'time' => Carbon::now()->format('H:i'),
+                        'is_auto' => $isAutoCheckout,
+                        'action' => 'check_out'
+                    ]
+                ));
+            } catch (\Exception $e) {
+                \Log::warning('Broadcast failed for AttendanceNotification: ' . $e->getMessage());
+            }
         }
 
         return $pointage;

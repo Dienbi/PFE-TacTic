@@ -2,20 +2,22 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\PaieRepositoryInterface;
+use App\Contracts\Repositories\PointageRepositoryInterface;
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\StatutPaie;
 use App\Models\Paie;
-use App\Repositories\PaieRepository;
-use App\Repositories\PointageRepository;
-use App\Repositories\UtilisateurRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 class PaieService
 {
     public function __construct(
-        protected PaieRepository $paieRepository,
-        protected UtilisateurRepository $utilisateurRepository,
-        protected PointageRepository $pointageRepository
+        protected PaieRepositoryInterface $paieRepository,
+        protected UtilisateurRepositoryInterface $utilisateurRepository,
+        protected PointageRepositoryInterface $pointageRepository,
+        protected CacheService $cacheService,
+        protected PayrollCalculator $payrollCalculator
     ) {}
 
     // ── CRUD ──────────────────────────────────────────────────────────
@@ -69,7 +71,7 @@ class PaieService
         $this->notifySalaryConfigured($utilisateurId, $salaireBase);
 
         // Return a preview of what the payroll would look like
-        $preview = Paie::calculerPaie($salaireBase, 0);
+        $preview = $this->payrollCalculator->calculatePayroll($salaireBase, 0);
 
         return [
             'utilisateur' => $utilisateur,
@@ -91,13 +93,14 @@ class PaieService
             $periodeFin
         );
 
-        $heuresSupp = max(0, $stats['total_heures'] - Paie::STANDARD_MONTHLY_HOURS);
+        $standardHours = config('payroll.standard_monthly_hours', 173);
+        $heuresSupp = max(0, $stats['total_heures'] - $standardHours);
 
-        $calcul = Paie::calculerPaie($utilisateur->salaire_base, $heuresSupp);
+        $calcul = $this->payrollCalculator->calculatePayroll($utilisateur->salaire_base, $heuresSupp);
 
         return array_merge($calcul, [
             'utilisateur' => $utilisateur,
-            'heures_normales' => min($stats['total_heures'], Paie::STANDARD_MONTHLY_HOURS),
+            'heures_normales' => min($stats['total_heures'], $standardHours),
             'attendance_stats' => $stats,
             'periode_debut' => $periodeDebut->toDateString(),
             'periode_fin' => $periodeFin->toDateString(),
@@ -129,11 +132,12 @@ class PaieService
             $periodeFin
         );
 
-        $heuresNormales = min($stats['total_heures'], Paie::STANDARD_MONTHLY_HOURS);
-        $heuresSupp = max(0, $stats['total_heures'] - Paie::STANDARD_MONTHLY_HOURS);
+        $standardHours = config('payroll.standard_monthly_hours', 173);
+        $heuresNormales = min($stats['total_heures'], $standardHours);
+        $heuresSupp = max(0, $stats['total_heures'] - $standardHours);
 
         // Full calculation
-        $calcul = Paie::calculerPaie($utilisateur->salaire_base, $heuresSupp);
+        $calcul = $this->payrollCalculator->calculatePayroll($utilisateur->salaire_base, $heuresSupp);
 
         $paie = $this->paieRepository->create([
             'utilisateur_id' => $utilisateurId,
@@ -242,7 +246,9 @@ class PaieService
 
     public function getGlobalStats(): array
     {
-        return $this->paieRepository->getGlobalStats();
+        return $this->cacheService->getPayrollStats(
+            fn() => $this->paieRepository->getGlobalStats()
+        );
     }
 
     public function getTotalSalaires(int $year, int $month): float
@@ -252,15 +258,20 @@ class PaieService
 
     /**
      * Get all employees with their salary configuration info.
+     * Optimized to eliminate N+1 queries by fetching all last paies at once.
      */
     public function getEmployeesWithSalaryConfig(): array
     {
         $employees = $this->utilisateurRepository->getActifs();
 
-        return $employees->map(function ($emp) {
-            $lastPaie = $this->paieRepository->getLastPaie($emp->id);
+        // Get all last paies at once to avoid N+1 queries
+        $employeeIds = $employees->pluck('id')->toArray();
+        $lastPaies = $this->paieRepository->getLastPaiesForUsers($employeeIds);
+
+        return $employees->map(function ($emp) use ($lastPaies) {
+            $lastPaie = $lastPaies[$emp->id] ?? null;
             $preview = $emp->salaire_base > 0
-                ? Paie::calculerPaie($emp->salaire_base, 0)
+                ? $this->payrollCalculator->calculatePayroll($emp->salaire_base, 0)
                 : null;
 
             return [
@@ -287,7 +298,7 @@ class PaieService
      */
     public function simuler(float $salaireBase, float $heuresSupp = 0): array
     {
-        return Paie::calculerPaie($salaireBase, $heuresSupp);
+        return $this->payrollCalculator->simulate($salaireBase, $heuresSupp);
     }
 
     /**

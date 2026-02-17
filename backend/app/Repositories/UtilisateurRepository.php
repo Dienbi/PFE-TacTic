@@ -2,16 +2,20 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\EmployeStatus;
 use App\Enums\Role;
 use App\Models\Utilisateur;
+use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class UtilisateurRepository extends BaseRepository
+class UtilisateurRepository extends BaseRepository implements UtilisateurRepositoryInterface
 {
-    public function __construct(Utilisateur $model)
-    {
+    public function __construct(
+        Utilisateur $model,
+        protected CacheService $cacheService
+    ) {
         parent::__construct($model);
     }
 
@@ -32,7 +36,9 @@ class UtilisateurRepository extends BaseRepository
 
     public function getActifs(): Collection
     {
-        return $this->model->actif()->get();
+        return $this->cacheService->getActiveUsers(
+            fn() => $this->model->actif()->get()
+        );
     }
 
     public function getActifsPaginated(int $perPage = 15): LengthAwarePaginator

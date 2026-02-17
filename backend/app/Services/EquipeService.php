@@ -2,21 +2,21 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\EquipeRepositoryInterface;
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\Role;
 use App\Enums\StatutConge;
 use App\Events\ManagerNotification;
 use App\Models\Conge;
 use App\Models\Equipe;
-use App\Repositories\EquipeRepository;
-use App\Repositories\UtilisateurRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 class EquipeService
 {
     public function __construct(
-        protected EquipeRepository $equipeRepository,
-        protected UtilisateurRepository $utilisateurRepository
+        protected EquipeRepositoryInterface $equipeRepository,
+        protected UtilisateurRepositoryInterface $utilisateurRepository
     ) {}
 
     public function getAll(): Collection
@@ -80,13 +80,17 @@ class EquipeService
             $utilisateur = $this->utilisateurRepository->find($utilisateurId);
 
             if ($equipe && $equipe->chef_id && $utilisateur) {
-                event(new ManagerNotification(
-                    $equipe->chef_id,
-                    'info',
-                    'New Team Member',
-                    $utilisateur->prenom . ' ' . $utilisateur->nom . ' has been added to your team.',
-                    ['equipe_id' => $equipeId, 'utilisateur_id' => $utilisateurId]
-                ));
+                try {
+                    event(new ManagerNotification(
+                        $equipe->chef_id,
+                        'info',
+                        'New Team Member',
+                        $utilisateur->prenom . ' ' . $utilisateur->nom . ' has been added to your team.',
+                        ['equipe_id' => $equipeId, 'utilisateur_id' => $utilisateurId]
+                    ));
+                } catch (\Exception $e) {
+                    \Log::warning('Broadcast failed for ManagerNotification: ' . $e->getMessage());
+                }
             }
         }
 
@@ -127,11 +131,33 @@ class EquipeService
 
     /**
      * Filter users based on availability (team assignment and leave status)
+     * Optimized to eliminate N+1 queries by eager loading leaves
      */
     protected function filterAvailableUsers(Collection $users): array
     {
         $result = [];
         $today = Carbon::today();
+        $nextMonth = $today->copy()->addMonth();
+
+        // Eager load leaves for all users at once to avoid N+1 queries
+        $users->load([
+            'conges' => function ($query) use ($today, $nextMonth) {
+                $query->where('statut', StatutConge::APPROUVE)
+                      ->where(function ($q) use ($today, $nextMonth) {
+                          // Active leaves
+                          $q->where(function ($q1) use ($today) {
+                              $q1->where('date_debut', '<=', $today)
+                                 ->where('date_fin', '>=', $today);
+                          })
+                          // Or upcoming leaves
+                          ->orWhere(function ($q2) use ($today, $nextMonth) {
+                              $q2->where('date_debut', '>', $today)
+                                 ->where('date_debut', '<=', $nextMonth);
+                          });
+                      })
+                      ->orderBy('date_debut');
+            }
+        ]);
 
         foreach ($users as $user) {
             // Skip users already assigned to a team
@@ -139,20 +165,15 @@ class EquipeService
                 continue;
             }
 
-            // Check for active approved leaves
-            $activeLeave = Conge::where('utilisateur_id', $user->id)
-                ->where('statut', StatutConge::APPROUVE)
-                ->where('date_debut', '<=', $today)
-                ->where('date_fin', '>=', $today)
-                ->first();
+            // Get active leave from eager loaded relationship
+            $activeLeave = $user->conges->first(function ($conge) use ($today) {
+                return $conge->date_debut <= $today && $conge->date_fin >= $today;
+            });
 
-            // Check for upcoming approved leaves starting within the next month
-            $upcomingLeave = Conge::where('utilisateur_id', $user->id)
-                ->where('statut', StatutConge::APPROUVE)
-                ->where('date_debut', '>', $today)
-                ->where('date_debut', '<=', $today->copy()->addMonth())
-                ->orderBy('date_debut')
-                ->first();
+            // Get upcoming leave from eager loaded relationship
+            $upcomingLeave = !$activeLeave ? $user->conges->first(function ($conge) use ($today) {
+                return $conge->date_debut > $today;
+            }) : null;
 
             $leaveInfo = null;
             $leaveDuration = 0;

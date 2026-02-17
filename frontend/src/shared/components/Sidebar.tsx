@@ -11,6 +11,9 @@ import {
   UserCircle,
   Briefcase,
   ClipboardList,
+  Search,
+  FilePlus,
+  FolderOpen,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import client from "../../api/client";
@@ -84,6 +87,16 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           { icon: FileText, label: "Leave", path: "/manager/leave" },
           { icon: DollarSign, label: "Salary", path: "/manager/salary" },
           { icon: ClipboardList, label: "Requests", path: "/manager/requests" },
+          {
+            icon: FilePlus,
+            label: "Request Job",
+            path: "/manager/request-job",
+          },
+          {
+            icon: FolderOpen,
+            label: "My Job Requests",
+            path: "/manager/job-requests",
+          },
         ];
       case "employee":
         return [
@@ -105,6 +118,12 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
             label: "My Indicators",
             path: "/employee/indicators",
           },
+          { icon: Search, label: "Job Board", path: "/employee/jobs" },
+          {
+            icon: ClipboardList,
+            label: "My Applications",
+            path: "/employee/applications",
+          },
         ];
       default: // RH
         return [
@@ -118,7 +137,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           },
           { icon: DollarSign, label: "Payroll", path: "/payroll" },
           { icon: FileText, label: "Leave Management", path: "/leave" },
-          { icon: Target, label: "Posts & Matching", path: "/posts" },
+          { icon: Target, label: "Job Requests", path: "/hr/job-requests" },
+          { icon: Briefcase, label: "Job Posts", path: "/hr/job-posts" },
           { icon: BarChart3, label: "Reports", path: "/reports" },
         ];
     }

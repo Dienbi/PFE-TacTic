@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\EmployeStatus;
 use App\Enums\Role;
 use App\Models\Utilisateur;
-use App\Repositories\UtilisateurRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 class UtilisateurService
 {
     public function __construct(
-        protected UtilisateurRepository $utilisateurRepository
+        protected UtilisateurRepositoryInterface $utilisateurRepository
     ) {}
 
     public function getAll(): Collection

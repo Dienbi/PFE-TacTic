@@ -2,20 +2,20 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\CongeRepositoryInterface;
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\EmployeStatus;
 use App\Enums\StatutConge;
 use App\Events\LeaveStatusNotification;
 use App\Models\Conge;
-use App\Repositories\CongeRepository;
-use App\Repositories\UtilisateurRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 class CongeService
 {
     public function __construct(
-        protected CongeRepository $congeRepository,
-        protected UtilisateurRepository $utilisateurRepository,
+        protected CongeRepositoryInterface $congeRepository,
+        protected UtilisateurRepositoryInterface $utilisateurRepository,
         protected LeaveConflictService $leaveConflictService
     ) {}
 
@@ -151,16 +151,20 @@ class CongeService
 
         // Broadcast notification to user
         if ($result) {
-            event(new LeaveStatusNotification(
-                $conge->utilisateur_id,
-                'warning',
-                'Leave Rejected',
-                'Your leave request has been rejected.' . ($motifRefus ? " Reason: $motifRefus" : ''),
-                [
-                    'conge_id' => $congeId,
-                    'reason' => $motifRefus
-                ]
-            ));
+            try {
+                event(new LeaveStatusNotification(
+                    $conge->utilisateur_id,
+                    'warning',
+                    'Leave Rejected',
+                    'Your leave request has been rejected.' . ($motifRefus ? " Reason: $motifRefus" : ''),
+                    [
+                        'conge_id' => $congeId,
+                        'reason' => $motifRefus
+                    ]
+                ));
+            } catch (\Exception $e) {
+                \Log::warning('Broadcast failed for LeaveStatusNotification: ' . $e->getMessage());
+            }
         }
 
         return $result;

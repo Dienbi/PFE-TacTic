@@ -30,6 +30,15 @@ import ProtectedRoute, {
 } from "./shared/components/ProtectedRoute";
 import { ToastProvider } from "./shared/components/Toast";
 
+// Job Matching imports
+import RequestJob from "./jobmatching/pages/manager/RequestJob";
+import MyJobRequests from "./jobmatching/pages/manager/MyJobRequests";
+import JobRequestsReview from "./jobmatching/pages/hr/JobRequestsReview";
+import JobPosts from "./jobmatching/pages/hr/JobPosts";
+import ApplicationsView from "./jobmatching/pages/hr/ApplicationsView";
+import JobBoard from "./jobmatching/pages/employee/JobBoard";
+import MyApplications from "./jobmatching/pages/employee/MyApplications";
+
 // Component to handle dashboard redirect based on user role
 const DashboardRedirect: React.FC = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -107,6 +116,30 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/hr/job-requests"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <JobRequestsReview />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hr/job-posts"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <JobPosts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hr/job-posts/:postId/applications"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <ApplicationsView />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Manager Only Routes */}
             <Route
@@ -149,6 +182,22 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/manager/request-job"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <RequestJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manager/job-requests"
+              element={
+                <ProtectedRoute allowedRoles={["manager"]}>
+                  <MyJobRequests />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Employee Only Routes */}
             <Route
@@ -172,6 +221,22 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["employee"]}>
                   <EmployeeSalary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/jobs"
+              element={
+                <ProtectedRoute allowedRoles={["employee"]}>
+                  <JobBoard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/applications"
+              element={
+                <ProtectedRoute allowedRoles={["employee"]}>
+                  <MyApplications />
                 </ProtectedRoute>
               }
             />

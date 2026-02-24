@@ -28,8 +28,14 @@ class Equipe extends Model
     }
 
     // Accessors
+    /**
+     * Get nombre_membres attribute.
+     * Prefer using ->loadCount('membres') or Equipe::withCount('membres') at the query level
+     * to avoid N+1 queries when serializing collections.
+     */
     public function getNombreMembresAttribute()
     {
-        return $this->membres()->count();
+        // Use the pre-loaded count if available (from withCount), otherwise fallback to query
+        return $this->membres_count ?? $this->membres()->count();
     }
 }

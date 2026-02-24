@@ -9,6 +9,7 @@ use App\Enums\Role;
 use App\Enums\EmployeStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UtilisateurController extends Controller
 {
@@ -24,7 +25,7 @@ class UtilisateurController extends Controller
         if ($request->has('paginate')) {
             $users = $this->utilisateurService->getPaginated($request->get('per_page', 15));
         } else {
-            $users = $this->utilisateurService->getAll();
+            $users = Cache::remember('users_all', 120, fn() => $this->utilisateurService->getAll());
         }
 
         return response()->json($users);
@@ -53,6 +54,7 @@ class UtilisateurController extends Controller
     {
         $user = $this->utilisateurService->create($request->validated());
 
+        Cache::forget('users_all');
         return response()->json($user, 201);
     }
 
@@ -69,6 +71,7 @@ class UtilisateurController extends Controller
             ], 400);
         }
 
+        Cache::forget('users_all');
         return response()->json([
             'message' => 'Utilisateur mis à jour avec succès.',
         ]);
@@ -81,6 +84,7 @@ class UtilisateurController extends Controller
     {
         $this->utilisateurService->archive($id);
 
+        Cache::forget('users_all');
         return response()->json([
             'message' => 'Utilisateur archivé avec succès.',
         ]);
@@ -108,6 +112,7 @@ class UtilisateurController extends Controller
             ], 404);
         }
 
+        Cache::forget('users_all');
         return response()->json([
             'message' => 'Utilisateur restauré avec succès.',
         ]);

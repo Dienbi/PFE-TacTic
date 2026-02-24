@@ -51,11 +51,8 @@ class EquipeService
 
     public function delete(int $id): bool
     {
-        // Remove all members from team first
-        $equipe = $this->equipeRepository->getWithMembres($id);
-        foreach ($equipe->membres as $membre) {
-            $this->utilisateurRepository->update($membre->id, ['equipe_id' => null]);
-        }
+        // Remove all members from team in a single bulk UPDATE
+        \App\Models\Utilisateur::where('equipe_id', $id)->update(['equipe_id' => null]);
 
         return $this->equipeRepository->delete($id);
     }

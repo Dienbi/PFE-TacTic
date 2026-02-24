@@ -8,6 +8,7 @@ use App\Services\CongeService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CongeController extends Controller
 {
@@ -16,13 +17,25 @@ class CongeController extends Controller
     ) {}
 
     /**
-     * Get all leave requests
+     * Get all leave requests (paginated)
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $perPage = $request->integer('per_page', 20);
         $conges = $this->congeService->getAll();
 
-        return response()->json($conges);
+        // Manual pagination since service returns enriched collection
+        $page = $request->integer('page', 1);
+        $total = $conges->count();
+        $items = $conges->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return response()->json([
+            'data' => $items,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'last_page' => (int) ceil($total / $perPage),
+        ]);
     }
 
     /**
@@ -52,11 +65,13 @@ class CongeController extends Controller
     }
 
     /**
-     * Get pending leave requests
+     * Get pending leave requests (cached for 60s)
      */
     public function enAttente(): JsonResponse
     {
-        $conges = $this->congeService->getEnAttente();
+        $conges = Cache::remember('conges_en_attente', 300, fn () =>
+            $this->congeService->getEnAttente()
+        );
 
         return response()->json($conges);
     }

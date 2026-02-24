@@ -159,7 +159,7 @@ const PayrollDashboard: React.FC = () => {
       ]);
       setGlobalStats(statsRes.data);
       setEmployees(empRes.data);
-      setPayrolls(payRes.data);
+      setPayrolls(payRes.data.data ?? payRes.data);
     } catch (error) {
       console.error("Error fetching payroll data:", error);
     } finally {

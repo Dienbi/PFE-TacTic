@@ -98,6 +98,11 @@ class PointageService
         return $this->pointageRepository->getByUtilisateur($utilisateurId);
     }
 
+    public function getByUtilisateurPaginated(int $utilisateurId, int $perPage, int $page): array
+    {
+        return $this->pointageRepository->getByUtilisateurPaginated($utilisateurId, $perPage, $page);
+    }
+
     public function getByDate(Carbon $date): Collection
     {
         return $this->pointageRepository->getByDate($date);

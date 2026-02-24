@@ -19,6 +19,7 @@ class CongeRepository extends BaseRepository implements CongeRepositoryInterface
     public function getByUtilisateur(int $utilisateurId): Collection
     {
         return $this->model->where('utilisateur_id', $utilisateurId)
+            ->with('utilisateur')
             ->orderBy('date_debut', 'desc')
             ->get();
     }

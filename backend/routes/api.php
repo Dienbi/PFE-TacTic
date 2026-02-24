@@ -60,6 +60,7 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Dashboard routes
     Route::prefix('dashboard')->group(function () {
+        Route::get('/all', [DashboardController::class, 'rhDashboardAll']);
         Route::get('/rh-stats', [DashboardController::class, 'rhStats']);
         Route::get('/attendance-trend', [DashboardController::class, 'attendanceTrend']);
         Route::get('/absence-distribution', [DashboardController::class, 'absenceDistribution']);

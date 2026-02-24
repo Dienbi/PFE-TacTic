@@ -107,11 +107,11 @@ class JobPost extends Model
 
     public function getApplicationsCountAttribute(): int
     {
-        return $this->applications()->count();
+        return $this->applications_count ?? $this->applications()->count();
     }
 
     public function getPendingApplicationsCountAttribute(): int
     {
-        return $this->applications()->pending()->count();
+        return $this->pending_applications_count ?? $this->applications()->pending()->count();
     }
 }

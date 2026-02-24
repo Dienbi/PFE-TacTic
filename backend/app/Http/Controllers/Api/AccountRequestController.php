@@ -10,6 +10,7 @@ use App\Mail\WelcomeNewUser;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -69,9 +70,11 @@ class AccountRequestController extends Controller
      */
     public function pending(): JsonResponse
     {
-        $requests = AccountRequest::pending()
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $requests = Cache::remember('account_requests_pending', 300, fn() =>
+            AccountRequest::pending()
+                ->orderBy('created_at', 'desc')
+                ->get()
+        );
 
         return response()->json($requests);
     }
@@ -160,6 +163,7 @@ class AccountRequestController extends Controller
             "Compte créé pour {$utilisateur->prenom} {$utilisateur->nom} ({$generatedEmail}) avec le rôle {$request->role}"
         );
 
+        Cache::forget('account_requests_pending');
         return response()->json([
             'message' => 'La demande a été approuvée. Un email a été envoyé à l\'utilisateur.',
             'generated_email' => $generatedEmail,
@@ -196,6 +200,7 @@ class AccountRequestController extends Controller
             "Demande de compte refusée pour {$accountRequest->prenom} {$accountRequest->nom}"
         );
 
+        Cache::forget('account_requests_pending');
         return response()->json([
             'message' => 'La demande a été refusée.',
         ]);

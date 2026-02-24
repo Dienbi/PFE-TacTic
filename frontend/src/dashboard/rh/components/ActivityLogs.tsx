@@ -23,7 +23,7 @@ const ActivityLogs: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await client.get("/utilisateurs/logs");
-      setLogs(response.data);
+      setLogs(response.data.data ?? response.data);
     } catch (error) {
       console.error("Error fetching activity logs:", error);
     } finally {

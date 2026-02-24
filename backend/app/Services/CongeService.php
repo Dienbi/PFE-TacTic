@@ -21,11 +21,15 @@ class CongeService
 
     public function getAll(): Collection
     {
-        // Enrich leaves with conflict data
         $leaves = $this->congeRepository->all();
+        $leaves->load('utilisateur');
+
+        // Batch conflict check — single set of queries instead of N+1
+        $conflictsMap = $this->leaveConflictService->checkConflictsForMany($leaves);
         foreach ($leaves as $leave) {
-            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+            $leave->conflicts = $conflictsMap[$leave->id] ?? [];
         }
+
         return $leaves;
     }
 
@@ -47,18 +51,24 @@ class CongeService
     public function getEnAttente(): Collection
     {
         $leaves = $this->congeRepository->getEnAttente();
+
+        $conflictsMap = $this->leaveConflictService->checkConflictsForMany($leaves);
         foreach ($leaves as $leave) {
-            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+            $leave->conflicts = $conflictsMap[$leave->id] ?? [];
         }
+
         return $leaves;
     }
 
     public function getEnAttenteByEquipe(int $equipeId): Collection
     {
         $leaves = $this->congeRepository->getEnAttenteByEquipe($equipeId);
+
+        $conflictsMap = $this->leaveConflictService->checkConflictsForMany($leaves);
         foreach ($leaves as $leave) {
-            $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
+            $leave->conflicts = $conflictsMap[$leave->id] ?? [];
         }
+
         return $leaves;
     }
 
@@ -98,6 +108,8 @@ class CongeService
 
     public function approuver(int $congeId, int $approuveParId): bool
     {
+        \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
+
         $conge = $this->congeRepository->findOrFail($congeId);
 
         // Deduct leave days
@@ -139,6 +151,8 @@ class CongeService
 
     public function refuser(int $congeId, int $approuveParId, ?string $motifRefus = null): bool
     {
+        \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
+
         $conge = $this->congeRepository->findOrFail($congeId);
 
         // Update rejection reason

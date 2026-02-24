@@ -114,18 +114,73 @@ class PaieRepository extends BaseRepository implements PaieRepositoryInterface
 
     public function getStatsByUtilisateur(int $utilisateurId): array
     {
-        $paies = $this->getByUtilisateur($utilisateurId);
+        $stats = $this->model->where('utilisateur_id', $utilisateurId)
+            ->selectRaw('
+                COALESCE(SUM(salaire_brut), 0) as total_brut,
+                COALESCE(SUM(salaire_net), 0) as total_net,
+                COALESCE(SUM(deductions), 0) as total_deductions,
+                COALESCE(SUM(cnss_employe), 0) as total_cnss,
+                COALESCE(SUM(impot_mensuel), 0) as total_impot,
+                COALESCE(AVG(salaire_net), 0) as moyenne_net,
+                COUNT(*) as nombre_paies
+            ')
+            ->first();
+
+        $dernierePaie = $this->getLastPaie($utilisateurId);
 
         return [
-            'total_brut' => round($paies->sum('salaire_brut'), 2),
-            'total_net' => round($paies->sum('salaire_net'), 2),
-            'total_deductions' => round($paies->sum('deductions'), 2),
-            'total_cnss' => round($paies->sum('cnss_employe'), 2),
-            'total_impot' => round($paies->sum('impot_mensuel'), 2),
-            'moyenne_net' => round($paies->avg('salaire_net'), 2),
-            'nombre_paies' => $paies->count(),
-            'derniere_paie' => $paies->first(),
+            'total_brut' => round($stats->total_brut, 2),
+            'total_net' => round($stats->total_net, 2),
+            'total_deductions' => round($stats->total_deductions, 2),
+            'total_cnss' => round($stats->total_cnss, 2),
+            'total_impot' => round($stats->total_impot, 2),
+            'moyenne_net' => round($stats->moyenne_net, 2),
+            'nombre_paies' => $stats->nombre_paies,
+            'derniere_paie' => $dernierePaie,
         ];
+    }
+
+    /**
+     * Get stats for multiple users at once (batch optimized).
+     * Returns array keyed by utilisateur_id.
+     */
+    public function getStatsForUsers(array $utilisateurIds): array
+    {
+        if (empty($utilisateurIds)) {
+            return [];
+        }
+
+        $stats = $this->model->whereIn('utilisateur_id', $utilisateurIds)
+            ->selectRaw('
+                utilisateur_id,
+                COALESCE(SUM(salaire_brut), 0) as total_brut,
+                COALESCE(SUM(salaire_net), 0) as total_net,
+                COALESCE(SUM(deductions), 0) as total_deductions,
+                COALESCE(SUM(cnss_employe), 0) as total_cnss,
+                COALESCE(SUM(impot_mensuel), 0) as total_impot,
+                COALESCE(AVG(salaire_net), 0) as moyenne_net,
+                COUNT(*) as nombre_paies
+            ')
+            ->groupBy('utilisateur_id')
+            ->get()
+            ->keyBy('utilisateur_id');
+
+        $result = [];
+        foreach ($utilisateurIds as $id) {
+            $s = $stats[$id] ?? null;
+            $result[$id] = [
+                'total_brut' => $s ? round($s->total_brut, 2) : 0,
+                'total_net' => $s ? round($s->total_net, 2) : 0,
+                'total_deductions' => $s ? round($s->total_deductions, 2) : 0,
+                'total_cnss' => $s ? round($s->total_cnss, 2) : 0,
+                'total_impot' => $s ? round($s->total_impot, 2) : 0,
+                'moyenne_net' => $s ? round($s->moyenne_net, 2) : 0,
+                'nombre_paies' => $s ? $s->nombre_paies : 0,
+                'derniere_paie' => null, // filled separately
+            ];
+        }
+
+        return $result;
     }
 
     /**

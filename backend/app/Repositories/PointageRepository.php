@@ -17,6 +17,7 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
     public function getByUtilisateur(int $utilisateurId): Collection
     {
         return $this->model->where('utilisateur_id', $utilisateurId)
+            ->with('utilisateur')
             ->orderBy('date', 'desc')
             ->get();
     }
@@ -68,15 +69,39 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
             ->get();
     }
 
-    public function getStatsByPeriod(int $utilisateurId, Carbon $startDate, Carbon $endDate): array
+    public function getByUtilisateurPaginated(int $utilisateurId, int $perPage, int $page): array
     {
-        $pointages = $this->getByPeriod($utilisateurId, $startDate, $endDate);
+        $result = $this->model->where('utilisateur_id', $utilisateurId)
+            ->with('utilisateur')
+            ->orderBy('date', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
 
         return [
-            'total_jours' => $pointages->count(),
-            'total_heures' => $pointages->sum('duree_travail'),
-            'absences' => $pointages->whereNull('heure_entree')->count(),
-            'absences_justifiees' => $pointages->where('absence_justifiee', true)->count(),
+            'data' => $result->items(),
+            'current_page' => $result->currentPage(),
+            'per_page' => $result->perPage(),
+            'total' => $result->total(),
+            'last_page' => $result->lastPage(),
+        ];
+    }
+
+    public function getStatsByPeriod(int $utilisateurId, Carbon $startDate, Carbon $endDate): array
+    {
+        $row = $this->model->where('utilisateur_id', $utilisateurId)
+            ->byPeriod($startDate, $endDate)
+            ->selectRaw("
+                COUNT(*) as total_jours,
+                COALESCE(SUM(duree_travail), 0) as total_heures,
+                SUM(CASE WHEN heure_entree IS NULL THEN 1 ELSE 0 END) as absences,
+                SUM(CASE WHEN absence_justifiee = true THEN 1 ELSE 0 END) as absences_justifiees
+            ")
+            ->first();
+
+        return [
+            'total_jours' => (int) $row->total_jours,
+            'total_heures' => (float) $row->total_heures,
+            'absences' => (int) $row->absences,
+            'absences_justifiees' => (int) $row->absences_justifiees,
         ];
     }
 
@@ -114,15 +139,10 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
 
     public function getHeuresSupp(int $utilisateurId, Carbon $startDate, Carbon $endDate): float
     {
-        $pointages = $this->getByPeriod($utilisateurId, $startDate, $endDate);
-        $heuresSupp = 0.0;
-
-        foreach ($pointages as $pointage) {
-            if ($pointage->duree_travail && $pointage->duree_travail > 8) {
-                $heuresSupp += ($pointage->duree_travail - 8);
-            }
-        }
-
-        return $heuresSupp;
+        return (float) $this->model->where('utilisateur_id', $utilisateurId)
+            ->byPeriod($startDate, $endDate)
+            ->where('duree_travail', '>', 8)
+            ->selectRaw('COALESCE(SUM(duree_travail - 8), 0) as heures_supp')
+            ->value('heures_supp');
     }
 }

@@ -31,6 +31,8 @@ interface PaieRepositoryInterface
 
     public function getStatsByUtilisateur(int $utilisateurId): array;
 
+    public function getStatsForUsers(array $utilisateurIds): array;
+
     public function getGlobalStats(): array;
 
     public function getByStatut(StatutPaie $statut): Collection;

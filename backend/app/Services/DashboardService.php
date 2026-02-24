@@ -21,16 +21,18 @@ class DashboardService
      */
     public function getRhDashboardStats(): array
     {
-        // Count ALL users (not just active)
-        $totalEmployees = DB::table('utilisateurs')
+        // Both counts in a single query using conditional aggregation
+        $startOfMonthDate = Carbon::now()->startOfMonth()->toDateString();
+        $userCounts = DB::table('utilisateurs')
             ->whereNull('deleted_at')
-            ->count();
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN date_embauche < ? THEN 1 ELSE 0 END) as previous_month
+            ", [$startOfMonthDate])
+            ->first();
 
-        // Get previous month count for comparison
-        $previousMonthCount = DB::table('utilisateurs')
-            ->whereNull('deleted_at')
-            ->where('date_embauche', '<', Carbon::now()->startOfMonth())
-            ->count();
+        $totalEmployees     = (int) ($userCounts->total ?? 0);
+        $previousMonthCount = (int) ($userCounts->previous_month ?? 0);
 
         $newEmployeesThisMonth = $totalEmployees - $previousMonthCount;
         $employeeChange = $previousMonthCount > 0
@@ -110,39 +112,47 @@ class DashboardService
     }
 
     /**
-     * Get attendance trend for the last N months
+     * Get attendance trend for the last N months.
+     * Optimized: single GROUP BY query instead of N separate queries.
      */
     public function getAttendanceTrend(int $months = 6): array
     {
-        $trend = [];
-        $totalEmployees = $this->utilisateurRepository->getActifs()->count();
+        $activeEmployees = $this->utilisateurRepository->getActifs()->count();
+        $startDate = Carbon::now()->subMonths($months - 1)->startOfMonth();
+        $endDate = Carbon::now();
 
+        // Single query: count attendances grouped by year-month
+        $monthlyCounts = DB::table('pointages')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->whereNotNull('heure_entree')
+            ->selectRaw("TO_CHAR(date, 'YYYY-MM') as month_key, COUNT(*) as cnt")
+            ->groupByRaw("TO_CHAR(date, 'YYYY-MM')")
+            ->pluck('cnt', 'month_key');
+
+        $trend = [];
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
-            $startOfMonth = $date->copy()->startOfMonth();
-            $endOfMonth = $date->copy()->endOfMonth();
+            $monthStart = $date->copy()->startOfMonth();
+            $monthEnd = $date->copy()->endOfMonth();
 
-            // Don't calculate beyond current date for current month
-            if ($endOfMonth->isFuture()) {
-                $endOfMonth = Carbon::now();
+            if ($monthEnd->isFuture()) {
+                $monthEnd = Carbon::now();
             }
 
-            $workingDays = $this->getWorkingDaysBetween($startOfMonth, $endOfMonth);
-            $totalPossible = $totalEmployees * $workingDays;
+            $workingDays = $this->getWorkingDaysBetween($monthStart, $monthEnd);
+            $totalPossible = $activeEmployees * $workingDays;
 
-            $actualAttendances = DB::table('pointages')
-                ->whereBetween('date', [$startOfMonth, $endOfMonth])
-                ->whereNotNull('heure_entree')
-                ->count();
+            $key = $date->format('Y-m');
+            $actual = $monthlyCounts[$key] ?? 0;
 
             $rate = $totalPossible > 0
-                ? round(($actualAttendances / $totalPossible) * 100, 1)
+                ? round(($actual / $totalPossible) * 100, 1)
                 : 0;
 
             $trend[] = [
                 'name' => $date->format('M'),
                 'value' => $rate,
-                'month' => $date->format('Y-m'),
+                'month' => $key,
             ];
         }
 
@@ -150,12 +160,13 @@ class DashboardService
     }
 
     /**
-     * Get absence distribution by type
+     * Get absence distribution by type.
+     * Optimized: 2 queries (conges + pointages) instead of 4.
      */
     public function getAbsenceDistribution(Carbon $startDate, Carbon $endDate): array
     {
-        // Count approved leaves (congés)
-        $conges = DB::table('conges')
+        // Single query for all conge types using conditional aggregation
+        $congeStats = DB::table('conges')
             ->where('statut', 'APPROUVE')
             ->where(function($query) use ($startDate, $endDate) {
                 $query->whereBetween('date_debut', [$startDate, $endDate])
@@ -165,39 +176,28 @@ class DashboardService
                           ->where('date_fin', '>=', $endDate);
                     });
             })
-            ->count();
+            ->selectRaw("
+                COUNT(*) as total_conges,
+                SUM(CASE WHEN type = 'MALADIE' THEN 1 ELSE 0 END) as maladie,
+                SUM(CASE WHEN type NOT IN ('CONGE', 'MALADIE') THEN 1 ELSE 0 END) as autres
+            ")
+            ->first();
 
-        // Count sick leaves (congé maladie by type)
-        $maladie = DB::table('conges')
-            ->where('statut', 'APPROUVE')
-            ->where('type', 'MALADIE')
-            ->where(function($query) use ($startDate, $endDate) {
-                $query->whereBetween('date_debut', [$startDate, $endDate])
-                    ->orWhereBetween('date_fin', [$startDate, $endDate]);
-            })
-            ->count();
+        $totalConges = $congeStats->total_conges ?? 0;
+        $maladie = $congeStats->maladie ?? 0;
+        $autres = $congeStats->autres ?? 0;
 
-        // Count unjustified absences (pointages without entry time)
+        // Unjustified absences from pointages
         $absences = DB::table('pointages')
             ->whereBetween('date', [$startDate, $endDate])
             ->whereNull('heure_entree')
             ->where('absence_justifiee', false)
             ->count();
 
-        // Other leaves (excluding standard vacation and sick leave)
-        $autres = DB::table('conges')
-            ->where('statut', 'APPROUVE')
-            ->whereNotIn('type', ['CONGE', 'MALADIE'])
-            ->where(function($query) use ($startDate, $endDate) {
-                $query->whereBetween('date_debut', [$startDate, $endDate])
-                    ->orWhereBetween('date_fin', [$startDate, $endDate]);
-            })
-            ->count();
-
         return [
             [
                 'name' => 'Congé',
-                'value' => max($conges - $maladie, 0),
+                'value' => max($totalConges - $maladie, 0),
                 'color' => '#3B82F6'
             ],
             [
@@ -219,19 +219,29 @@ class DashboardService
     }
 
     /**
-     * Calculate working days between two dates (excluding weekends)
+     * Calculate working days between two dates (excluding weekends).
+     * O(1) math instead of iterating day by day.
      */
     private function getWorkingDaysBetween(Carbon $startDate, Carbon $endDate): int
     {
-        $workingDays = 0;
-        $current = $startDate->copy();
+        if ($endDate->lt($startDate)) {
+            return 0;
+        }
 
-        while ($current->lte($endDate)) {
-            // Skip weekends (Saturday = 6, Sunday = 0)
-            if ($current->dayOfWeek !== Carbon::SATURDAY && $current->dayOfWeek !== Carbon::SUNDAY) {
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+        $fullWeeks = intdiv($totalDays, 7);
+        $remainingDays = $totalDays % 7;
+
+        // Full weeks contribute 5 working days each
+        $workingDays = $fullWeeks * 5;
+
+        // Count working days in the remaining partial week
+        $dayOfWeek = $startDate->dayOfWeekIso; // 1=Monday ... 7=Sunday
+        for ($i = 0; $i < $remainingDays; $i++) {
+            $day = (($dayOfWeek - 1 + $i) % 7) + 1;
+            if ($day <= 5) { // Monday-Friday
                 $workingDays++;
             }
-            $current->addDay();
         }
 
         return $workingDays;

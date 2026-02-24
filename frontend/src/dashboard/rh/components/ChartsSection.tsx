@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   LineChart,
   Line,
@@ -12,7 +12,6 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import client from "../../../api/client";
 
 interface TrendData {
   name: string;
@@ -26,31 +25,13 @@ interface AbsenceData {
   color: string;
 }
 
-const ChartsSection = () => {
-  const [trendData, setTrendData] = useState<TrendData[]>([]);
-  const [absenceData, setAbsenceData] = useState<AbsenceData[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ChartsSectionProps {
+  trendData: TrendData[];
+  absenceData: AbsenceData[];
+  loading: boolean;
+}
 
-  useEffect(() => {
-    fetchChartData();
-  }, []);
-
-  const fetchChartData = async () => {
-    try {
-      const [trendResponse, absenceResponse] = await Promise.all([
-        client.get("/dashboard/attendance-trend?months=6"),
-        client.get("/dashboard/absence-distribution"),
-      ]);
-
-      setTrendData(trendResponse.data);
-      setAbsenceData(absenceResponse.data);
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const ChartsSection: React.FC<ChartsSectionProps> = ({ trendData, absenceData, loading }) => {
   if (loading) {
     return (
       <div className="charts-grid">

@@ -10,6 +10,8 @@ interface PointageRepositoryInterface
 {
     public function getByUtilisateur(int $utilisateurId): Collection;
 
+    public function getByUtilisateurPaginated(int $utilisateurId, int $perPage, int $page): array;
+
     public function getByDate(Carbon $date): Collection;
 
     public function getByPeriod(int $utilisateurId, Carbon $startDate, Carbon $endDate): Collection;

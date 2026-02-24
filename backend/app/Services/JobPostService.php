@@ -45,12 +45,14 @@ class JobPostService
     {
         // Validate competences if provided
         if (!empty($data['competences'])) {
-            foreach ($data['competences'] as $comp) {
-                $competence = $this->competenceRepository->find($comp['competence_id']);
-                if (!$competence) {
-                    return ['error' => "Compétence ID {$comp['competence_id']} introuvable."];
-                }
+            $requestedIds = array_column($data['competences'], 'competence_id');
+            $foundIds = \App\Models\Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
+            $missingIds = array_diff($requestedIds, $foundIds);
+            if (!empty($missingIds)) {
+                return ['error' => 'Compétence(s) introuvable(s): ID ' . implode(', ', $missingIds)];
+            }
 
+            foreach ($data['competences'] as $comp) {
                 if ($comp['niveau_requis'] < 1 || $comp['niveau_requis'] > 5) {
                     return ['error' => 'Le niveau requis doit être entre 1 et 5.'];
                 }
@@ -92,12 +94,14 @@ class JobPostService
 
         // Validate competences if provided
         if (isset($data['competences'])) {
-            foreach ($data['competences'] as $comp) {
-                $competence = $this->competenceRepository->find($comp['competence_id']);
-                if (!$competence) {
-                    return ['error' => "Compétence ID {$comp['competence_id']} introuvable."];
-                }
+            $requestedIds = array_column($data['competences'], 'competence_id');
+            $foundIds = \App\Models\Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
+            $missingIds = array_diff($requestedIds, $foundIds);
+            if (!empty($missingIds)) {
+                return ['error' => 'Compétence(s) introuvable(s): ID ' . implode(', ', $missingIds)];
+            }
 
+            foreach ($data['competences'] as $comp) {
                 if ($comp['niveau_requis'] < 1 || $comp['niveau_requis'] > 5) {
                     return ['error' => 'Le niveau requis doit être entre 1 et 5.'];
                 }

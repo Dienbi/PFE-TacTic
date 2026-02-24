@@ -5,28 +5,33 @@ namespace App\Repositories;
 use App\Contracts\Repositories\EquipeRepositoryInterface;
 use App\Models\Equipe;
 use App\Models\Utilisateur;
+use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Collection;
 
 class EquipeRepository extends BaseRepository implements EquipeRepositoryInterface
 {
-    public function __construct(Equipe $model)
+    public function __construct(Equipe $model, protected CacheService $cacheService)
     {
         parent::__construct($model);
     }
 
     public function getWithMembres(int $id): ?Equipe
     {
-        return $this->model->with(['chefEquipe', 'membres'])->find($id);
+        return $this->cacheService->getTeamMembers($id, function () use ($id) {
+            return $this->model->with(['chefEquipe', 'membres'])->find($id);
+        });
     }
 
     public function getAllWithRelations(): Collection
     {
-        return $this->model->with(['chefEquipe', 'membres'])->get();
+        return $this->model->with(['chefEquipe', 'membres'])->withCount('membres')->get();
     }
 
     public function getAllWithCounts(): Collection
     {
-        return $this->model->with('chefEquipe')->withCount('membres')->get();
+        return $this->cacheService->getTeams(function () {
+            return $this->model->with('chefEquipe')->withCount('membres')->get();
+        });
     }
 
     /**
@@ -51,12 +56,16 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
 
     public function assignChef(int $equipeId, int $chefId): bool
     {
-        return $this->update($equipeId, ['chef_equipe_id' => $chefId]);
+        $result = $this->update($equipeId, ['chef_equipe_id' => $chefId]);
+        if ($result) $this->cacheService->invalidateTeams();
+        return $result;
     }
 
     public function removeChef(int $equipeId): bool
     {
-        return $this->update($equipeId, ['chef_equipe_id' => null]);
+        $result = $this->update($equipeId, ['chef_equipe_id' => null]);
+        if ($result) $this->cacheService->invalidateTeams();
+        return $result;
     }
 
     public function findWithMembers(int $id): ?Equipe
@@ -71,7 +80,9 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
             return false;
         }
         $utilisateur->equipe_id = $equipeId;
-        return $utilisateur->save();
+        $result = $utilisateur->save();
+        if ($result) $this->cacheService->invalidateTeams();
+        return $result;
     }
 
     public function removeMember(int $utilisateurId): bool
@@ -81,12 +92,13 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
             return false;
         }
         $utilisateur->equipe_id = null;
-        return $utilisateur->save();
+        $result = $utilisateur->save();
+        if ($result) $this->cacheService->invalidateTeams();
+        return $result;
     }
 
     public function getMembersCount(int $equipeId): int
     {
-        $equipe = $this->model->withCount('membres')->find($equipeId);
-        return $equipe ? $equipe->membres_count : 0;
+        return Utilisateur::where('equipe_id', $equipeId)->count();
     }
 }

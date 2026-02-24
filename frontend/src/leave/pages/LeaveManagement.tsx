@@ -74,8 +74,8 @@ const LeaveManagement: React.FC = () => {
         client.get("/conges"),
         client.get("/conges/en-attente"),
       ]);
-      setLeaves(allResponse.data);
-      setPendingLeaves(pendingResponse.data);
+      setLeaves(allResponse.data.data ?? allResponse.data);
+      setPendingLeaves(pendingResponse.data.data ?? pendingResponse.data);
     } catch (error) {
       console.error("Error fetching leaves:", error);
     } finally {

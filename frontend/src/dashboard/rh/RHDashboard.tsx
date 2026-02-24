@@ -5,9 +5,9 @@ import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
 import { useRealtimeNotifications } from "../../shared/hooks/useRealtimeNotifications";
+import client from "../../api/client";
 import "./RHDashboard.css";
 
-// Lazy load components that make API calls
 const ActivityLogs = lazy(() => import("./components/ActivityLogs"));
 const AccountRequests = lazy(() => import("./components/AccountRequests"));
 
@@ -22,20 +22,25 @@ const LoadingFallback = () => (
 
 const RHDashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
 
-  // Enable realtime notifications for RH
   useRealtimeNotifications({
     onAttendanceNotification: (data) => {
       console.log("Attendance event:", data);
-      // You can trigger a refresh of attendance data here if needed
     },
   });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
+
+    // Single request for all dashboard data instead of 3 separate calls
+    client
+      .get("/dashboard/all?months=6")
+      .then((r) => setDashboardData(r.data))
+      .catch((e) => console.error("Dashboard fetch error:", e))
+      .finally(() => setDashboardLoading(false));
   }, []);
 
   const userName = user ? `${user.prenom} ${user.nom}` : "RH Manager";
@@ -48,9 +53,13 @@ const RHDashboard: React.FC = () => {
         <Navbar userName={userName} userRole={userRole} />
 
         <div className="dashboard-content">
-          <KPISection />
+          <KPISection stats={dashboardData?.stats ?? null} loading={dashboardLoading} />
 
-          <ChartsSection />
+          <ChartsSection
+            trendData={dashboardData?.trend ?? []}
+            absenceData={dashboardData?.absence ?? []}
+            loading={dashboardLoading}
+          />
 
           <div className="dashboard-middle-section">
             <Suspense fallback={<LoadingFallback />}>

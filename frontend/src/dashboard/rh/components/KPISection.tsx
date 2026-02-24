@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Users, Clock, TrendingUp, Award, DollarSign } from "lucide-react";
-import client from "../../../api/client";
+import React from "react";
+import { Users, Clock, TrendingUp, DollarSign } from "lucide-react";
 
 interface DashboardStats {
   total_employees: number;
@@ -11,35 +10,18 @@ interface DashboardStats {
   monthly_payroll: number;
 }
 
-const KPISection = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+interface KPISectionProps {
+  stats: DashboardStats | null;
+  loading: boolean;
+}
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      const response = await client.get("/dashboard/rh-stats");
-      setStats(response.data);
-    } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatCurrency = (value: number): string => {
-    // Format as TND to match salary dashboard
-    return (
-      new Intl.NumberFormat("fr-TN", {
-        style: "decimal",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value) + " TND"
-    );
-  };
+const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
+  const formatCurrency = (value: number): string =>
+    new Intl.NumberFormat("fr-TN", {
+      style: "decimal",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value) + " TND";
 
   if (loading || !stats) {
     return (

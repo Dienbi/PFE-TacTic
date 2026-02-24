@@ -17,6 +17,7 @@ class JobPostRepository extends BaseRepository
     public function getPublished(): Collection
     {
         return $this->model->published()
+                          ->withCount('applications')
                           ->with(['createdBy', 'competences'])
                           ->orderBy('published_at', 'desc')
                           ->get();
@@ -33,6 +34,7 @@ class JobPostRepository extends BaseRepository
     public function getOpen(): Collection
     {
         return $this->model->open()
+                          ->withCount('applications')
                           ->with(['createdBy', 'competences'])
                           ->orderBy('published_at', 'desc')
                           ->get();
@@ -64,7 +66,8 @@ class JobPostRepository extends BaseRepository
 
     public function getAll(): Collection
     {
-        return $this->model->with(['createdBy', 'competences', 'jobRequest'])
+        return $this->model->withCount('applications')
+                          ->with(['createdBy', 'competences', 'jobRequest'])
                           ->orderBy('created_at', 'desc')
                           ->get();
     }
@@ -102,6 +105,7 @@ class JobPostRepository extends BaseRepository
                               $query->where('utilisateur_id', $userId)
                                     ->whereNotIn('statut', ['retiree']);
                           })
+                          ->withCount('applications')
                           ->with(['createdBy', 'competences'])
                           ->orderBy('published_at', 'desc')
                           ->get();

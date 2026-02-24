@@ -303,6 +303,7 @@ class PaieService
 
     /**
      * Get team payroll summary for a manager.
+     * Optimized: uses batch queries instead of per-member loops.
      */
     public function getTeamPayroll(int $managerId): array
     {
@@ -314,12 +315,21 @@ class PaieService
         }
 
         $members = $this->utilisateurRepository->getByEquipe($equipe->id);
+        $memberIds = $members->pluck('id')->toArray();
+
+        // Batch: get last paies and stats for all members in 2 queries
+        $lastPaies = $this->paieRepository->getLastPaiesForUsers($memberIds);
+        $allStats = $this->paieRepository->getStatsForUsers($memberIds);
+
+        // Merge derniere_paie into stats
+        foreach ($lastPaies as $uid => $paie) {
+            if (isset($allStats[$uid])) {
+                $allStats[$uid]['derniere_paie'] = $paie;
+            }
+        }
 
         $result = [];
         foreach ($members as $member) {
-            $lastPaie = $this->paieRepository->getLastPaie($member->id);
-            $stats = $this->paieRepository->getStatsByUtilisateur($member->id);
-
             $result[] = [
                 'utilisateur' => [
                     'id' => $member->id,
@@ -329,8 +339,8 @@ class PaieService
                     'role' => $member->role,
                 ],
                 'salaire_base' => $member->salaire_base,
-                'derniere_paie' => $lastPaie,
-                'stats' => $stats,
+                'derniere_paie' => $lastPaies[$member->id] ?? null,
+                'stats' => $allStats[$member->id] ?? [],
             ];
         }
 

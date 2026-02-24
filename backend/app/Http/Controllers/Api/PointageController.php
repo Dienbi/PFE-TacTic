@@ -25,23 +25,29 @@ class PointageController extends Controller
     }
 
     /**
-     * Get attendance for current user
+     * Get attendance for current user (paginated)
      */
     public function mesPointages(Request $request): JsonResponse
     {
-        $pointages = $this->pointageService->getByUtilisateur($request->user()->id);
+        $perPage = $request->integer('per_page', 20);
+        $page = $request->integer('page', 1);
 
-        return response()->json($pointages);
+        return response()->json(
+            $this->pointageService->getByUtilisateurPaginated($request->user()->id, $perPage, $page)
+        );
     }
 
     /**
-     * Get attendance by user ID
+     * Get attendance by user ID (paginated)
      */
-    public function byUtilisateur(int $utilisateurId): JsonResponse
+    public function byUtilisateur(Request $request, int $utilisateurId): JsonResponse
     {
-        $pointages = $this->pointageService->getByUtilisateur($utilisateurId);
+        $perPage = $request->integer('per_page', 20);
+        $page = $request->integer('page', 1);
 
-        return response()->json($pointages);
+        return response()->json(
+            $this->pointageService->getByUtilisateurPaginated($utilisateurId, $perPage, $page)
+        );
     }
 
     /**

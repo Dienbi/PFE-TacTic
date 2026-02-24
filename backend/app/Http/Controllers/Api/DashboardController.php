@@ -7,6 +7,7 @@ use App\Services\DashboardService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -15,11 +16,38 @@ class DashboardController extends Controller
     ) {}
 
     /**
+     * Get all RH dashboard data in one request (stats + trend + absence distribution)
+     */
+    public function rhDashboardAll(Request $request): JsonResponse
+    {
+        $months = (int) $request->input('months', 6);
+
+        return response()->json(
+            Cache::remember("dashboard_all_{$months}", 300, function () use ($months) {
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate   = Carbon::now()->endOfMonth();
+                $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
+
+                return [
+                    'stats'   => Cache::remember('dashboard_rh_stats', 300,
+                        fn() => $this->dashboardService->getRhDashboardStats()),
+                    'trend'   => Cache::remember("dashboard_trend_{$months}", 300,
+                        fn() => $this->dashboardService->getAttendanceTrend($months)),
+                    'absence' => Cache::remember($distKey, 300,
+                        fn() => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)),
+                ];
+            })
+        );
+    }
+
+    /**
      * Get RH dashboard statistics
      */
     public function rhStats(Request $request): JsonResponse
     {
-        $stats = $this->dashboardService->getRhDashboardStats();
+        $stats = Cache::remember('dashboard_rh_stats', 300, fn () =>
+            $this->dashboardService->getRhDashboardStats()
+        );
         return response()->json($stats);
     }
 
@@ -29,7 +57,9 @@ class DashboardController extends Controller
     public function attendanceTrend(Request $request): JsonResponse
     {
         $months = $request->input('months', 6);
-        $trend = $this->dashboardService->getAttendanceTrend($months);
+        $trend = Cache::remember("dashboard_trend_{$months}", 300, fn () =>
+            $this->dashboardService->getAttendanceTrend($months)
+        );
         return response()->json($trend);
     }
 
@@ -46,7 +76,10 @@ class DashboardController extends Controller
             ? Carbon::parse($request->input('end_date'))
             : Carbon::now()->endOfMonth();
 
-        $distribution = $this->dashboardService->getAbsenceDistribution($startDate, $endDate);
+        $key = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
+        $distribution = Cache::remember($key, 300, fn () =>
+            $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
+        );
         return response()->json($distribution);
     }
 }

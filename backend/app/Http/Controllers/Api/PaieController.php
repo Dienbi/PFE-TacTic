@@ -17,11 +17,24 @@ class PaieController extends Controller
     ) {}
 
     /**
-     * Get all payrolls (RH)
+     * Get all payrolls (RH) - paginated
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->paieService->getAll());
+        $perPage = $request->integer('per_page', 20);
+        $all = $this->paieService->getAll();
+
+        $page = $request->integer('page', 1);
+        $total = $all->count();
+        $items = $all->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return response()->json([
+            'data' => $items,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'last_page' => (int) ceil($total / $perPage),
+        ]);
     }
 
     /**

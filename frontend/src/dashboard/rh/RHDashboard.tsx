@@ -53,7 +53,10 @@ const RHDashboard: React.FC = () => {
         <Navbar userName={userName} userRole={userRole} />
 
         <div className="dashboard-content">
-          <KPISection stats={dashboardData?.stats ?? null} loading={dashboardLoading} />
+          <KPISection
+            stats={dashboardData?.stats ?? null}
+            loading={dashboardLoading}
+          />
 
           <ChartsSection
             trendData={dashboardData?.trend ?? []}

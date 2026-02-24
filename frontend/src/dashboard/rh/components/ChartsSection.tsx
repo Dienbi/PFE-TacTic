@@ -31,7 +31,11 @@ interface ChartsSectionProps {
   loading: boolean;
 }
 
-const ChartsSection: React.FC<ChartsSectionProps> = ({ trendData, absenceData, loading }) => {
+const ChartsSection: React.FC<ChartsSectionProps> = ({
+  trendData,
+  absenceData,
+  loading,
+}) => {
   if (loading) {
     return (
       <div className="charts-grid">

@@ -48,24 +48,32 @@ class DashboardService
         $activeEmployees = $this->utilisateurRepository->getActifs()->count();
         $totalPossibleAttendances = $activeEmployees * $workingDays;
 
-        $actualAttendances = DB::table('pointages')
-            ->whereBetween('date', [$startOfMonth, $today])
-            ->whereNotNull('heure_entree')
-            ->count();
+        $prevMonthStart = Carbon::now()->subMonth()->startOfMonth();
+        $prevMonthEnd = Carbon::now()->subMonth()->endOfMonth();
 
+        // Optimized: single query to get current and previous attendance counts + total hours
+        $pointageStats = DB::table('pointages')
+            ->whereNotNull('heure_entree')
+            ->selectRaw("
+                COUNT(*) FILTER (WHERE date BETWEEN ? AND ?) as current_month_count,
+                COUNT(*) FILTER (WHERE date BETWEEN ? AND ?) as prev_month_count,
+                SUM(duree_travail) FILTER (WHERE date BETWEEN ? AND ?) as total_hours
+            ", [
+                $startOfMonth->toDateString(), $today->toDateString(),
+                $prevMonthStart->toDateString(), $prevMonthEnd->toDateString(),
+                $startOfMonth->toDateString(), $today->toDateString()
+            ])
+            ->first();
+
+        $actualAttendances = (int) ($pointageStats?->current_month_count ?? 0);
         $attendanceRate = $totalPossibleAttendances > 0
             ? round(($actualAttendances / $totalPossibleAttendances) * 100, 1)
             : 100.0;
 
         // Calculate previous month attendance rate for comparison
-        $prevMonthStart = Carbon::now()->subMonth()->startOfMonth();
-        $prevMonthEnd = Carbon::now()->subMonth()->endOfMonth();
         $prevWorkingDays = $this->getWorkingDaysBetween($prevMonthStart, $prevMonthEnd);
         $prevTotalPossible = $previousMonthCount * $prevWorkingDays;
-        $prevActualAttendances = DB::table('pointages')
-            ->whereBetween('date', [$prevMonthStart, $prevMonthEnd])
-            ->whereNotNull('heure_entree')
-            ->count();
+        $prevActualAttendances = (int) ($pointageStats?->prev_month_count ?? 0);
         $prevAttendanceRate = $prevTotalPossible > 0
             ? ($prevActualAttendances / $prevTotalPossible) * 100
             : 0;
@@ -76,10 +84,7 @@ class DashboardService
 
         // Calculate overtime ratio
         $totalHeuresNormales = $workingDays * 8 * $activeEmployees; // 8 hours per day
-        $totalHeuresTravaillees = DB::table('pointages')
-            ->whereBetween('date', [$startOfMonth, $today])
-            ->whereNotNull('heure_entree')
-            ->sum('duree_travail') ?? 0;
+        $totalHeuresTravaillees = (float) ($pointageStats?->total_hours ?? 0);
 
         $heuresSupplementaires = max($totalHeuresTravaillees - $totalHeuresNormales, 0);
 

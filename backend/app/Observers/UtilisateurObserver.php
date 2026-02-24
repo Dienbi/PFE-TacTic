@@ -48,14 +48,21 @@ class UtilisateurObserver
      */
     private function invalidateCaches(Utilisateur $utilisateur): void
     {
-        // Invalidate active users list
-        $this->cacheService->invalidateActiveUsers();
+        // Only invalidate if more than just the last connection date changed
+        // This prevents excessive cache wipes on every login
+        $changes = $utilisateur->getChanges();
+        $onlyLastConnection = count($changes) === 1 && isset($changes['date_derniere_connexion']);
+
+        if (!$onlyLastConnection) {
+            // Invalidate active users list
+            $this->cacheService->invalidateActiveUsers();
+        }
 
         // Invalidate user-specific caches
         $this->cacheService->invalidateUser($utilisateur->id);
 
         // If user's team changed, invalidate team caches
-        if ($utilisateur->isDirty('equipe_id')) {
+        if ($utilisateur->wasChanged('equipe_id')) {
             if ($utilisateur->getOriginal('equipe_id')) {
                 $this->cacheService->invalidateTeamMembers($utilisateur->getOriginal('equipe_id'));
             }

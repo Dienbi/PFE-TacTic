@@ -15,9 +15,21 @@ interface Log {
   } | null;
 }
 
-const ActivityLogs: React.FC = () => {
+interface ActivityLogsProps {
+  initialData?: Log[];
+  loading?: boolean;
+}
+
+const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (initialData) {
+      setLogs(initialData);
+      setIsLoading(loading ?? false);
+    }
+  }, [initialData, loading]);
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -32,11 +44,13 @@ const ActivityLogs: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
+    if (!initialData) {
+      fetchLogs();
+    }
     // Refresh every 30 seconds
     const interval = setInterval(fetchLogs, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [initialData]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);

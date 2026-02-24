@@ -9,11 +9,22 @@ class ActivityLogger
 {
     public static function log(string $action, string $description = null, ?int $userId = null)
     {
-        ActivityLog::create([
-            'user_id' => $userId ?? auth()->id(),
-            'action' => $action,
-            'description' => $description,
-            'ip_address' => Request::ip(),
-        ]);
+        try {
+            // Use provided ID or current authenticated user ID
+            $uid = $userId;
+            if (!$uid && auth()->check()) {
+                $uid = auth()->id();
+            }
+
+            ActivityLog::create([
+                'user_id' => $uid,
+                'action' => $action,
+                'description' => $description,
+                'ip_address' => Request::ip(),
+            ]);
+        } catch (\Exception $e) {
+            // Never let logging crash the main request
+            \Log::error("ActivityLog failed: " . $e->getMessage());
+        }
     }
 }

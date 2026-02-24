@@ -10,11 +10,24 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
+    private ?int $cachedActiveCount = null;
+
     public function __construct(
         private UtilisateurRepositoryInterface $utilisateurRepository,
         private PointageRepositoryInterface $pointageRepository,
         private CongeRepositoryInterface $congeRepository
     ) {}
+
+    /**
+     * Get active employees count with in-memory request-local caching
+     */
+    private function getActiveCount(): int
+    {
+        if ($this->cachedActiveCount === null) {
+            $this->cachedActiveCount = $this->utilisateurRepository->getActifs()->count();
+        }
+        return $this->cachedActiveCount;
+    }
 
     /**
      * Get RH dashboard KPI statistics
@@ -45,7 +58,7 @@ class DashboardService
         $workingDays = $this->getWorkingDaysBetween($startOfMonth, $today);
 
         // Only count active employees for attendance rate
-        $activeEmployees = $this->utilisateurRepository->getActifs()->count();
+        $activeEmployees = $this->getActiveCount();
         $totalPossibleAttendances = $activeEmployees * $workingDays;
 
         $prevMonthStart = Carbon::now()->subMonth()->startOfMonth();
@@ -122,7 +135,7 @@ class DashboardService
      */
     public function getAttendanceTrend(int $months = 6): array
     {
-        $activeEmployees = $this->utilisateurRepository->getActifs()->count();
+        $activeEmployees = $this->getActiveCount();
         $startDate = Carbon::now()->subMonths($months - 1)->startOfMonth();
         $endDate = Carbon::now();
 

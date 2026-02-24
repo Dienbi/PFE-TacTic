@@ -166,7 +166,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
 
     public function getAllWithRelations(): Collection
     {
-        return $this->model->with('equipe')
+        return $this->model->with(['equipe' => fn($q) => $q->withCount('membres')])
             ->select(['id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif', 'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at'])
             ->whereNull('deleted_at')
             ->get();

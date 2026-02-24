@@ -94,8 +94,10 @@ class AuthService
 
     protected function respondWithToken(string $token, Utilisateur $utilisateur): array
     {
-        // Load competences relationship
-        $utilisateur->load('competences');
+        // Load competences relationship only if not already loaded
+        if (!$utilisateur->relationLoaded('competences')) {
+            $utilisateur->load('competences');
+        }
 
         return [
             'access_token' => $token,

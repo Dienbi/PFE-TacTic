@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Activity, Clock, RefreshCw } from "lucide-react";
 import client from "../../../api/client";
+import { useDashboard } from "../../context/DashboardContext";
 import "./ActivityLogs.css";
 
 interface Log {
@@ -16,27 +17,38 @@ interface Log {
 }
 
 const ActivityLogs: React.FC = () => {
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: dashboardData, loading: dashboardLoading, fetchDashboardData } = useDashboard();
+  const [localLogs, setLocalLogs] = useState<Log[]>([]);
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
+
+  // Use data from dashboard context if available
+  const logs = localLogs.length > 0 ? localLogs : (dashboardData?.logs ?? []);
+  const isLoading = dashboardLoading || isLocalLoading;
 
   const fetchLogs = async () => {
-    setIsLoading(true);
+    setIsLocalLoading(true);
     try {
+      // If we are on the dashboard, we might want to refresh the whole dashboard
+      // but for now let's just fetch logs specifically if user clicks refresh
       const response = await client.get("/utilisateurs/logs");
-      setLogs(response.data.data ?? response.data);
+      setLocalLogs(response.data.data ?? response.data);
     } catch (error) {
       console.error("Error fetching activity logs:", error);
     } finally {
-      setIsLoading(false);
+      setIsLocalLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLogs();
+    // We don't fetch on mount if dashboard data is already there
+    if (!dashboardData?.logs) {
+        fetchLogs();
+    }
+
     // Refresh every 30 seconds
-    const interval = setInterval(fetchLogs, 30000);
+    const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [dashboardData, fetchDashboardData]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);

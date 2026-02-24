@@ -22,19 +22,19 @@ class DashboardController extends Controller
     {
         $months = (int) $request->input('months', 6);
 
+        // We use a shorter TTL for the consolidated dashboard to keep it fresh
         return response()->json(
-            Cache::remember("dashboard_all_{$months}", 300, function () use ($months) {
+            Cache::remember("dashboard_all_full_{$months}", 60, function () use ($months) {
                 $startDate = Carbon::now()->startOfMonth();
                 $endDate   = Carbon::now()->endOfMonth();
-                $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
 
                 return [
-                    'stats'   => Cache::remember('dashboard_rh_stats', 300,
-                        fn() => $this->dashboardService->getRhDashboardStats()),
-                    'trend'   => Cache::remember("dashboard_trend_{$months}", 300,
-                        fn() => $this->dashboardService->getAttendanceTrend($months)),
-                    'absence' => Cache::remember($distKey, 300,
-                        fn() => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)),
+                    'stats'   => $this->dashboardService->getRhDashboardStats(),
+                    'trend'   => $this->dashboardService->getAttendanceTrend($months),
+                    'absence' => $this->dashboardService->getAbsenceDistribution($startDate, $endDate),
+                    'logs'    => $this->dashboardService->getRecentLogs(10),
+                    'account_requests' => $this->dashboardService->getPendingAccountRequests(),
+                    'recent_leaves' => $this->dashboardService->getRecentLeaves(5),
                 ];
             })
         );

@@ -29,6 +29,7 @@ import ProtectedRoute, {
   getDefaultDashboard,
 } from "./shared/components/ProtectedRoute";
 import { ToastProvider } from "./shared/components/Toast";
+import { DashboardProvider } from "./dashboard/context/DashboardContext";
 
 // Job Matching imports
 import RequestJob from "./jobmatching/pages/manager/RequestJob";
@@ -51,7 +52,8 @@ const DashboardRedirect: React.FC = () => {
 function App() {
   return (
     <ToastProvider>
-      <Router>
+      <DashboardProvider>
+        <Router>
         <div className="App">
           <Routes>
             {/* Public Routes */}
@@ -272,7 +274,8 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>
-      </Router>
+        </Router>
+      </DashboardProvider>
     </ToastProvider>
   );
 }

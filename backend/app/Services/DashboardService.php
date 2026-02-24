@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Contracts\Repositories\CongeRepositoryInterface;
+use App\Models\ActivityLog;
+use App\Models\AccountRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -234,6 +236,39 @@ class DashboardService
                 'color' => '#EF4444'
             ],
         ];
+    }
+
+    /**
+     * Get recent activity logs
+     */
+    public function getRecentLogs(int $limit = 10): array
+    {
+        return ActivityLog::with(['user' => fn($q) => $q->select('id', 'nom', 'prenom', 'role')])
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Get pending account requests
+     */
+    public function getPendingAccountRequests(): array
+    {
+        return AccountRequest::where('status', AccountRequest::STATUS_PENDING)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Get recent leave requests
+     */
+    public function getRecentLeaves(int $limit = 5): array
+    {
+        return $this->congeRepository->getEnAttente()
+            ->take($limit)
+            ->toArray();
     }
 
     /**

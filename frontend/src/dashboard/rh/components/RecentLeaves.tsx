@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import client from "../../../api/client";
+import { useDashboard } from "../../context/DashboardContext";
 
 interface LeaveRequest {
   id: number;
@@ -18,21 +19,28 @@ interface LeaveRequest {
 
 const RecentLeaves = () => {
   const navigate = useNavigate();
-  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: dashboardData, loading: dashboardLoading } = useDashboard();
+  const [localLeaves, setLocalLeaves] = useState<LeaveRequest[] | null>(null);
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
+
+  const leaves = localLeaves ?? (dashboardData?.recent_leaves ?? []);
+  const isLoading = dashboardLoading || isLocalLoading;
 
   useEffect(() => {
-    fetchPendingLeaves();
-  }, []);
+    if (!dashboardData?.recent_leaves) {
+        fetchPendingLeaves();
+    }
+  }, [dashboardData]);
 
   const fetchPendingLeaves = async () => {
+    setIsLocalLoading(true);
     try {
       const response = await client.get("/conges/en-attente");
-      setLeaves(response.data.slice(0, 5)); // Show only first 5
+      setLocalLeaves(response.data.slice(0, 5)); // Show only first 5
     } catch (error) {
       console.error("Error fetching leaves:", error);
     } finally {
-      setIsLoading(false);
+      setIsLocalLoading(false);
     }
   };
 

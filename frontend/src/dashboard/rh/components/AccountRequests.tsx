@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { UserPlus, Check, X, Clock, Mail, Bell } from "lucide-react";
 import client from "../../../api/client";
+import { useDashboard } from "../../context/DashboardContext";
 import echoService from "../../../shared/services/echoService";
 import "./AccountRequests.css";
 
@@ -21,8 +22,13 @@ interface Notification {
 }
 
 const AccountRequests: React.FC = () => {
-  const [requests, setRequests] = useState<AccountRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: dashboardData, loading: dashboardLoading, fetchDashboardData } = useDashboard();
+  const [localRequests, setLocalRequests] = useState<AccountRequest[] | null>(null);
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
+
+  const requests = localRequests ?? (dashboardData?.account_requests ?? []);
+  const isLoading = dashboardLoading || isLocalLoading;
+
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<AccountRequest | null>(
@@ -34,18 +40,21 @@ const AccountRequests: React.FC = () => {
   const [notification, setNotification] = useState<Notification | null>(null);
 
   const fetchPendingRequests = useCallback(async () => {
+    setIsLocalLoading(true);
     try {
       const response = await client.get("/account-requests/pending");
-      setRequests(response.data);
+      setLocalRequests(response.data);
     } catch (error) {
       console.error("Error fetching account requests:", error);
     } finally {
-      setIsLoading(false);
+      setIsLocalLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchPendingRequests();
+    if (!dashboardData?.account_requests) {
+        fetchPendingRequests();
+    }
 
     // Subscribe to RH notifications via Laravel Reverb
     const unsubscribe = echoService.subscribeToRHNotifications((data) => {

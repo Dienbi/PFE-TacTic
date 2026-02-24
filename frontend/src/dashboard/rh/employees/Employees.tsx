@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
+import { useDashboard } from "../../context/DashboardContext";
 import Loader from "../../../shared/components/Loader";
 import "./Employees.css";
 
@@ -42,10 +43,14 @@ interface Team {
 
 const Employees: React.FC = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<User[]>([]);
+  const { users: contextUsers, teams: contextTeams, loading: contextLoading, fetchUsersAndTeams } = useDashboard();
+  const [localUsers, setLocalUsers] = useState<User[] | null>(null);
   const [archivedUsers, setArchivedUsers] = useState<User[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [localTeams, setLocalTeams] = useState<Team[] | null>(null);
+
+  const users = localUsers ?? (contextUsers as User[] ?? []);
+  const teams = localTeams ?? (contextTeams as Team[] ?? []);
+  const isLoading = contextLoading;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"active" | "archived">("active");
@@ -78,9 +83,9 @@ const Employees: React.FC = () => {
     if (storedUser) {
       setRhUser(JSON.parse(storedUser));
     }
-    // Only fetch active users and teams initially for faster load
-    fetchInitialData();
-  }, []);
+    // Use context to fetch data
+    fetchUsersAndTeams();
+  }, [fetchUsersAndTeams]);
 
   // Fetch archived users only when switching to archive view
   useEffect(() => {
@@ -135,7 +140,7 @@ const Employees: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const response = await client.get("/utilisateurs");
-      setUsers(response.data);
+      setLocalUsers(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
     }

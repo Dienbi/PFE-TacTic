@@ -16,14 +16,19 @@ interface LeaveRequest {
   };
 }
 
-const RecentLeaves = () => {
+const RecentLeaves = ({ initialData, loading }: { initialData?: LeaveRequest[], loading?: boolean }) => {
   const navigate = useNavigate();
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchPendingLeaves();
-  }, []);
+    if (initialData) {
+      setLeaves(initialData.slice(0, 5));
+      setIsLoading(loading ?? false);
+    } else {
+      fetchPendingLeaves();
+    }
+  }, [initialData, loading]);
 
   const fetchPendingLeaves = async () => {
     try {

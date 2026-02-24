@@ -20,7 +20,15 @@ interface Notification {
   timestamp: string;
 }
 
-const AccountRequests: React.FC = () => {
+interface AccountRequestsProps {
+  initialData?: AccountRequest[];
+  loading?: boolean;
+}
+
+const AccountRequests: React.FC<AccountRequestsProps> = ({
+  initialData,
+  loading,
+}) => {
   const [requests, setRequests] = useState<AccountRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showApproveModal, setShowApproveModal] = useState(false);
@@ -45,8 +53,15 @@ const AccountRequests: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchPendingRequests();
+    if (initialData) {
+      setRequests(initialData);
+      setIsLoading(loading ?? false);
+    } else {
+      fetchPendingRequests();
+    }
+  }, [initialData, loading, fetchPendingRequests]);
 
+  useEffect(() => {
     // Subscribe to RH notifications via Laravel Reverb
     const unsubscribe = echoService.subscribeToRHNotifications((data) => {
       console.log("New account request received:", data);

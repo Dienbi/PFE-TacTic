@@ -66,15 +66,24 @@ const RHDashboard: React.FC = () => {
 
           <div className="dashboard-middle-section">
             <Suspense fallback={<LoadingFallback />}>
-              <AccountRequests />
+              <AccountRequests
+                initialData={dashboardData?.pending_requests}
+                loading={dashboardLoading}
+              />
             </Suspense>
           </div>
 
           <div className="dashboard-bottom-grid">
             <Suspense fallback={<LoadingFallback />}>
-              <ActivityLogs />
+              <ActivityLogs
+                initialData={dashboardData?.recent_logs}
+                loading={dashboardLoading}
+              />
             </Suspense>
-            <RecentLeaves />
+            <RecentLeaves
+              initialData={dashboardData?.recent_leaves}
+              loading={dashboardLoading}
+            />
           </div>
         </div>
       </div>

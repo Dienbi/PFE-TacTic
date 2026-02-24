@@ -224,6 +224,35 @@ class DashboardService
     }
 
     /**
+     * Get recent leave requests
+     */
+    public function getRecentLeaves(int $limit = 5)
+    {
+        return $this->congeRepository->getEnAttente()->take($limit);
+    }
+
+    /**
+     * Get pending account requests
+     */
+    public function getPendingAccountRequests()
+    {
+        return \App\Models\AccountRequest::pending()
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get recent activity logs
+     */
+    public function getRecentActivityLogs(int $limit = 20)
+    {
+        return \App\Models\ActivityLog::with(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')])
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
+
+    /**
      * Calculate working days between two dates (excluding weekends).
      * O(1) math instead of iterating day by day.
      */

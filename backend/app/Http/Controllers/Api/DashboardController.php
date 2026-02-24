@@ -35,6 +35,12 @@ class DashboardController extends Controller
                         fn() => $this->dashboardService->getAttendanceTrend($months)),
                     'absence' => Cache::remember($distKey, 300,
                         fn() => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)),
+                    'recent_leaves' => Cache::remember('conges_en_attente', 300,
+                        fn() => $this->dashboardService->getRecentLeaves()),
+                    'pending_requests' => Cache::remember('account_requests_pending', 300,
+                        fn() => $this->dashboardService->getPendingAccountRequests()),
+                    'recent_logs' => Cache::remember('recent_activity_logs', 300,
+                        fn() => $this->dashboardService->getRecentActivityLogs()),
                 ];
             })
         );

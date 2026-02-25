@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AffectationController;
+use App\Http\Controllers\Api\AIController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\CongeController;
@@ -305,6 +306,26 @@ Route::middleware('jwt.auth')->group(function () {
         // HR routes
         Route::middleware('role:rh')->group(function () {
             Route::post('/{id}/review', [App\Http\Controllers\Api\JobApplicationController::class, 'review']);
+        });
+    });
+
+    // ─── AI Routes ──────────────────────────────────────────────
+    Route::prefix('ai')->group(function () {
+        // Available to all authenticated users
+        Route::get('/health', [AIController::class, 'health']);
+
+        // Predictions & matching (RH only)
+        Route::middleware('role:rh')->group(function () {
+            Route::get('/predictions/attendance', [AIController::class, 'attendancePredictionsAll']);
+            Route::get('/predictions/attendance/{userId}', [AIController::class, 'attendancePrediction']);
+            Route::get('/predictions/performance', [AIController::class, 'performanceScoresAll']);
+            Route::get('/predictions/performance/{userId}', [AIController::class, 'performanceScore']);
+            Route::get('/dashboard-kpis', [AIController::class, 'dashboardKPIs']);
+            Route::get('/match/{jobPostId}', [AIController::class, 'matchCandidates']);
+
+            // Training (status must be before {model} to avoid wildcard match)
+            Route::get('/train/status', [AIController::class, 'trainingStatus']);
+            Route::post('/train/{model}', [AIController::class, 'train']);
         });
     });
 });

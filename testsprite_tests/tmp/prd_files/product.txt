@@ -1,0 +1,214 @@
+Product Specification Document — TACTIC HRIS
+1. Product Overview
+TACTIC is a full-stack Human Resources Information System (HRIS) designed for Tunisian enterprises. It covers the complete HR lifecycle: employee management, attendance, leave, payroll, recruitment, skills, AI-powered predictions, and dashboards.
+
+Backend	Laravel 10 (PHP) — REST API
+Frontend	React 18 (TypeScript) — SPA
+AI Service	FastAPI (Python) + PyTorch
+Auth	JWT Bearer tokens
+Real-time	Laravel Reverb (WebSocket)
+Base URL	http://localhost:8000/api
+2. User Roles
+Role	Access Level
+rh	Full system access — HR Manager
+chef_equipe	Team Manager — team/leave/payroll view, job requests
+employe	Self-service only — own data, leave requests, job applications
+3. Authentication
+All protected routes require Authorization: Bearer <token> header
+Login: POST /api/auth/login with { "email": "...", "password": "..." }
+Logout: POST /api/auth/logout
+Refresh: POST /api/auth/refresh
+Current user: GET /api/auth/me
+4. API Endpoints
+4.1 Public (No Auth)
+Method	Endpoint	Description
+POST	/api/auth/login	Login, returns JWT token
+POST	/api/auth/register	Register new user
+POST	/api/account-requests	Submit account/invite request
+GET	/api/account-requests/validate-token/{token}	Validate invite token
+POST	/api/account-requests/set-password	Set password via invite token
+GET	/api/test-cors	CORS health check
+4.2 Auth Endpoints (JWT Required)
+Method	Endpoint	Description
+POST	/api/auth/logout	Logout
+POST	/api/auth/refresh	Refresh JWT
+GET	/api/auth/me	Get current user profile
+POST	/api/auth/change-password	Change password
+PUT	/api/auth/update-profile	Update own profile
+PUT	/api/auth/update-skills	Update own skills
+4.3 Dashboard (RH only)
+Method	Endpoint	Description
+GET	/api/dashboard/all	Complete dashboard data
+GET	/api/dashboard/rh-stats	HR KPI statistics
+GET	/api/dashboard/attendance-trend	Attendance trend chart data
+GET	/api/dashboard/absence-distribution	Absence type distribution
+4.4 Users /api/utilisateurs
+Method	Endpoint	Role	Description
+GET	/api/utilisateurs	All	List all users
+GET	/api/utilisateurs/search	All	Search users
+GET	/api/utilisateurs/disponibles	All	List available users
+GET	/api/utilisateurs/role/{role}	All	Filter by role
+GET	/api/utilisateurs/{id}	All	Get user by ID
+POST	/api/utilisateurs	RH	Create user
+PUT	/api/utilisateurs/{id}	RH	Update user
+DELETE	/api/utilisateurs/{id}	RH	Soft-delete user
+DELETE	/api/utilisateurs/{id}/force	RH	Permanently delete
+GET	/api/utilisateurs/archived	RH	List archived users
+POST	/api/utilisateurs/{id}/activate	RH	Activate user
+POST	/api/utilisateurs/{id}/restore	RH	Restore archived user
+PUT	/api/utilisateurs/{id}/status	RH	Update status
+PUT	/api/utilisateurs/{id}/equipe	RH	Assign to team
+PUT	/api/utilisateurs/{id}/competences	RH	Assign skills
+GET	/api/utilisateurs/logs	RH	View activity logs
+4.5 Account Requests /api/account-requests
+Method	Endpoint	Role
+GET	/api/account-requests	RH
+GET	/api/account-requests/pending	RH
+GET	/api/account-requests/pending-count	RH
+GET	/api/account-requests/{id}	RH
+POST	/api/account-requests/{id}/approve	RH
+POST	/api/account-requests/{id}/reject	RH
+4.6 Teams /api/equipes
+Method	Endpoint	Role	Description
+GET	/api/equipes	All	List teams
+GET	/api/equipes/{id}	All	Get team
+GET	/api/equipes/{id}/membres	All	Get team members
+GET	/api/equipes/my-team	Manager, RH	Current user's team
+GET	/api/equipes/available-managers	RH	Available managers
+GET	/api/equipes/available-employees	RH	Available employees
+POST	/api/equipes	RH	Create team
+PUT	/api/equipes/{id}	RH	Update team
+DELETE	/api/equipes/{id}	RH	Delete team
+PUT	/api/equipes/{id}/chef	RH	Assign manager
+DELETE	/api/equipes/{id}/membres/{memberId}	RH	Remove member
+4.7 Attendance /api/pointages
+Method	Endpoint	Role	Description
+GET	/api/pointages/today	All	Today's attendance
+GET	/api/pointages/mes-pointages	All	Own attendance records
+GET	/api/pointages/stats	All	Own attendance stats
+GET	/api/pointages/period	All	Attendance by date range
+POST	/api/pointages/entree	All	Clock in
+POST	/api/pointages/sortie	All	Clock out
+GET	/api/pointages/summary	RH, Manager	Summary report
+GET	/api/pointages/date	RH, Manager	Attendance by date
+GET	/api/pointages/utilisateur/{id}	RH, Manager	User's attendance
+POST	/api/pointages/absence	RH, Manager	Mark absence
+POST	/api/pointages/{id}/justifier	RH, Manager	Justify absence
+PUT	/api/pointages/{id}	RH, Manager	Edit record
+DELETE	/api/pointages/{id}	RH, Manager	Delete record
+4.8 Leave /api/conges
+Method	Endpoint	Role	Description
+GET	/api/conges/mes-conges	All	Own leave requests
+GET	/api/conges/{id}	All	Get leave by ID
+POST	/api/conges	All	Submit leave request
+DELETE	/api/conges/{id}/annuler	All	Cancel leave request
+GET	/api/conges	RH, Manager	All leave requests
+GET	/api/conges/en-attente	RH, Manager	Pending requests
+GET	/api/conges/en-attente/equipe	Manager	Team pending requests
+GET	/api/conges/period	RH, Manager	Leaves by period
+POST	/api/conges/{id}/approuver	RH, Manager	Approve leave
+POST	/api/conges/{id}/refuser	RH, Manager	Reject leave
+GET	/api/conges/{id}/medical-file	RH, Manager	Download medical file
+4.9 Payroll /api/paies
+Method	Endpoint	Role	Description
+GET	/api/paies/mes-paies	All	Own payslips
+GET	/api/paies/stats	All	Own payroll stats
+GET	/api/paies/{id}/download	All	Download payslip PDF
+GET	/api/paies/team	RH, Manager	Team payroll
+GET	/api/paies	RH	All payroll records
+GET	/api/paies/non-payees	RH	Unpaid payrolls
+GET	/api/paies/total-mensuel	RH	Monthly total
+GET	/api/paies/global-stats	RH	Global payroll stats
+GET	/api/paies/employees-config	RH	Employee salary config
+GET	/api/paies/utilisateur/{id}	RH	User's payroll history
+POST	/api/paies/generer	RH	Generate single payroll
+POST	/api/paies/generer-tous	RH	Generate bulk payroll
+POST	/api/paies/simuler	RH	Simulate payroll
+POST	/api/paies/preview	RH	Preview payslip
+POST	/api/paies/configurer-salaire	RH	Configure salary
+POST	/api/paies/increase-salaries	RH	Bulk salary increase
+POST	/api/paies/{id}/valider	RH	Validate payroll
+POST	/api/paies/{id}/payer	RH	Mark as paid
+PUT	/api/paies/{id}	RH	Edit payroll
+DELETE	/api/paies/{id}	RH	Delete payroll
+4.10 Positions /api/postes
+Method	Endpoint	Role
+GET	/api/postes, /api/postes/actifs, /api/postes/search, /api/postes/{id}	All
+POST	/api/postes	RH
+PUT	/api/postes/{id}	RH
+DELETE	/api/postes/{id}	RH
+4.11 Skills /api/competences
+Method	Endpoint	Role
+GET	/api/competences, /api/competences/search, /api/competences/{id}	All
+POST	/api/competences	RH
+PUT	/api/competences/{id}	RH
+DELETE	/api/competences/{id}	RH
+4.12 Assignments /api/affectations
+Method	Endpoint	Role
+GET	/api/affectations, /affectations/actives, /affectations/utilisateur/{id}, /affectations/poste/{id}, /affectations/{id}	All
+POST	/api/affectations	RH
+PUT	/api/affectations/{id}	RH
+POST	/api/affectations/{id}/terminer	RH
+DELETE	/api/affectations/{id}	RH
+4.13 Job Requests /api/job-requests
+Method	Endpoint	Role
+GET	/api/job-requests, /api/job-requests/{id}	All
+POST	/api/job-requests	Manager
+PUT	/api/job-requests/{id}	Manager
+DELETE	/api/job-requests/{id}	Manager
+GET	/api/job-requests/pending/list	RH
+POST	/api/job-requests/{id}/approve	RH
+POST	/api/job-requests/{id}/reject	RH
+4.14 Job Posts /api/job-posts
+Method	Endpoint	Role
+GET	/api/job-posts, /api/job-posts/open, /api/job-posts/{id}	All
+POST	/api/job-posts	RH
+PUT	/api/job-posts/{id}	RH
+DELETE	/api/job-posts/{id}	RH
+POST	/api/job-posts/{id}/publish	RH
+POST	/api/job-posts/{id}/close	RH
+4.15 Job Applications /api/applications
+Method	Endpoint	Role
+GET	/api/applications, /api/applications/job-post/{id}, /api/applications/{id}	All
+POST	/api/applications	Employee
+POST	/api/applications/{id}/withdraw	Employee
+POST	/api/applications/{id}/review	RH
+4.16 AI Module /api/ai
+Method	Endpoint	Role	Description
+GET	/api/ai/health	All	AI service health check
+GET	/api/ai/predictions/attendance	RH	All attendance predictions
+GET	/api/ai/predictions/attendance/{userId}	RH	User attendance prediction
+GET	/api/ai/predictions/performance	RH	All performance scores
+GET	/api/ai/predictions/performance/{userId}	RH	User performance score
+GET	/api/ai/dashboard-kpis	RH	AI-powered KPIs
+GET	/api/ai/match/{jobPostId}	RH	AI candidate ranking
+GET	/api/ai/train/status	RH	Model training status
+POST	/api/ai/train/{model}	RH	Trigger model retraining
+5. Data Models
+Utilisateur (User)
+matricule, nom, prenom, email, password, role (rh/chef_equipe/employe), type_contrat, salaire_base, status, actif, solde_conge, equipe_id, date_embauche
+
+Equipe (Team)
+nom, chef_id (manager), member list
+
+Pointage (Attendance)
+utilisateur_id, date, heure_entree, heure_sortie, duree_travail, absence_justifiee
+
+Conge (Leave)
+utilisateur_id, type, date_debut, date_fin, statut (en_attente/approuve/refuse), motif, approuve_par, medical_file
+
+Paie (Payroll)
+utilisateur_id, salaire_brut, heures_supp, cnss_employe, impot_mensuel, salaire_net, statut (en_attente/valide/paye), periode_debut, periode_fin
+
+JobRequest → JobPost → JobApplication
+Manager submits job request → RH approves and publishes job post → Employees apply → AI ranks candidates
+
+6. Business Rules
+JWT authentication is required for all endpoints except login, register, account-requests, and test-cors.
+Role-based access: RH has full access; chef_equipe manages their team only; employe accesses only their own data.
+Payroll uses Tunisian CNSS and IRPP tax brackets in automated calculations.
+Leave balance (solde_conge) is automatically decremented when a leave is approved.
+Soft-delete is used for users; archived users can be restored.
+AI models: attendance LSTM, performance FFN, candidate matching NN — all accessible via the AI module.
+Invitation flow: new employees receive a token via email to set their password before first login.
+Audit trail: all RH actions are logged in ActivityLog.

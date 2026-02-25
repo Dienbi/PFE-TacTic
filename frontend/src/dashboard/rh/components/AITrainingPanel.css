@@ -1,0 +1,127 @@
+.ai-training-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-training-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10B981, #3B82F6, #7C3AED);
+}
+
+.ai-training-card .card-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-train-all {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #7C3AED, #3B82F6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-train-all:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.btn-train-all:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.training-models {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.training-model-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border: 1px solid #F3F4F6;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+.training-model-row:hover {
+    background: #F9FAFB;
+}
+
+.model-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.model-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #111827;
+}
+
+.model-desc {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+}
+
+.model-status {
+    min-width: 80px;
+    text-align: center;
+}
+
+.train-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.result-success { background: #ECFDF5; color: #059669; }
+.result-error { background: #FEF2F2; color: #DC2626; }
+.result-pending { background: #EFF6FF; color: #3B82F6; }
+
+.btn-train-single {
+    padding: 0.4rem 0.8rem;
+    background: #F3F4F6;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btn-train-single:hover:not(:disabled) {
+    background: #E5E7EB;
+}
+
+.btn-train-single:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}

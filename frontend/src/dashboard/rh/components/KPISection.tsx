@@ -1,5 +1,13 @@
-import React from "react";
-import { Users, Clock, TrendingUp, DollarSign } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  Users,
+  Clock,
+  TrendingUp,
+  DollarSign,
+  Brain,
+  ShieldAlert,
+} from "lucide-react";
+import { aiApi, DashboardKPIs } from "../../../api/aiApi";
 
 interface DashboardStats {
   total_employees: number;
@@ -16,6 +24,14 @@ interface KPISectionProps {
 }
 
 const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
+  const [aiKpis, setAiKpis] = useState<DashboardKPIs | null>(null);
+
+  useEffect(() => {
+    aiApi
+      .getDashboardKPIs()
+      .then(setAiKpis)
+      .catch((err) => console.error("AI KPIs error:", err));
+  }, []);
   const formatCurrency = (value: number): string =>
     new Intl.NumberFormat("fr-TN", {
       style: "decimal",
@@ -105,6 +121,41 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
           <div className={`kpi-change ${kpi.color}`}>{kpi.change}</div>
         </div>
       ))}
+
+      {/* AI-powered KPI cards */}
+      <div className="kpi-card kpi-card-ai">
+        <div className="kpi-header">
+          <span className="kpi-title">Score Performance IA</span>
+          <Brain size={18} className="text-purple-500" />
+        </div>
+        <div className="kpi-value">
+          {aiKpis?.performance_scores
+            ? `${aiKpis.performance_scores.avg_performance.toFixed(1)}`
+            : "—"}
+        </div>
+        <div className="kpi-change text-purple-500">
+          {aiKpis?.performance_scores
+            ? "Moyenne globale /100"
+            : "Chargement..."}
+        </div>
+      </div>
+
+      <div className="kpi-card kpi-card-ai">
+        <div className="kpi-header">
+          <span className="kpi-title">Risque Absence IA</span>
+          <ShieldAlert size={18} className="text-orange-500" />
+        </div>
+        <div className="kpi-value">
+          {aiKpis?.attendance_predictions
+            ? `${aiKpis.attendance_predictions.high_risk_employees + aiKpis.attendance_predictions.medium_risk_employees}`
+            : "—"}
+        </div>
+        <div className="kpi-change text-orange-500">
+          {aiKpis?.attendance_predictions
+            ? `${aiKpis.attendance_predictions.predicted_absence_rate.toFixed(1)}% taux prédit`
+            : "Chargement..."}
+        </div>
+      </div>
     </div>
   );
 };

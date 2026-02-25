@@ -59,6 +59,44 @@
 .text-green-500 { color: #10B981; }
 .text-blue-500 { color: #3B82F6; }
 .text-gray-500 { color: #6B7280; }
+.text-purple-500 { color: #7C3AED; }
+.text-orange-500 { color: #D97706; }
+.text-red-500 { color: #DC2626; }
+
+.kpi-card-ai {
+    border: 1px solid #EDE9FE;
+    background: linear-gradient(135deg, #FEFCE8 0%, #FAF5FF 100%);
+}
+
+/* --- AI Section --- */
+.dashboard-ai-section {
+    margin-top: 0.5rem;
+}
+
+.ai-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.ai-section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.ai-section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .ai-section-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 /* --- Charts Grid --- */
 .charts-grid {

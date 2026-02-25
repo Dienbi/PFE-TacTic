@@ -63,11 +63,12 @@ export const getByPeriod = async (
   const response = await client.get("/pointages/period", {
     params: { start_date: startDate, end_date: endDate },
   });
-  return response.data;
+  return Array.isArray(response.data) ? response.data : (response.data.data ?? []);
 };
 
 // Get user's attendance history
 export const getMesPointages = async (): Promise<Pointage[]> => {
   const response = await client.get("/pointages/mes-pointages");
-  return response.data;
+  // The endpoint returns a paginated response; extract the data array
+  return Array.isArray(response.data) ? response.data : (response.data.data ?? []);
 };

@@ -4,6 +4,9 @@ import Navbar from "../../../src/shared/components/Navbar";
 import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
+import AttendancePredictions from "./components/AttendancePredictions";
+import PerformanceRanking from "./components/PerformanceRanking";
+import AITrainingPanel from "./components/AITrainingPanel";
 import { useRealtimeNotifications } from "../../shared/hooks/useRealtimeNotifications";
 import client from "../../api/client";
 import "./RHDashboard.css";
@@ -63,6 +66,23 @@ const RHDashboard: React.FC = () => {
             absenceData={dashboardData?.absence ?? []}
             loading={dashboardLoading}
           />
+
+          {/* ── AI Intelligence Section ───────────────────────────── */}
+          <div className="dashboard-ai-section">
+            <div className="ai-section-header">
+              <h2>🤖 Intelligence Artificielle</h2>
+              <span className="badge-ai">Powered by PyTorch</span>
+            </div>
+
+            <div className="ai-section-grid">
+              <AttendancePredictions />
+              <PerformanceRanking />
+            </div>
+
+            <div style={{ marginTop: "1.5rem" }}>
+              <AITrainingPanel />
+            </div>
+          </div>
 
           <div className="dashboard-middle-section">
             <Suspense fallback={<LoadingFallback />}>

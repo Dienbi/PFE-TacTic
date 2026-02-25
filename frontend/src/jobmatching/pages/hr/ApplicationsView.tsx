@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jobMatchingApi, JobApplication } from "../../api/jobMatchingApi";
+import { aiApi, CandidateRecommendation } from "../../../api/aiApi";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import "./ApplicationsView.css";
@@ -14,6 +15,13 @@ const ApplicationsView: React.FC = () => {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [selectedApplication, setSelectedApplication] =
     useState<JobApplication | null>(null);
+  const [activeTab, setActiveTab] = useState<"applications" | "ai">(
+    "applications",
+  );
+  const [aiRecommendations, setAiRecommendations] = useState<
+    CandidateRecommendation[]
+  >([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userName = user ? `${user.prenom} ${user.nom}` : "HR Manager";
@@ -22,6 +30,7 @@ const ApplicationsView: React.FC = () => {
   useEffect(() => {
     if (postId) {
       loadApplications();
+      loadAiRecommendations();
     }
   }, [postId]);
 
@@ -39,8 +48,22 @@ const ApplicationsView: React.FC = () => {
     }
   };
 
+  const loadAiRecommendations = async () => {
+    try {
+      setAiLoading(true);
+      const data = await aiApi.getMatchRecommendations(parseInt(postId!));
+      setAiRecommendations(data);
+    } catch (err: any) {
+      console.error("AI recommendations error:", err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleAccept = async (applicationId: number) => {
-    if (!globalThis.confirm("Are you sure you want to accept this application?"))
+    if (
+      !globalThis.confirm("Are you sure you want to accept this application?")
+    )
       return;
 
     setProcessingId(applicationId);
@@ -145,7 +168,75 @@ const ApplicationsView: React.FC = () => {
 
           {error && <div className="alert alert-danger">{error}</div>}
 
-          {loading ? (
+          {/* Tab Navigation */}
+          <div className="view-tabs">
+            <button
+              className={`view-tab ${activeTab === "applications" ? "active" : ""}`}
+              onClick={() => setActiveTab("applications")}
+            >
+              📋 Candidatures ({applications.length})
+            </button>
+            <button
+              className={`view-tab ${activeTab === "ai" ? "active" : ""}`}
+              onClick={() => setActiveTab("ai")}
+            >
+              🤖 Recommandations IA
+              {aiRecommendations.length > 0 && (
+                <span className="ai-tab-badge">{aiRecommendations.length}</span>
+              )}
+            </button>
+          </div>
+
+          {activeTab === "ai" ? (
+            /* ── AI Recommendations Tab ──────────────────────────── */
+            <div className="ai-recommendations-section">
+              {aiLoading ? (
+                <div className="loading-state">
+                  <div className="spinner"></div>
+                  <p>Analyse IA en cours...</p>
+                </div>
+              ) : aiRecommendations.length === 0 ? (
+                <div className="empty-state-card">
+                  <div className="empty-icon">🤖</div>
+                  <h3>Aucune recommandation</h3>
+                  <p>
+                    Entraînez les modèles IA pour obtenir des recommandations de
+                    candidats.
+                  </p>
+                </div>
+              ) : (
+                <div className="ai-rec-list">
+                  {aiRecommendations.map((rec, idx) => (
+                    <div key={rec.utilisateur_id} className="ai-rec-card">
+                      <div className="ai-rec-rank">#{idx + 1}</div>
+                      <div className="ai-rec-avatar">
+                        {rec.prenom.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="ai-rec-info">
+                        <h4>
+                          {rec.prenom} {rec.nom}
+                        </h4>
+                        <div className="ai-rec-scores">
+                          <span className="ai-rec-metric">📧 {rec.email}</span>
+                        </div>
+                      </div>
+                      <div className="ai-rec-score-container">
+                        <div
+                          className="ai-rec-score-circle"
+                          style={{
+                            background: `conic-gradient(${rec.score >= 70 ? "#059669" : rec.score >= 40 ? "#D97706" : "#DC2626"} ${rec.score * 3.6}deg, #F3F4F6 0deg)`,
+                          }}
+                        >
+                          <span>{Math.round(rec.score)}%</span>
+                        </div>
+                        <span className="ai-rec-score-label">Match</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : loading ? (
             <div className="loading-state">
               <div className="spinner"></div>
               <p>Loading candidates...</p>

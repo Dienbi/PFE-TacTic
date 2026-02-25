@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.models.schemas import MatchRequest, MatchResponse
-from app.services.matching_service import MatchingService
+from app.services.prediction_service import PredictionService
 from app.utils.database import get_db
 import logging
 
@@ -16,27 +16,21 @@ async def match_candidates(
     db: Session = Depends(get_db)
 ):
     """
-    Generate AI-based candidate recommendations for a job post
+    Generate AI-based candidate recommendations for a job post.
     
-    Args:
-        request: MatchRequest with job_post_id
-        db: Database session
-    
-    Returns:
-        MatchResponse with ranked candidate recommendations
-        
-    Raises:
-        HTTPException: If job post not found or matching fails
+    Uses the trained neural matching model if available,
+    falls back to rule-based scoring otherwise.
     """
     try:
         logger.info(f"Matching candidates for job post {request.job_post_id}")
         
-        matching_service = MatchingService(db)
-        result = matching_service.match_candidates(request.job_post_id)
+        service = PredictionService(db)
+        result = service.match_candidates(request.job_post_id)
         
         logger.info(
-            f"Successfully matched {result['total_candidates']} candidates "
-            f"for job post {request.job_post_id}"
+            f"Matched {result['total_candidates']} candidates "
+            f"for job post {request.job_post_id} "
+            f"(model: {result.get('model_used', 'unknown')})"
         )
         
         return result

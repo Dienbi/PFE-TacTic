@@ -678,7 +678,7 @@ features:
       - Position Management API
 
   - name: Job Recruitment Pipeline API
-    description: Full recruitment pipeline: manager job requests, HR job posts, employee applications, AI candidate ranking
+    description: "Full recruitment pipeline: manager job requests, HR job posts, employee applications, AI candidate ranking"
     files:
       - backend/app/Http/Controllers/JobRequestController.php
       - backend/app/Http/Controllers/JobPostController.php

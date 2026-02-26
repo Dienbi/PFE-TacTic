@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "test_authentication_login_and_token_retrieval",
+    "description": "Test the POST /api/auth/login endpoint with valid credentials to ensure it returns a 200 status with a JWT token and user object. Then test GET /api/auth/me with the token to verify the current user profile is returned with a 200 status."
+  },
+  {
+    "id": "TC002",
+    "title": "test_user_management_create_update_and_role_restriction",
+    "description": "Test POST /api/utilisateurs to create a new user with RH role credentials and verify 201 response with created user object. Test PUT /api/utilisateurs/{id} to update user details and verify 200 response. Also test that employee role cannot create users and receives 403 Forbidden."
+  },
+  {
+    "id": "TC003",
+    "title": "test_account_requests_invite_token_flow",
+    "description": "Test POST /api/account-requests to submit a new account request and verify success message. Test GET /api/account-requests/validate-token/{token} with valid and invalid tokens to verify 200 and 404 responses respectively. Test POST /api/account-requests/set-password with valid and expired/invalid tokens to verify success and validation error responses."
+  },
+  {
+    "id": "TC004",
+    "title": "test_team_management_create_update_and_access_control",
+    "description": "Test POST /api/equipes to create a team with RH credentials and verify 201 response. Test PUT /api/equipes/{id}/chef to assign a manager and verify 200 response. Test GET /api/equipes/my-team with manager credentials to verify 200 response. Verify employee role cannot create teams and receives 403 Forbidden."
+  },
+  {
+    "id": "TC005",
+    "title": "test_attendance_clock_in_out_and_absence_marking",
+    "description": "Test POST /api/pointages/entree to clock in and verify 200 response with Pointage object. Test POST /api/pointages/sortie to clock out and verify updated Pointage object. Test POST /api/pointages/absence with manager or RH token to mark absence and verify 200 response."
+  },
+  {
+    "id": "TC006",
+    "title": "test_leave_management_submission_approval_and_restrictions",
+    "description": "Test POST /api/conges to submit leave request with valid data and verify 201 response. Test POST /api/conges/{id}/approuver with RH token to approve leave and verify updated Conge object and decremented leave balance. Verify employee role cannot approve leave and receives 403 Forbidden."
+  },
+  {
+    "id": "TC007",
+    "title": "test_payroll_generation_simulation_and_access_control",
+    "description": "Test POST /api/paies/simuler with RH token to simulate payroll and verify 200 response. Test POST /api/paies/generer with valid payload and RH token to generate payroll and verify 200 response. Verify employee role cannot generate payroll and receives 403 Forbidden."
+  },
+  {
+    "id": "TC008",
+    "title": "test_position_management_crud_and_role_restrictions",
+    "description": "Test POST /api/postes to create a position with RH token and verify 201 response. Test GET /api/postes to list positions and verify 200 response. Verify employee role cannot create positions and receives 403 Forbidden."
+  },
+  {
+    "id": "TC009",
+    "title": "test_skills_management_crud_and_validation",
+    "description": "Test POST /api/competences to create a skill with valid data and RH token and verify 201 response. Test PUT /api/competences/{id} to update skill and verify 200 response. Test POST /api/competences with missing required fields to verify 422 validation error. Verify employee role cannot create skills and receives 403 Forbidden."
+  },
+  {
+    "id": "TC010",
+    "title": "test_job_recruitment_pipeline_end_to_end_flow",
+    "description": "Test POST /api/job-requests with manager token to create job request and verify 201 response. Test POST /api/job-requests/{id}/approve with RH token to approve request and verify 200 response. Test POST /api/job-posts with RH token to create job post and verify 201 response. Test POST /api/applications with employee token to submit application and verify 201 response. Test GET /api/ai/match/{jobPostId} with RH token to get AI-ranked candidates and verify 200 response."
+  }
+]

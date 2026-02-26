@@ -4,16 +4,16 @@
 
 ## 1️⃣ Document Metadata
 
-| Field | Value |
-|---|---|
-| **Project Name** | PFE_TACTIC — TACTIC HRIS (Laravel 10 REST API) |
-| **Date** | 2026-02-25 |
-| **Prepared by** | TestSprite AI + GitHub Copilot |
-| **Backend URL** | http://localhost:8000 |
-| **Auth Method** | JWT Bearer Token |
-| **Total Tests Run** | 10 |
-| **Passed** | 0 |
-| **Failed** | 10 |
+| Field               | Value                                          |
+| ------------------- | ---------------------------------------------- |
+| **Project Name**    | PFE_TACTIC — TACTIC HRIS (Laravel 10 REST API) |
+| **Date**            | 2026-02-25                                     |
+| **Prepared by**     | TestSprite AI + GitHub Copilot                 |
+| **Backend URL**     | http://localhost:8000                          |
+| **Auth Method**     | JWT Bearer Token                               |
+| **Total Tests Run** | 10                                             |
+| **Passed**          | 0                                              |
+| **Failed**          | 10                                             |
 
 ---
 
@@ -22,6 +22,7 @@
 ### REQ-01 · Authentication & Token Management
 
 #### TC001 — test_authentication_login_and_token_retrieval
+
 - **Test Code:** [TC001_test_authentication_login_and_token_retrieval.py](./tmp/TC001_test_authentication_login_and_token_retrieval.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError: Expected 200, got 401`
@@ -33,6 +34,7 @@
 ### REQ-02 · User Management (CRUD + Role Access Control)
 
 #### TC002 — test_user_management_create_update_and_role_restriction
+
 - **Test Code:** [TC002_test_user_management_create_update_and_role_restriction.py](./tmp/TC002_test_user_management_create_update_and_role_restriction.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError: Expected 201 Created, got 200`
@@ -44,6 +46,7 @@
 ### REQ-03 · Account Requests & Invite Token Flow
 
 #### TC003 — test_account_requests_invite_token_flow
+
 - **Test Code:** [TC003_test_account_requests_invite_token_flow.py](./tmp/TC003_test_account_requests_invite_token_flow.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError: Created account request not found in pending requests`
@@ -55,6 +58,7 @@
 ### REQ-04 · Team Management (CRUD + Access Control)
 
 #### TC004 — test_team_management_create_update_and_access_control
+
 - **Test Code:** [TC004_test_team_management_create_update_and_access_control.py](./tmp/TC004_test_team_management_create_update_and_access_control.py)
 - **Status:** ❌ Failed
 - **Error:** `RuntimeError: Failed to get auth token: 401 Client Error: Unauthorized for url: http://localhost:8000/api/auth/login`
@@ -66,6 +70,7 @@
 ### REQ-05 · Attendance Tracking (Clock-in/out & Absences)
 
 #### TC005 — test_attendance_clock_in_out_and_absence_marking
+
 - **Test Code:** [TC005_test_attendance_clock_in_out_and_absence_marking.py](./tmp/TC005_test_attendance_clock_in_out_and_absence_marking.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError: Clock in response missing Pointage ID`
@@ -84,6 +89,7 @@
 ### REQ-06 · Leave Management (Submission, Approval, Restrictions)
 
 #### TC006 — test_leave_management_submission_approval_and_restrictions
+
 - **Test Code:** [TC006_test_leave_management_submission_approval_and_restrictions.py](./tmp/TC006_test_leave_management_submission_approval_and_restrictions.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError: Leave submission failed with status 200`
@@ -95,6 +101,7 @@
 ### REQ-07 · Payroll Generation & Access Control
 
 #### TC007 — test_payroll_generation_simulation_and_access_control
+
 - **Test Code:** [TC007_test_payroll_generation_simulation_and_access_control.py](./tmp/TC007_test_payroll_generation_simulation_and_access_control.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError: Failed to create employee user` — server returned the Laravel default HTML welcome page instead of JSON.
@@ -106,6 +113,7 @@
 ### REQ-08 · Position Management (CRUD + Role Restrictions)
 
 #### TC008 — test_position_management_crud_and_role_restrictions
+
 - **Test Code:** [TC008_test_position_management_crud_and_role_restrictions.py](./tmp/TC008_test_position_management_crud_and_role_restrictions.py)
 - **Status:** ❌ Failed
 - **Error:** `requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)`
@@ -117,6 +125,7 @@
 ### REQ-09 · Skills Management (CRUD & Validation)
 
 #### TC009 — test_skills_management_crud_and_validation
+
 - **Test Code:** [TC009_test_skills_management_crud_and_validation.py](./tmp/TC009_test_skills_management_crud_and_validation.py)
 - **Status:** ❌ Failed
 - **Error:** `RuntimeError: Failed to login as employee: 401 Client Error: Unauthorized`
@@ -128,6 +137,7 @@
 ### REQ-10 · Job Recruitment Pipeline (End-to-End)
 
 #### TC010 — test_job_recruitment_pipeline_end_to_end_flow
+
 - **Test Code:** [TC010_test_job_recruitment_pipeline_end_to_end_flow.py](./tmp/TC010_test_job_recruitment_pipeline_end_to_end_flow.py)
 - **Status:** ❌ Failed
 - **Error:** `AssertionError` (generic, no detail)
@@ -140,21 +150,22 @@
 
 - **Pass rate:** 0 / 10 (0%)
 
-| Requirement | Total Tests | ✅ Passed | ❌ Failed |
-|---|---|---|---|
-| REQ-01: Authentication | 1 | 0 | 1 |
-| REQ-02: User Management | 1 | 0 | 1 |
-| REQ-03: Account Requests | 1 | 0 | 1 |
-| REQ-04: Team Management | 1 | 0 | 1 |
-| REQ-05: Attendance Tracking | 1 | 0 | 1 |
-| REQ-06: Leave Management | 1 | 0 | 1 |
-| REQ-07: Payroll | 1 | 0 | 1 |
-| REQ-08: Position Management | 1 | 0 | 1 |
-| REQ-09: Skills Management | 1 | 0 | 1 |
-| REQ-10: Job Recruitment Pipeline | 1 | 0 | 1 |
-| **Total** | **10** | **0** | **10** |
+| Requirement                      | Total Tests | ✅ Passed | ❌ Failed |
+| -------------------------------- | ----------- | --------- | --------- |
+| REQ-01: Authentication           | 1           | 0         | 1         |
+| REQ-02: User Management          | 1           | 0         | 1         |
+| REQ-03: Account Requests         | 1           | 0         | 1         |
+| REQ-04: Team Management          | 1           | 0         | 1         |
+| REQ-05: Attendance Tracking      | 1           | 0         | 1         |
+| REQ-06: Leave Management         | 1           | 0         | 1         |
+| REQ-07: Payroll                  | 1           | 0         | 1         |
+| REQ-08: Position Management      | 1           | 0         | 1         |
+| REQ-09: Skills Management        | 1           | 0         | 1         |
+| REQ-10: Job Recruitment Pipeline | 1           | 0         | 1         |
+| **Total**                        | **10**      | **0**     | **10**    |
 
 **Actual API behavior (from test evidence):**
+
 - `POST /api/pointages/entree` → ✅ Works, returns `{ message, pointage: { id, ... } }`
 - `DELETE /api/postes/{id}` → ✅ Works, returns 204 No Content
 - `POST /api/conges` → ⚠️ Works but returns 200 instead of 201
@@ -167,32 +178,32 @@
 
 ### 🔴 Critical Issues
 
-| # | Issue | Affected Tests | Root Cause |
-|---|---|---|---|
-| 1 | **Wrong test credentials** | TC001, TC004, TC009 | TestSprite auto-generated credentials that don't match seeded DB users. Real creds: `admin@tactic.com / password` |
-| 2 | **HTML response instead of JSON** | TC007 | Laravel returned welcome page — possible routing misconfiguration or wrong base URL in test |
+| #   | Issue                             | Affected Tests      | Root Cause                                                                                                        |
+| --- | --------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1   | **Wrong test credentials**        | TC001, TC004, TC009 | TestSprite auto-generated credentials that don't match seeded DB users. Real creds: `admin@tactic.com / password` |
+| 2   | **HTML response instead of JSON** | TC007               | Laravel returned welcome page — possible routing misconfiguration or wrong base URL in test                       |
 
 ### 🟡 API Convention Issues (Easy Fixes)
 
-| # | Issue | Affected Tests | Fix |
-|---|---|---|---|
-| 3 | **POST creation endpoints return 200 instead of 201** | TC002, TC006 | Update `UtilisateurController@store` and `CongeController@store` to return `response()->json($data, 201)` |
-| 4 | **DELETE endpoints return 204 but tests call `.json()`** | TC008 | Test code bug — the API is correct. TestSprite needs to handle 204 responses |
+| #   | Issue                                                    | Affected Tests | Fix                                                                                                       |
+| --- | -------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
+| 3   | **POST creation endpoints return 200 instead of 201**    | TC002, TC006   | Update `UtilisateurController@store` and `CongeController@store` to return `response()->json($data, 201)` |
+| 4   | **DELETE endpoints return 204 but tests call `.json()`** | TC008          | Test code bug — the API is correct. TestSprite needs to handle 204 responses                              |
 
 ### 🟢 Test Code Bugs (API is Correct)
 
-| # | Issue | Affected Tests | Fix |
-|---|---|---|---|
-| 5 | **Wrong response path for Pointage ID** | TC005 | Test should access `response["pointage"]["id"]` not `response["id"]` |
-| 6 | **JSON decode on 204 No Content** | TC008 | Test should check status code only for DELETE operations |
+| #   | Issue                                   | Affected Tests | Fix                                                                  |
+| --- | --------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| 5   | **Wrong response path for Pointage ID** | TC005          | Test should access `response["pointage"]["id"]` not `response["id"]` |
+| 6   | **JSON decode on 204 No Content**       | TC008          | Test should check status code only for DELETE operations             |
 
 ### ⚠️ Functional Gaps
 
-| # | Issue | Affected Tests |
-|---|---|---|
-| 7 | **Account request not appearing in pending list** | TC003 |
-| 8 | **Job recruitment pipeline E2E not validated** | TC010 — blocked by upstream failures |
-| 9 | **AI module, Dashboard, Assignments endpoints** | Not covered — 0 tests generated for these modules |
+| #   | Issue                                             | Affected Tests                                    |
+| --- | ------------------------------------------------- | ------------------------------------------------- |
+| 7   | **Account request not appearing in pending list** | TC003                                             |
+| 8   | **Job recruitment pipeline E2E not validated**    | TC010 — blocked by upstream failures              |
+| 9   | **AI module, Dashboard, Assignments endpoints**   | Not covered — 0 tests generated for these modules |
 
 ### Recommended Next Steps
 

@@ -1,37 +1,161 @@
-name: Weekend AI Architect Audit
+name: Weekend Maintenance Audit
 
 on:
   schedule:
-    # Sunday at 02:00 (Matches your Python scheduler time)
+    # Sunday at 02:00 (matches the Python AI scheduler)
     - cron: '0 2 * * 0'
-  workflow_dispatch: # Allows you to run it manually to test
+  workflow_dispatch: # Run manually from the Actions tab to test
 
 jobs:
-  jules-audit:
+  # ──────────────────────────────────────────────
+  # Backend – PHP CS Fixer + PHPStan
+  # ──────────────────────────────────────────────
+  audit-backend:
+    name: Backend – Style & Static Analysis
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    defaults:
+      run:
+        working-directory: backend
 
-      - name: Run Jules Deep Audit
-        uses: google-labs-code/jules-action@v1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          prompt: |
-            Task: Perform a full-stack audit of the TacTic platform based on AGENTS.md.
-            
-            1. Backend (Laravel):
-               - Verify new controllers follow the Repository Pattern (Controller -> Service -> Repository).
-               - Check for N+1 query issues in Eloquent relationships.
-               - Ensure all JSON responses use response()->json().
-            
-            2. Frontend (React/TS):
-               - Check for missing optional chaining (?.) on API responses.
-               - Identify components with potential unnecessary re-renders.
-               - Verify TypeScript interfaces match the backend snake_case naming.
-            
-            3. AI Service (FastAPI):
-               - Ensure route ordering (static before parameterized).
-               - Look for any non-async blocking calls in FastAPI endpoints.
-            
-            If violations are found, refactor the code to comply with AGENTS.md and open a single 'Weekend Maintenance' Pull Request.
+          # Need full history so the PR step can push a branch
+          fetch-depth: 0
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo, pdo_pgsql, mbstring, xml, bcmath, tokenizer
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install PHP-CS-Fixer
+        run: composer require --dev friendsofphp/php-cs-fixer --no-interaction
+
+      - name: Run PHP-CS-Fixer (auto-fix)
+        run: vendor/bin/php-cs-fixer fix app/ --rules=@PSR12 --allow-risky=yes || true
+
+      - name: Install PHPStan + Larastan
+        run: composer require --dev nunomaduro/larastan phpstan/phpstan --no-interaction
+
+      - name: Run PHPStan (level 5)
+        run: vendor/bin/phpstan analyse app/ --level=5 --memory-limit=256M || true
+
+  # ──────────────────────────────────────────────
+  # Frontend – ESLint auto-fix
+  # ──────────────────────────────────────────────
+  audit-frontend:
+    name: Frontend – ESLint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint (auto-fix)
+        run: npx eslint src/ --ext .ts,.tsx --fix --max-warnings=0 || true
+
+  # ──────────────────────────────────────────────
+  # AI Service – Flake8 + Ruff
+  # ──────────────────────────────────────────────
+  audit-ai-service:
+    name: AI Service – Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install linters
+        run: pip install flake8 ruff
+
+      - name: Run Ruff (auto-fix)
+        run: ruff check app/ --fix || true
+
+      - name: Run Flake8 (report only)
+        run: flake8 app/ --max-line-length=120 || true
+
+  # ──────────────────────────────────────────────
+  # Open a PR if any files were changed by auto-fix
+  # ──────────────────────────────────────────────
+  open-maintenance-pr:
+    name: Open Weekend Maintenance PR
+    runs-on: ubuntu-latest
+    needs: [audit-backend, audit-frontend, audit-ai-service]
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Re-run all fixers to collect changes
+        run: |
+          # PHP-CS-Fixer
+          cd backend
+          composer install --no-interaction --quiet
+          composer require --dev friendsofphp/php-cs-fixer --no-interaction --quiet
+          vendor/bin/php-cs-fixer fix app/ --rules=@PSR12 --allow-risky=yes || true
+          cd ..
+          # Ruff
+          cd ai-service
+          pip install ruff --quiet
+          ruff check app/ --fix || true
+          cd ..
+          # ESLint
+          cd frontend
+          npm ci --silent
+          npx eslint src/ --ext .ts,.tsx --fix || true
+          cd ..
+
+      - name: Create Pull Request if changes exist
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: weekend automated code style & lint fixes"
+          branch: chore/weekend-maintenance
+          delete-branch: true
+          title: "🔧 Weekend Maintenance – Auto-fix $(date +'%Y-%m-%d')"
+          body: |
+            Automated fixes applied by the Weekend Maintenance Audit workflow.
+
+            **What was checked:**
+            - Backend: PHP-CS-Fixer (PSR-12), PHPStan level 5
+            - Frontend: ESLint auto-fix on `src/`
+            - AI Service: Ruff auto-fix
+
+            Review the diff and merge if the fixes look correct.
+          labels: maintenance, automated

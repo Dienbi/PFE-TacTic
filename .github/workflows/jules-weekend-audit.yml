@@ -16,7 +16,7 @@ jobs:
       - name: Run Jules Deep Audit
         uses: google-labs-code/jules-action@v1
         with:
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          jules_api_key: ${{AQ.Ab8RN6JihKboer-mUejkBRdSje2b-IHZiP5AuaXqd1K8N5fVdQ}}
           prompt: |
             Task: Perform a full-stack audit of the TacTic platform based on AGENTS.md.
             

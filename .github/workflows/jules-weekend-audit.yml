@@ -126,8 +126,7 @@ jobs:
         run: |
           # PHP-CS-Fixer
           cd backend
-          composer install --no-interaction --quiet
-          composer require --dev friendsofphp/php-cs-fixer --no-interaction --quiet
+          composer require --dev friendsofphp/php-cs-fixer --no-interaction --quiet --update-with-dependencies
           vendor/bin/php-cs-fixer fix app/ --rules=@PSR12 --allow-risky=yes || true
           cd ..
           # Ruff

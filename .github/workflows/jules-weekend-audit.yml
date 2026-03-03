@@ -34,11 +34,11 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Install PHP-CS-Fixer
-        run: composer require --dev friendsofphp/php-cs-fixer --no-interaction
+      - name: Install PHP-CS-Fixer (standalone phar)
+        run: curl -sL https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer.phar
 
       - name: Run PHP-CS-Fixer (auto-fix)
-        run: vendor/bin/php-cs-fixer fix app/ --rules=@PSR12 --allow-risky=yes || true
+        run: php php-cs-fixer.phar fix app/ --rules=@PSR12 --allow-risky=yes || true
 
       - name: Install PHPStan + Larastan
         run: composer require --dev nunomaduro/larastan phpstan/phpstan --no-interaction
@@ -124,16 +124,13 @@ jobs:
 
       - name: Re-run all fixers to collect changes
         run: |
-          # PHP-CS-Fixer
-          cd backend
-          composer require --dev friendsofphp/php-cs-fixer --no-interaction --quiet --update-with-dependencies
-          vendor/bin/php-cs-fixer fix app/ --rules=@PSR12 --allow-risky=yes || true
-          cd ..
+          # PHP-CS-Fixer via standalone phar (avoids composer dependency conflicts)
+          curl -sL https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer.phar
+          php php-cs-fixer.phar fix backend/app/ --rules=@PSR12 --allow-risky=yes || true
+          rm php-cs-fixer.phar
           # Ruff
-          cd ai-service
           pip install ruff --quiet
-          ruff check app/ --fix || true
-          cd ..
+          ruff check ai-service/app/ --fix || true
           # ESLint
           cd frontend
           npm ci --silent

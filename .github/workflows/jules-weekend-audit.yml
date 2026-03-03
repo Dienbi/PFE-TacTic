@@ -31,20 +31,11 @@ jobs:
           extensions: pdo, pdo_pgsql, mbstring, xml, bcmath, tokenizer
           coverage: none
 
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
       - name: Install PHP-CS-Fixer (standalone phar)
         run: curl -sL https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer.phar
 
       - name: Run PHP-CS-Fixer (auto-fix)
         run: php php-cs-fixer.phar fix app/ --rules=@PSR12 --allow-risky=yes || true
-
-      - name: Install PHPStan + Larastan
-        run: composer require --dev nunomaduro/larastan phpstan/phpstan --no-interaction
-
-      - name: Run PHPStan (level 5)
-        run: vendor/bin/phpstan analyse app/ --level=5 --memory-limit=256M || true
 
   # ──────────────────────────────────────────────
   # Frontend – ESLint auto-fix

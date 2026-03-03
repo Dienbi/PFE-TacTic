@@ -75,8 +75,14 @@ const RHDashboard: React.FC = () => {
             </div>
 
             <div className="ai-section-grid">
-              <AttendancePredictions />
-              <PerformanceRanking />
+              <AttendancePredictions
+                initialData={dashboardData?.ai_attendance}
+                loading={dashboardLoading}
+              />
+              <PerformanceRanking
+                initialData={dashboardData?.ai_performance}
+                loading={dashboardLoading}
+              />
             </div>
 
             <div style={{ marginTop: "1.5rem" }}>

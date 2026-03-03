@@ -25,13 +25,14 @@ const RecentLeaves = ({ initialData, loading }: { initialData?: LeaveRequest[], 
     if (initialData) {
       setLeaves(initialData.slice(0, 5));
       setIsLoading(loading ?? false);
-    } else {
+    } else if (!loading) {
       fetchPendingLeaves();
     }
   }, [initialData, loading]);
 
   const fetchPendingLeaves = async () => {
     try {
+      setIsLoading(true);
       const response = await client.get("/conges/en-attente");
       setLeaves(response.data.slice(0, 5)); // Show only first 5
     } catch (error) {

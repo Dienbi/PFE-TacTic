@@ -37,15 +37,20 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
 
     // Initialize Laravel Echo only once
     if (!echoInstance) {
+      const REVERB_APP_KEY = process.env.REACT_APP_REVERB_APP_KEY || '5uzfsf7jv9rmk46zgbrz';
+      const REVERB_HOST = process.env.REACT_APP_REVERB_HOST || '127.0.0.1';
+      const REVERB_PORT = parseInt(process.env.REACT_APP_REVERB_PORT || '6001');
+      const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
       echoInstance = new Echo({
         broadcaster: "reverb",
-        key: process.env.REACT_APP_REVERB_APP_KEY || "tactic-key",
-        wsHost: process.env.REACT_APP_REVERB_HOST || "localhost",
-        wsPort: parseInt(process.env.REACT_APP_REVERB_PORT || "6001"),
-        wssPort: parseInt(process.env.REACT_APP_REVERB_PORT || "6001"),
-        forceTLS: (process.env.REACT_APP_REVERB_SCHEME || "http") === "https",
+        key: REVERB_APP_KEY,
+        wsHost: REVERB_HOST,
+        wsPort: REVERB_PORT,
+        wssPort: REVERB_PORT,
+        forceTLS: (process.env.REACT_APP_REVERB_SCHEME || 'http') === 'https',
         enabledTransports: ["ws", "wss"],
-        authEndpoint: "http://localhost:8000/api/broadcasting/auth",
+        authEndpoint: `${API_URL}/api/broadcasting/auth`,
         auth: {
           headers: {
             Authorization: `Bearer ${token}`,

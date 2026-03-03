@@ -23,8 +23,10 @@ const AttendancePredictions: React.FC<AttendancePredictionsProps> = ({
       setPredictions(initialData);
       return;
     }
-    loadPredictions();
-  }, [initialData]);
+    if (!parentLoading) {
+      loadPredictions();
+    }
+  }, [initialData, parentLoading]);
 
   const loadPredictions = async () => {
     try {

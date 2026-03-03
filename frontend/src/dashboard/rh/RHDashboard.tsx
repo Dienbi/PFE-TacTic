@@ -58,6 +58,7 @@ const RHDashboard: React.FC = () => {
         <div className="dashboard-content">
           <KPISection
             stats={dashboardData?.stats ?? null}
+            aiKpis={dashboardData?.ai_kpis ?? null}
             loading={dashboardLoading}
           />
 

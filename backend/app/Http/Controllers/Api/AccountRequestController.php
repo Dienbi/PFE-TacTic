@@ -164,6 +164,7 @@ class AccountRequestController extends Controller
         );
 
         Cache::forget('account_requests_pending');
+        Cache::forget("dashboard_all_6_v2");
         return response()->json([
             'message' => 'La demande a été approuvée. Un email a été envoyé à l\'utilisateur.',
             'generated_email' => $generatedEmail,
@@ -201,6 +202,7 @@ class AccountRequestController extends Controller
         );
 
         Cache::forget('account_requests_pending');
+        Cache::forget("dashboard_all_6_v2");
         return response()->json([
             'message' => 'La demande a été refusée.',
         ]);

@@ -109,6 +109,8 @@ class CongeService
     public function approuver(int $congeId, int $approuveParId): bool
     {
         \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
+        \Illuminate\Support\Facades\Cache::forget("dashboard_all_6_v2");
+        \Illuminate\Support\Facades\Cache::forget("dashboard_rh_stats");
 
         $conge = $this->congeRepository->findOrFail($congeId);
 
@@ -152,6 +154,8 @@ class CongeService
     public function refuser(int $congeId, int $approuveParId, ?string $motifRefus = null): bool
     {
         \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
+        \Illuminate\Support\Facades\Cache::forget("dashboard_all_6_v2");
+        \Illuminate\Support\Facades\Cache::forget("dashboard_rh_stats");
 
         $conge = $this->congeRepository->findOrFail($congeId);
 

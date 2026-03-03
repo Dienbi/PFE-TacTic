@@ -196,3 +196,9 @@ Default credentials: `admin@tactic.com` / `password` (role: RH)
 - **Laravel route ordering** — same rule: static routes before parameterized ones.
 - **`torch` subprocess issue on Windows** — do not use `uvicorn --reload`; it spawns a subprocess that loses PATH and cannot import torch.
 - **Match endpoint** — returns `MatchResponse` object; extract `.recommendations` array, not the root response.
+
+
+## Performance Expectations
+- **Laravel:** Heavy use of `with()` for eager loading to prevent N+1.
+- **React:** Use `React.memo` for expensive components in the Dashboard.
+- **Python:** Torch models should be loaded once at startup, not per request.

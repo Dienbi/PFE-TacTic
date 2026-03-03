@@ -19,6 +19,21 @@ jobs:
     name: Backend – PHPUnit
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: tactic_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: backend
@@ -31,7 +46,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
-          extensions: pdo, pdo_sqlite, sqlite3, mbstring, xml, bcmath, tokenizer
+          extensions: pdo, pdo_pgsql, mbstring, xml, bcmath, tokenizer
           coverage: none
 
       - name: Cache Composer dependencies
@@ -50,8 +65,16 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
-      - name: Run PHPUnit (SQLite in-memory)
+      - name: Run PHPUnit (PostgreSQL)
         run: php artisan test --env=testing
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin
 
   # ──────────────────────────────────────────────
   # JOB 2 – React Frontend (TypeScript + Build)
@@ -116,9 +139,7 @@ jobs:
       - name: Install dependencies (CPU-only torch for CI speed)
         run: |
           pip install --upgrade pip
-          # Install torch CPU-only wheel first to avoid downloading the huge CUDA build
           pip install torch --index-url https://download.pytorch.org/whl/cpu
-          # Install the rest of the project requirements
           pip install -r requirements.txt --no-deps --ignore-installed torch
 
       - name: Check syntax (py_compile)
@@ -130,4 +151,4 @@ jobs:
         run: |
           python -c "import sys; sys.path.insert(0, '.'); from app.main import app; print('FastAPI app loaded OK')"
         env:
-          DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:5433/tactic_db"
+          DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:5432/tactic_db"

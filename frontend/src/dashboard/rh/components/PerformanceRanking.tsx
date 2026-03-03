@@ -24,8 +24,10 @@ const PerformanceRanking: React.FC<PerformanceRankingProps> = ({
       setRankings(initialData);
       return;
     }
-    loadRankings();
-  }, [initialData]);
+    if (!parentLoading) {
+      loadRankings();
+    }
+  }, [initialData, parentLoading]);
 
   const loadRankings = async () => {
     try {

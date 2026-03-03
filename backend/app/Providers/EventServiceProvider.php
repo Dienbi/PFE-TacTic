@@ -18,6 +18,12 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        \App\Events\NewActivityLog::class => [
+            \App\Listeners\InvalidateDashboardCache::class,
+        ],
+        \App\Events\NewAccountRequest::class => [
+            \App\Listeners\InvalidateDashboardCache::class,
+        ],
     ];
 
     /**

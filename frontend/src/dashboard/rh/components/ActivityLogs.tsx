@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Activity, Clock, RefreshCw } from "lucide-react";
 import client from "../../../api/client";
+import echoService from "../../../shared/services/echoService";
 import "./ActivityLogs.css";
 
 interface Log {
@@ -44,13 +45,25 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
   };
 
   useEffect(() => {
-    if (!initialData) {
+    if (!initialData && !loading) {
       fetchLogs();
     }
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchLogs, 30000);
-    return () => clearInterval(interval);
-  }, [initialData]);
+  }, [initialData, loading]);
+
+  useEffect(() => {
+    // Subscribe to real-time activity log updates
+    const unsubscribe = echoService.subscribeToPrivateRH((newLog: Log) => {
+      setLogs((prevLogs) => {
+        // Avoid duplicates
+        if (prevLogs.some((l) => l.id === newLog.id)) return prevLogs;
+        return [newLog, ...prevLogs].slice(0, 20); // Keep only top 20
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);

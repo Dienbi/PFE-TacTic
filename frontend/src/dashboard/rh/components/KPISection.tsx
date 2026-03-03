@@ -20,18 +20,25 @@ interface DashboardStats {
 
 interface KPISectionProps {
   stats: DashboardStats | null;
+  aiKpis: DashboardKPIs | null;
   loading: boolean;
 }
 
-const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
-  const [aiKpis, setAiKpis] = useState<DashboardKPIs | null>(null);
+const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, loading }) => {
+  const [aiKpis, setAiKpis] = useState<DashboardKPIs | null>(initialAiKpis);
 
   useEffect(() => {
-    aiApi
-      .getDashboardKPIs()
-      .then(setAiKpis)
-      .catch((err) => console.error("AI KPIs error:", err));
-  }, []);
+    if (initialAiKpis) {
+      setAiKpis(initialAiKpis);
+      return;
+    }
+    if (!loading) {
+      aiApi
+        .getDashboardKPIs()
+        .then(setAiKpis)
+        .catch((err) => console.error("AI KPIs error:", err));
+    }
+  }, [initialAiKpis, loading]);
   const formatCurrency = (value: number): string =>
     new Intl.NumberFormat("fr-TN", {
       style: "decimal",

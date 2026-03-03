@@ -22,35 +22,42 @@ class DashboardController extends Controller
     public function rhDashboardAll(Request $request): JsonResponse
     {
         $months = (int) $request->input('months', 6);
+        $noCache = $request->boolean('noCache');
 
-        return response()->json(
-            Cache::remember("dashboard_all_{$months}_v2", 300, function () use ($months) {
-                $startDate = Carbon::now()->startOfMonth();
-                $endDate   = Carbon::now()->endOfMonth();
-                $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
+        if ($noCache) {
+            Cache::forget("dashboard_all_{$months}_v2");
+        }
 
-                return [
-                    'stats'   => Cache::remember('dashboard_rh_stats', 300,
-                        fn() => $this->dashboardService->getRhDashboardStats()),
-                    'trend'   => Cache::remember("dashboard_trend_{$months}", 300,
-                        fn() => $this->dashboardService->getAttendanceTrend($months)),
-                    'absence' => Cache::remember($distKey, 300,
-                        fn() => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)),
-                    'recent_leaves' => Cache::remember('conges_en_attente', 300,
-                        fn() => $this->dashboardService->getRecentLeaves()),
-                    'pending_requests' => Cache::remember('account_requests_pending', 300,
-                        fn() => $this->dashboardService->getPendingAccountRequests()),
-                    'recent_logs' => Cache::remember('recent_activity_logs', 300,
-                        fn() => $this->dashboardService->getRecentActivityLogs()),
+        $data = Cache::remember("dashboard_all_{$months}_v2", 300, function () use ($months) {
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate   = Carbon::now()->endOfMonth();
+            $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
 
-                    // AI Data integrated into the single call
-                    'ai_attendance' => Cache::remember('ai_attendance_all', 600,
-                        fn() => $this->aiService->getAttendancePredictionsAll()),
-                    'ai_performance' => Cache::remember('ai_performance_all', 600,
-                        fn() => $this->aiService->getPerformanceScoresAll()),
-                ];
-            })
-        );
+            return [
+                'stats'   => Cache::remember('dashboard_rh_stats', 300,
+                    fn() => $this->dashboardService->getRhDashboardStats()),
+                'trend'   => Cache::remember("dashboard_trend_{$months}", 300,
+                    fn() => $this->dashboardService->getAttendanceTrend($months)),
+                'absence' => Cache::remember($distKey, 300,
+                    fn() => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)),
+                'recent_leaves' => Cache::remember('conges_en_attente', 300,
+                    fn() => $this->dashboardService->getRecentLeaves()),
+                'pending_requests' => Cache::remember('account_requests_pending', 300,
+                    fn() => $this->dashboardService->getPendingAccountRequests()),
+                'recent_logs' => Cache::remember('recent_activity_logs', 300,
+                    fn() => $this->dashboardService->getRecentActivityLogs()),
+
+                // AI Data integrated into the single call
+                'ai_attendance' => Cache::remember('ai_attendance_all', 600,
+                    fn() => $this->aiService->getAttendancePredictionsAll()),
+                'ai_performance' => Cache::remember('ai_performance_all', 600,
+                    fn() => $this->aiService->getPerformanceScoresAll()),
+                'ai_kpis' => Cache::remember('ai_dashboard_kpis', 600,
+                    fn() => $this->aiService->getDashboardKPIs()),
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**

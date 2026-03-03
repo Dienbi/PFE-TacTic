@@ -56,7 +56,7 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
     if (initialData) {
       setRequests(initialData);
       setIsLoading(loading ?? false);
-    } else {
+    } else if (!loading) {
       fetchPendingRequests();
     }
   }, [initialData, loading, fetchPendingRequests]);
@@ -82,12 +82,8 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
       fetchPendingRequests();
     });
 
-    // Fallback polling every 60 seconds (in case websocket fails)
-    const interval = setInterval(fetchPendingRequests, 60000);
-
     return () => {
       unsubscribe();
-      clearInterval(interval);
     };
   }, [fetchPendingRequests]);
 

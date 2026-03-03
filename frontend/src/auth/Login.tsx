@@ -23,22 +23,19 @@ const Login: React.FC = () => {
       localStorage.setItem("token", access_token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Wait a bit to show the loader (optional, for UX)
-      setTimeout(() => {
-        // Redirect based on role
-        switch (user.role) {
-          case "RH":
-            navigate("/dashboard/rh");
-            break;
-          case "CHEF_EQUIPE":
-            navigate("/dashboard/manager");
-            break;
-          case "EMPLOYE":
-          default:
-            navigate("/dashboard/employee");
-            break;
-        }
-      }, 1000);
+      // Redirect based on role
+      switch (user.role) {
+        case "RH":
+          navigate("/dashboard/rh");
+          break;
+        case "CHEF_EQUIPE":
+          navigate("/dashboard/manager");
+          break;
+        case "EMPLOYE":
+        default:
+          navigate("/dashboard/employee");
+          break;
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError("Login failed. Please check your credentials.");

@@ -133,6 +133,7 @@ jobs:
         run: |
           curl -sL https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/latest/download/php-cs-fixer.phar -o php-cs-fixer.phar
           php php-cs-fixer.phar fix backend/app/ --rules=@PSR12 --allow-risky=yes
+          rm -f php-cs-fixer.phar .php-cs-fixer.cache
 
       - name: Fix – Ruff (Python)
         continue-on-error: true
@@ -146,6 +147,7 @@ jobs:
           cd frontend
           npm install --legacy-peer-deps --silent
           npx eslint src/ --ext .ts,.tsx --fix || true
+          git checkout -- package-lock.json || true
 
       - name: Create Pull Request if changes exist
         uses: peter-evans/create-pull-request@v6

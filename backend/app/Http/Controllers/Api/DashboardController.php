@@ -12,18 +12,19 @@ use Illuminate\Support\Facades\Cache;
 class DashboardController extends Controller
 {
     public function __construct(
-        private DashboardService $dashboardService
+        private DashboardService $dashboardService,
+        private \App\Services\AIService $aiService
     ) {}
 
     /**
-     * Get all RH dashboard data in one request (stats + trend + absence distribution)
+     * Get all RH dashboard data in one request (stats + trend + absence distribution + AI data)
      */
     public function rhDashboardAll(Request $request): JsonResponse
     {
         $months = (int) $request->input('months', 6);
 
         return response()->json(
-            Cache::remember("dashboard_all_{$months}", 300, function () use ($months) {
+            Cache::remember("dashboard_all_{$months}_v2", 300, function () use ($months) {
                 $startDate = Carbon::now()->startOfMonth();
                 $endDate   = Carbon::now()->endOfMonth();
                 $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
@@ -41,6 +42,12 @@ class DashboardController extends Controller
                         fn() => $this->dashboardService->getPendingAccountRequests()),
                     'recent_logs' => Cache::remember('recent_activity_logs', 300,
                         fn() => $this->dashboardService->getRecentActivityLogs()),
+
+                    // AI Data integrated into the single call
+                    'ai_attendance' => Cache::remember('ai_attendance_all', 600,
+                        fn() => $this->aiService->getAttendancePredictionsAll()),
+                    'ai_performance' => Cache::remember('ai_performance_all', 600,
+                        fn() => $this->aiService->getPerformanceScoresAll()),
                 ];
             })
         );

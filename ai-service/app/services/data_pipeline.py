@@ -132,76 +132,70 @@ class DataPipeline:
 
     def build_attendance_features(self, user_id: Optional[int] = None) -> pd.DataFrame:
         """
-        Build attendance feature matrix.
+        Build attendance feature matrix. Vectorized version.
         Returns one row per employee with aggregated attendance metrics.
         """
         attendance = self.get_attendance_data(user_id)
-        employees = self.get_all_employees()
-
-        if attendance.empty or employees.empty:
+        if attendance.empty:
             return pd.DataFrame()
 
-        features = []
-        user_ids = [user_id] if user_id else employees['id'].tolist()
+        # Vectorized calculations for all employees at once
+        attendance['is_present'] = attendance['heure_entree'].notna()
+        attendance['is_absent'] = attendance['heure_entree'].isna()
 
-        for uid in user_ids:
-            user_att = attendance[attendance['utilisateur_id'] == uid]
-            if user_att.empty:
-                continue
+        # Group by user
+        groups = attendance.groupby('utilisateur_id')
 
-            total_days = len(user_att)
-            present_days = user_att['heure_entree'].notna().sum()
-            absent_days = total_days - present_days
+        counts = groups.agg(
+            total_days=('id', 'count'),
+            present_days=('is_present', 'sum'),
+            absent_days=('is_absent', 'sum'),
+            avg_hours_worked=('duree_travail', 'mean')
+        ).reset_index()
 
-            # Presence rate
-            presence_rate = present_days / total_days if total_days > 0 else 0
+        counts['presence_rate'] = (counts['present_days'] / counts['total_days']).fillna(0).round(4)
 
-            # Average hours worked (only present days)
-            present_records = user_att[user_att['duree_travail'].notna()]
-            avg_hours = present_records['duree_travail'].astype(float).mean() if not present_records.empty else 0
+        # Late and Early features (vectorized)
+        attendance['entry_dt'] = pd.to_datetime(attendance['heure_entree'], errors='coerce')
+        attendance['exit_dt'] = pd.to_datetime(attendance['heure_sortie'], errors='coerce')
 
-            # Late arrival rate (after 08:30)
-            late_count = 0
-            if not present_records.empty:
-                for _, row in present_records.iterrows():
-                    if row['heure_entree'] is not None:
-                        try:
-                            entry_time = pd.to_datetime(row['heure_entree'])
-                            if entry_time.hour > 8 or (entry_time.hour == 8 and entry_time.minute > 30):
-                                late_count += 1
-                        except:
-                            pass
-            late_rate = late_count / present_days if present_days > 0 else 0
+        attendance['is_late'] = (attendance['entry_dt'].dt.hour > 8) | \
+                                ((attendance['entry_dt'].dt.hour == 8) & (attendance['entry_dt'].dt.minute > 30))
 
-            # Early departure rate (before 17:00)
-            early_count = 0
-            if not present_records.empty:
-                for _, row in present_records.iterrows():
-                    if row['heure_sortie'] is not None:
-                        try:
-                            exit_time = pd.to_datetime(row['heure_sortie'])
-                            if exit_time.hour < 17:
-                                early_count += 1
-                        except:
-                            pass
-            early_departure_rate = early_count / present_days if present_days > 0 else 0
+        attendance['is_early'] = (attendance['exit_dt'].dt.hour < 17) & (attendance['exit_dt'].notna())
 
-            # Justified absence ratio
-            justified = user_att[user_att['absence_justifiee'] == True]
-            justified_ratio = len(justified) / absent_days if absent_days > 0 else 0
+        late_counts = groups.agg(
+            late_count=('is_late', 'sum'),
+            early_count=('is_early', 'sum'),
+            justified_count=('absence_justifiee', 'sum')
+        ).reset_index()
 
-            # Day-of-week absence rates
-            dow_absence = {}
-            for dow in range(5):  # 0=Mon to 4=Fri
-                dow_records = user_att[user_att['date'].dt.dayofweek == dow]
-                if len(dow_records) > 0:
-                    dow_absent = dow_records['heure_entree'].isna().sum()
-                    dow_absence[f'dow_{dow}_absence_rate'] = dow_absent / len(dow_records)
-                else:
-                    dow_absence[f'dow_{dow}_absence_rate'] = 0
+        counts = counts.merge(late_counts, on='utilisateur_id')
+        counts['late_rate'] = (counts['late_count'] / counts['present_days']).fillna(0).round(4)
+        counts['early_departure_rate'] = (counts['early_count'] / counts['present_days']).fillna(0).round(4)
+        counts['justified_absence_ratio'] = (counts['justified_count'] / counts['absent_days']).fillna(0).round(4)
 
-            # Attendance streak (consecutive present days)
-            present_flags = user_att.sort_values('date')['heure_entree'].notna().astype(int).tolist()
+        # Overtime
+        attendance['is_overtime'] = attendance['duree_travail'].astype(float) > 8
+        overtime = groups.agg(overtime_count=('is_overtime', 'sum')).reset_index()
+        counts = counts.merge(overtime, on='utilisateur_id')
+        counts['overtime_ratio'] = (counts['overtime_count'] / counts['present_days']).fillna(0).round(4)
+
+        # Day of week absence rates (vectorized)
+        attendance['dow'] = attendance['date'].dt.dayofweek
+        for dow in range(5):
+            dow_mask = (attendance['dow'] == dow)
+            dow_data = attendance[dow_mask].groupby('utilisateur_id').agg(
+                dow_total=('id', 'count'),
+                dow_absent=('is_absent', 'sum')
+            ).reset_index()
+            dow_data[f'dow_{dow}_absence_rate'] = (dow_data['dow_absent'] / dow_data['dow_total']).fillna(0).round(4)
+            counts = counts.merge(dow_data[['utilisateur_id', f'dow_{dow}_absence_rate']], on='utilisateur_id', how='left').fillna(0)
+
+        # Attendance streak (requires loop but only once per user, still more efficient than original)
+        streaks = []
+        for uid, user_att in groups:
+            present_flags = user_att.sort_values('date')['is_present'].astype(int).tolist()
             max_streak = 0
             current_streak = 0
             for flag in present_flags:
@@ -210,95 +204,49 @@ class DataPipeline:
                     max_streak = max(max_streak, current_streak)
                 else:
                     current_streak = 0
+            streaks.append({'utilisateur_id': uid, 'max_attendance_streak': max_streak})
 
-            # Overtime ratio (hours > 8)
-            overtime_days = present_records[present_records['duree_travail'].astype(float) > 8] if not present_records.empty else pd.DataFrame()
-            overtime_ratio = len(overtime_days) / present_days if present_days > 0 else 0
+        counts = counts.merge(pd.DataFrame(streaks), on='utilisateur_id')
 
-            feat = {
-                'utilisateur_id': uid,
-                'total_days': total_days,
-                'present_days': present_days,
-                'absent_days': absent_days,
-                'presence_rate': round(presence_rate, 4),
-                'avg_hours_worked': round(avg_hours, 2),
-                'late_rate': round(late_rate, 4),
-                'early_departure_rate': round(early_departure_rate, 4),
-                'justified_absence_ratio': round(justified_ratio, 4),
-                'overtime_ratio': round(overtime_ratio, 4),
-                'max_attendance_streak': max_streak,
-                **{k: round(v, 4) for k, v in dow_absence.items()},
-            }
-            features.append(feat)
-
-        return pd.DataFrame(features)
+        return counts.drop(columns=['late_count', 'early_count', 'justified_count', 'overtime_count'])
 
     def build_leave_features(self, user_id: Optional[int] = None) -> pd.DataFrame:
         """
-        Build leave feature matrix.
+        Build leave feature matrix. Vectorized version.
         Returns one row per employee with aggregated leave metrics.
         """
         leaves = self.get_leave_data(user_id)
-        employees = self.get_all_employees()
-
-        if leaves.empty or employees.empty:
+        if leaves.empty:
             return pd.DataFrame()
 
-        features = []
-        user_ids = [user_id] if user_id else employees['id'].tolist()
+        leaves['duration'] = ((leaves['date_fin'] - leaves['date_debut']).dt.days + 1).clip(lower=0)
+        leaves['is_approved'] = leaves['statut'] == 'APPROUVE'
+        leaves['is_rejected'] = leaves['statut'] == 'REFUSE'
+        leaves['is_sick'] = leaves['type'] == 'MALADIE'
 
-        for uid in user_ids:
-            user_leaves = leaves[leaves['utilisateur_id'] == uid]
+        groups = leaves.groupby('utilisateur_id')
 
-            total_requests = len(user_leaves)
-            if total_requests == 0:
-                features.append({
-                    'utilisateur_id': uid,
-                    'total_leave_requests': 0,
-                    'total_leave_days': 0,
-                    'sick_leave_ratio': 0,
-                    'approved_ratio': 0,
-                    'rejected_ratio': 0,
-                    'avg_leave_duration': 0,
-                    'leave_frequency': 0,
-                })
-                continue
+        feats = groups.agg(
+            total_leave_requests=('id', 'count'),
+            sick_count=('is_sick', 'sum'),
+            approved_count=('is_approved', 'sum'),
+            rejected_count=('is_rejected', 'sum'),
+            avg_leave_duration=('duration', 'mean')
+        ).reset_index()
 
-            # Total leave days (approved only)
-            approved = user_leaves[user_leaves['statut'] == 'APPROUVE']
-            total_days = 0
-            for _, row in approved.iterrows():
-                days = (row['date_fin'] - row['date_debut']).days + 1
-                total_days += max(days, 0)
+        # Approved duration sum
+        approved_only = leaves[leaves['is_approved']].groupby('utilisateur_id')['duration'].sum().reset_index()
+        approved_only.columns = ['utilisateur_id', 'total_leave_days']
 
-            # Sick leave ratio
-            sick = user_leaves[user_leaves['type'] == 'MALADIE']
-            sick_ratio = len(sick) / total_requests if total_requests > 0 else 0
+        feats = feats.merge(approved_only, on='utilisateur_id', how='left').fillna(0)
 
-            # Approved/rejected ratio
-            approved_ratio = len(approved) / total_requests if total_requests > 0 else 0
-            rejected = user_leaves[user_leaves['statut'] == 'REFUSE']
-            rejected_ratio = len(rejected) / total_requests if total_requests > 0 else 0
+        feats['sick_leave_ratio'] = (feats['sick_count'] / feats['total_leave_requests']).round(4)
+        feats['approved_ratio'] = (feats['approved_count'] / feats['total_leave_requests']).round(4)
+        feats['rejected_ratio'] = (feats['rejected_count'] / feats['total_leave_requests']).round(4)
+        feats['leave_frequency'] = feats['total_leave_requests']
+        feats['avg_leave_duration'] = feats['avg_leave_duration'].round(2)
 
-            # Average leave duration
-            durations = []
-            for _, row in user_leaves.iterrows():
-                d = (row['date_fin'] - row['date_debut']).days + 1
-                durations.append(max(d, 0))
-            avg_duration = np.mean(durations) if durations else 0
-
-            features.append({
-                'utilisateur_id': uid,
-                'total_leave_requests': total_requests,
-                'total_leave_days': total_days,
-                'sick_leave_ratio': round(sick_ratio, 4),
-                'approved_ratio': round(approved_ratio, 4),
-                'rejected_ratio': round(rejected_ratio, 4),
-                'avg_leave_duration': round(avg_duration, 2),
-                'leave_frequency': total_requests,  # raw count over 6 months
-            })
-
-        return pd.DataFrame(features)
+        return feats.drop(columns=['sick_count', 'approved_count', 'rejected_count'])
 
     def build_employee_features(self) -> pd.DataFrame:
         """

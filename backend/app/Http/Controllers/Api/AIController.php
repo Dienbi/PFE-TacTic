@@ -24,7 +24,10 @@ class AIController extends Controller
      */
     public function attendancePredictionsAll(): JsonResponse
     {
-        return response()->json($this->aiService->getAttendancePredictionsAll());
+        $data = \Illuminate\Support\Facades\Cache::remember('ai_attendance_all', 600, function () {
+            return $this->aiService->getAttendancePredictionsAll();
+        });
+        return response()->json($data);
     }
 
     /**
@@ -33,7 +36,10 @@ class AIController extends Controller
      */
     public function attendancePrediction(int $userId): JsonResponse
     {
-        return response()->json($this->aiService->getAttendancePrediction($userId));
+        $data = \Illuminate\Support\Facades\Cache::remember("ai_attendance_{$userId}", 600, function () use ($userId) {
+            return $this->aiService->getAttendancePrediction($userId);
+        });
+        return response()->json($data);
     }
 
     // ─── Performance Scores ─────────────────────────────────────
@@ -44,7 +50,10 @@ class AIController extends Controller
      */
     public function performanceScoresAll(): JsonResponse
     {
-        return response()->json($this->aiService->getPerformanceScoresAll());
+        $data = \Illuminate\Support\Facades\Cache::remember('ai_performance_all', 600, function () {
+            return $this->aiService->getPerformanceScoresAll();
+        });
+        return response()->json($data);
     }
 
     /**
@@ -53,7 +62,10 @@ class AIController extends Controller
      */
     public function performanceScore(int $userId): JsonResponse
     {
-        return response()->json($this->aiService->getPerformanceScore($userId));
+        $data = \Illuminate\Support\Facades\Cache::remember("ai_performance_{$userId}", 600, function () use ($userId) {
+            return $this->aiService->getPerformanceScore($userId);
+        });
+        return response()->json($data);
     }
 
     // ─── Dashboard KPIs ─────────────────────────────────────────
@@ -64,7 +76,10 @@ class AIController extends Controller
      */
     public function dashboardKPIs(): JsonResponse
     {
-        return response()->json($this->aiService->getDashboardKPIs());
+        $data = \Illuminate\Support\Facades\Cache::remember('ai_dashboard_kpis', 600, function () {
+            return $this->aiService->getDashboardKPIs();
+        });
+        return response()->json($data);
     }
 
     // ─── Job Matching ────────────────────────────────────────────
@@ -92,6 +107,11 @@ class AIController extends Controller
                 'error' => 'Invalid model. Choose from: ' . implode(', ', $allowed),
             ], 400);
         }
+
+        // Clear AI cache on training
+        \Illuminate\Support\Facades\Cache::forget('ai_attendance_all');
+        \Illuminate\Support\Facades\Cache::forget('ai_performance_all');
+        \Illuminate\Support\Facades\Cache::forget('ai_dashboard_kpis');
 
         return response()->json($this->aiService->triggerTraining($model));
     }

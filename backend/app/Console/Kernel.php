@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Pre-warm the dashboard cache every 15 minutes
+        $schedule->command('app:prewarm-dashboard-cache')->everyFifteenMinutes();
     }
 
     /**

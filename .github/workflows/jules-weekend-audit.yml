@@ -1,0 +1,37 @@
+name: Weekend AI Architect Audit
+
+on:
+  schedule:
+    # Sunday at 02:00 (Matches your Python scheduler time)
+    - cron: '0 2 * * 0'
+  workflow_dispatch: # Allows you to run it manually to test
+
+jobs:
+  jules-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Jules Deep Audit
+        uses: google-labs-code/jules-action@v1
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          prompt: |
+            Task: Perform a full-stack audit of the TacTic platform based on AGENTS.md.
+            
+            1. Backend (Laravel):
+               - Verify new controllers follow the Repository Pattern (Controller -> Service -> Repository).
+               - Check for N+1 query issues in Eloquent relationships.
+               - Ensure all JSON responses use response()->json().
+            
+            2. Frontend (React/TS):
+               - Check for missing optional chaining (?.) on API responses.
+               - Identify components with potential unnecessary re-renders.
+               - Verify TypeScript interfaces match the backend snake_case naming.
+            
+            3. AI Service (FastAPI):
+               - Ensure route ordering (static before parameterized).
+               - Look for any non-async blocking calls in FastAPI endpoints.
+            
+            If violations are found, refactor the code to comply with AGENTS.md and open a single 'Weekend Maintenance' Pull Request.

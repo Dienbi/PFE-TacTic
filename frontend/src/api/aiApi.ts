@@ -94,7 +94,11 @@ export const aiApi = {
 
   getAttendancePredictionsAll: async (): Promise<AttendanceSummary[]> => {
     const r = await client.get("/ai/predictions/attendance");
-    return r.data?.data ?? r.data ?? [];
+    const data = r.data?.data ?? r.data ?? [];
+    if (!Array.isArray(data)) {
+      throw new Error(data?.message ?? "AI service unavailable");
+    }
+    return data;
   },
 
   // ── Performance Scores ───────────────────────────────────────────────
@@ -105,7 +109,11 @@ export const aiApi = {
 
   getPerformanceScoresAll: async (): Promise<PerformanceResult[]> => {
     const r = await client.get("/ai/predictions/performance");
-    return r.data?.data ?? r.data ?? [];
+    const data = r.data?.data ?? r.data ?? [];
+    if (!Array.isArray(data)) {
+      throw new Error(data?.message ?? "AI service unavailable");
+    }
+    return data;
   },
 
   // ── Dashboard KPIs ───────────────────────────────────────────────────

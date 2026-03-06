@@ -173,16 +173,18 @@ class LeaveConflictService
             ->where('actif', true)
             ->count();
 
-        if ($totalTeamSize === 0) return;
+        if ($totalTeamSize === 0) {
+            return;
+        }
 
-        $membersOnLeave = Conge::whereHas('utilisateur', function($q) use ($teamId) {
-                $q->where('equipe_id', $teamId);
-            })
+        $membersOnLeave = Conge::whereHas('utilisateur', function ($q) use ($teamId) {
+            $q->where('equipe_id', $teamId);
+        })
             ->where('statut', StatutConge::APPROUVE)
-            ->where(function($query) use ($start, $end) {
+            ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('date_debut', [$start, $end])
                     ->orWhereBetween('date_fin', [$start, $end])
-                    ->orWhere(function($q) use ($start, $end) {
+                    ->orWhere(function ($q) use ($start, $end) {
                         $q->where('date_debut', '<', $start)
                             ->where('date_fin', '>', $end);
                     });
@@ -203,15 +205,15 @@ class LeaveConflictService
 
     private function checkManagerVsTeamOverlap(Utilisateur $manager, Carbon $start, Carbon $end, array &$conflicts): void
     {
-        $hasMemberOnLeave = Conge::whereHas('utilisateur', function($q) use ($manager) {
-                $q->where('equipe_id', $manager->equipe_id)
-                  ->where('id', '!=', $manager->id);
-            })
+        $hasMemberOnLeave = Conge::whereHas('utilisateur', function ($q) use ($manager) {
+            $q->where('equipe_id', $manager->equipe_id)
+              ->where('id', '!=', $manager->id);
+        })
             ->where('statut', StatutConge::APPROUVE)
-            ->where(function($query) use ($start, $end) {
+            ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('date_debut', [$start, $end])
                     ->orWhereBetween('date_fin', [$start, $end])
-                    ->orWhere(function($q) use ($start, $end) {
+                    ->orWhere(function ($q) use ($start, $end) {
                         $q->where('date_debut', '<', $start)
                             ->where('date_fin', '>', $end);
                     });
@@ -233,14 +235,16 @@ class LeaveConflictService
             ->where('role', Role::CHEF_EQUIPE)
             ->first();
 
-        if (!$manager) return;
+        if (!$manager) {
+            return;
+        }
 
         $managerOnLeave = Conge::where('utilisateur_id', $manager->id)
             ->where('statut', StatutConge::APPROUVE)
-            ->where(function($query) use ($start, $end) {
+            ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('date_debut', [$start, $end])
                     ->orWhereBetween('date_fin', [$start, $end])
-                    ->orWhere(function($q) use ($start, $end) {
+                    ->orWhere(function ($q) use ($start, $end) {
                         $q->where('date_debut', '<', $start)
                             ->where('date_fin', '>', $end);
                     });

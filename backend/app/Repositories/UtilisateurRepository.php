@@ -37,7 +37,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
     public function getActifs(): Collection
     {
         return $this->cacheService->getActiveUsers(
-            fn() => $this->model->actif()->get()
+            fn () => $this->model->actif()->get()
         );
     }
 

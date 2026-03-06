@@ -15,7 +15,8 @@ class UtilisateurController extends Controller
 {
     public function __construct(
         protected UtilisateurService $utilisateurService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all users
@@ -25,7 +26,7 @@ class UtilisateurController extends Controller
         if ($request->has('paginate')) {
             $users = $this->utilisateurService->getPaginated($request->get('per_page', 15));
         } else {
-            $users = Cache::remember('users_all', 120, fn() => $this->utilisateurService->getAll());
+            $users = Cache::remember('users_all', 120, fn () => $this->utilisateurService->getAll());
         }
 
         return response()->json($users);

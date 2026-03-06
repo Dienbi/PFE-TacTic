@@ -11,7 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 class LeaveStatusNotification implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public function __construct(
         public int $userId,
@@ -19,7 +21,8 @@ class LeaveStatusNotification implements ShouldBroadcastNow
         public string $title,
         public string $message,
         public array $data = []
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

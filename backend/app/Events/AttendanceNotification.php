@@ -11,7 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 class AttendanceNotification implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public string $type;
     public string $title;

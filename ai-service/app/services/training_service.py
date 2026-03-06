@@ -4,7 +4,7 @@ Training Service — orchestrates training of all AI models.
 
 import logging
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict
 from sqlalchemy.orm import Session
 
 from app.services.data_pipeline import DataPipeline

@@ -119,7 +119,6 @@ class PerformanceScorer:
         Returns:
             dict with training metrics
         """
-        import pandas as pd
         
         # Merge features with labels
         data = employee_features.merge(performance_labels, on='utilisateur_id', how='inner')

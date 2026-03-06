@@ -53,7 +53,7 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
                 'date' => $today,
                 'heure_entree' => $type === 'entree' ? Carbon::now() : null,
             ]);
-        } else if ($type === 'sortie' && !$pointage->heure_sortie) {
+        } elseif ($type === 'sortie' && !$pointage->heure_sortie) {
             $pointage->heure_sortie = Carbon::now();
             $pointage->calculerDureeTravail();
         }
@@ -116,7 +116,7 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
                 'date' => $today,
                 'heure_entree' => Carbon::now(),
             ]);
-        } else if (!$pointage->heure_entree) {
+        } elseif (!$pointage->heure_entree) {
             $pointage->heure_entree = Carbon::now();
             $pointage->save();
         }

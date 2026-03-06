@@ -11,7 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 class JobRequestReviewedEvent implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public function __construct(
         public int $userId,
@@ -19,7 +21,8 @@ class JobRequestReviewedEvent implements ShouldBroadcastNow
         public string $titre,
         public bool $approved,
         public ?string $raison = null
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

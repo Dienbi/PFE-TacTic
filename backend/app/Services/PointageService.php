@@ -14,7 +14,8 @@ class PointageService
     public function __construct(
         protected PointageRepositoryInterface $pointageRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function getSummary(Carbon $date): array
     {
@@ -33,7 +34,9 @@ class PointageService
 
         foreach ($todayPointages as $pointage) {
             $user = $pointage->utilisateur;
-            if (!$user) continue;
+            if (!$user) {
+                continue;
+            }
 
             $userInfo = [
                 'id' => $user->id,

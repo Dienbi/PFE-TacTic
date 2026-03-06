@@ -57,14 +57,18 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
     public function assignChef(int $equipeId, int $chefId): bool
     {
         $result = $this->update($equipeId, ['chef_equipe_id' => $chefId]);
-        if ($result) $this->cacheService->invalidateTeams();
+        if ($result) {
+            $this->cacheService->invalidateTeams();
+        }
         return $result;
     }
 
     public function removeChef(int $equipeId): bool
     {
         $result = $this->update($equipeId, ['chef_equipe_id' => null]);
-        if ($result) $this->cacheService->invalidateTeams();
+        if ($result) {
+            $this->cacheService->invalidateTeams();
+        }
         return $result;
     }
 
@@ -81,7 +85,9 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         }
         $utilisateur->equipe_id = $equipeId;
         $result = $utilisateur->save();
-        if ($result) $this->cacheService->invalidateTeams();
+        if ($result) {
+            $this->cacheService->invalidateTeams();
+        }
         return $result;
     }
 
@@ -93,7 +99,9 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         }
         $utilisateur->equipe_id = null;
         $result = $utilisateur->save();
-        if ($result) $this->cacheService->invalidateTeams();
+        if ($result) {
+            $this->cacheService->invalidateTeams();
+        }
         return $result;
     }
 

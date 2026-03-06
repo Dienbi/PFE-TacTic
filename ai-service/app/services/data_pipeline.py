@@ -7,7 +7,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)

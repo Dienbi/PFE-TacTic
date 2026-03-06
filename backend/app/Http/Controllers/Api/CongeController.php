@@ -14,7 +14,8 @@ class CongeController extends Controller
 {
     public function __construct(
         protected CongeService $congeService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all leave requests (paginated)
@@ -69,7 +70,10 @@ class CongeController extends Controller
      */
     public function enAttente(): JsonResponse
     {
-        $conges = Cache::remember('conges_en_attente', 300, fn () =>
+        $conges = Cache::remember(
+            'conges_en_attente',
+            300,
+            fn () =>
             $this->congeService->getEnAttente()
         );
 

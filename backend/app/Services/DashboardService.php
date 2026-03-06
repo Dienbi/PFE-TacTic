@@ -14,7 +14,8 @@ class DashboardService
         private UtilisateurRepositoryInterface $utilisateurRepository,
         private PointageRepositoryInterface $pointageRepository,
         private CongeRepositoryInterface $congeRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Get RH dashboard KPI statistics
@@ -96,10 +97,10 @@ class DashboardService
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
         $monthlyPayroll = DB::table('paies')
-            ->where(function($query) use ($startOfMonth, $endOfMonth) {
+            ->where(function ($query) use ($startOfMonth, $endOfMonth) {
                 $query->whereBetween('periode_debut', [$startOfMonth, $endOfMonth])
                     ->orWhereBetween('periode_fin', [$startOfMonth, $endOfMonth])
-                    ->orWhere(function($q) use ($startOfMonth, $endOfMonth) {
+                    ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
                         $q->where('periode_debut', '<=', $startOfMonth)
                           ->where('periode_fin', '>=', $endOfMonth);
                     });
@@ -173,10 +174,10 @@ class DashboardService
         // Single query for all conge types using conditional aggregation
         $congeStats = DB::table('conges')
             ->where('statut', 'APPROUVE')
-            ->where(function($query) use ($startDate, $endDate) {
+            ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date_debut', [$startDate, $endDate])
                     ->orWhereBetween('date_fin', [$startDate, $endDate])
-                    ->orWhere(function($q) use ($startDate, $endDate) {
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
                         $q->where('date_debut', '<=', $startDate)
                           ->where('date_fin', '>=', $endDate);
                     });

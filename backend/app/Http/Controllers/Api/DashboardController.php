@@ -14,7 +14,8 @@ class DashboardController extends Controller
     public function __construct(
         private DashboardService $dashboardService,
         private \App\Services\AIService $aiService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all RH dashboard data in one request (stats + trend + absence distribution + AI data)
@@ -34,26 +35,53 @@ class DashboardController extends Controller
             $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
 
             return [
-                'stats'   => Cache::remember('dashboard_rh_stats', 300,
-                    fn() => $this->dashboardService->getRhDashboardStats()),
-                'trend'   => Cache::remember("dashboard_trend_{$months}", 300,
-                    fn() => $this->dashboardService->getAttendanceTrend($months)),
-                'absence' => Cache::remember($distKey, 300,
-                    fn() => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)),
-                'recent_leaves' => Cache::remember('conges_en_attente', 300,
-                    fn() => $this->dashboardService->getRecentLeaves()),
-                'pending_requests' => Cache::remember('account_requests_pending', 300,
-                    fn() => $this->dashboardService->getPendingAccountRequests()),
-                'recent_logs' => Cache::remember('recent_activity_logs', 300,
-                    fn() => $this->dashboardService->getRecentActivityLogs()),
+                'stats'   => Cache::remember(
+                    'dashboard_rh_stats',
+                    300,
+                    fn () => $this->dashboardService->getRhDashboardStats()
+                ),
+                'trend'   => Cache::remember(
+                    "dashboard_trend_{$months}",
+                    300,
+                    fn () => $this->dashboardService->getAttendanceTrend($months)
+                ),
+                'absence' => Cache::remember(
+                    $distKey,
+                    300,
+                    fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
+                ),
+                'recent_leaves' => Cache::remember(
+                    'conges_en_attente',
+                    300,
+                    fn () => $this->dashboardService->getRecentLeaves()
+                ),
+                'pending_requests' => Cache::remember(
+                    'account_requests_pending',
+                    300,
+                    fn () => $this->dashboardService->getPendingAccountRequests()
+                ),
+                'recent_logs' => Cache::remember(
+                    'recent_activity_logs',
+                    300,
+                    fn () => $this->dashboardService->getRecentActivityLogs()
+                ),
 
                 // AI Data integrated into the single call
-                'ai_attendance' => Cache::remember('ai_attendance_all', 600,
-                    fn() => $this->aiService->getAttendancePredictionsAll()),
-                'ai_performance' => Cache::remember('ai_performance_all', 600,
-                    fn() => $this->aiService->getPerformanceScoresAll()),
-                'ai_kpis' => Cache::remember('ai_dashboard_kpis', 600,
-                    fn() => $this->aiService->getDashboardKPIs()),
+                'ai_attendance' => Cache::remember(
+                    'ai_attendance_all',
+                    600,
+                    fn () => $this->aiService->getAttendancePredictionsAll()
+                ),
+                'ai_performance' => Cache::remember(
+                    'ai_performance_all',
+                    600,
+                    fn () => $this->aiService->getPerformanceScoresAll()
+                ),
+                'ai_kpis' => Cache::remember(
+                    'ai_dashboard_kpis',
+                    600,
+                    fn () => $this->aiService->getDashboardKPIs()
+                ),
             ];
         });
 
@@ -65,7 +93,10 @@ class DashboardController extends Controller
      */
     public function rhStats(Request $request): JsonResponse
     {
-        $stats = Cache::remember('dashboard_rh_stats', 300, fn () =>
+        $stats = Cache::remember(
+            'dashboard_rh_stats',
+            300,
+            fn () =>
             $this->dashboardService->getRhDashboardStats()
         );
         return response()->json($stats);
@@ -77,7 +108,10 @@ class DashboardController extends Controller
     public function attendanceTrend(Request $request): JsonResponse
     {
         $months = $request->input('months', 6);
-        $trend = Cache::remember("dashboard_trend_{$months}", 300, fn () =>
+        $trend = Cache::remember(
+            "dashboard_trend_{$months}",
+            300,
+            fn () =>
             $this->dashboardService->getAttendanceTrend($months)
         );
         return response()->json($trend);
@@ -97,7 +131,10 @@ class DashboardController extends Controller
             : Carbon::now()->endOfMonth();
 
         $key = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
-        $distribution = Cache::remember($key, 300, fn () =>
+        $distribution = Cache::remember(
+            $key,
+            300,
+            fn () =>
             $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
         );
         return response()->json($distribution);

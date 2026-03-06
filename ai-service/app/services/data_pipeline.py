@@ -350,7 +350,7 @@ class DataPipeline:
                         entry = pd.to_datetime(row['heure_entree'])
                         if entry.hour > 8 or (entry.hour == 8 and entry.minute > 30):
                             was_late = 1.0
-                    except:
+                    except Exception:
                         pass
 
                 dow = date.weekday() / 4.0 if hasattr(date, 'weekday') else pd.to_datetime(date).weekday() / 4.0

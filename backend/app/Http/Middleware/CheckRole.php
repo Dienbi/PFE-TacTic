@@ -24,7 +24,7 @@ class CheckRole
             ], 401);
         }
 
-        $allowedRoles = array_map(fn($role) => Role::from(strtoupper($role)), $roles);
+        $allowedRoles = array_map(fn ($role) => Role::from(strtoupper($role)), $roles);
 
         foreach ($allowedRoles as $role) {
             if ($user->hasRole($role)) {

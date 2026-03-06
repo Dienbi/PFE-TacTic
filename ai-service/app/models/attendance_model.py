@@ -8,7 +8,7 @@ import torch.nn as nn
 import numpy as np
 import os
 import logging
-from typing import Optional, Tuple
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 

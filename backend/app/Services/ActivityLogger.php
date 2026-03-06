@@ -18,7 +18,7 @@ class ActivityLogger
 
         try {
             // Load user relation for broadcasting
-            $log->load(['user' => fn($q) => $q->select('id', 'nom', 'prenom', 'role')]);
+            $log->load(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')]);
             event(new \App\Events\NewActivityLog($log));
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("Failed to broadcast activity log: " . $e->getMessage());

@@ -17,7 +17,8 @@ class CongeService
         protected CongeRepositoryInterface $congeRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository,
         protected LeaveConflictService $leaveConflictService
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {

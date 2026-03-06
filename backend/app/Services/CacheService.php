@@ -11,20 +11,20 @@ use Illuminate\Support\Facades\Cache;
 class CacheService
 {
     // Cache key prefixes
-    const PREFIX_ACTIVE_USERS = 'active_users';
-    const PREFIX_USER_PERMISSIONS = 'user_permissions';
-    const PREFIX_USER = 'user';
-    const PREFIX_PAYROLL_STATS = 'payroll_stats';
-    const PREFIX_COMPETENCES = 'competences';
-    const PREFIX_TEAMS = 'teams';
-    const PREFIX_TEAM_MEMBERS = 'team_members';
+    public const PREFIX_ACTIVE_USERS = 'active_users';
+    public const PREFIX_USER_PERMISSIONS = 'user_permissions';
+    public const PREFIX_USER = 'user';
+    public const PREFIX_PAYROLL_STATS = 'payroll_stats';
+    public const PREFIX_COMPETENCES = 'competences';
+    public const PREFIX_TEAMS = 'teams';
+    public const PREFIX_TEAM_MEMBERS = 'team_members';
 
     // Cache TTLs in seconds
-    const TTL_ACTIVE_USERS = 300; // 5 minutes
-    const TTL_USER_PERMISSIONS = 3600; // 1 hour
-    const TTL_USER_DATA = 1800; // 30 minutes
-    const TTL_STATISTICS = 3600; // 1 hour
-    const TTL_REFERENCE_DATA = 86400; // 1 day
+    public const TTL_ACTIVE_USERS = 300; // 5 minutes
+    public const TTL_USER_PERMISSIONS = 3600; // 1 hour
+    public const TTL_USER_DATA = 1800; // 30 minutes
+    public const TTL_STATISTICS = 3600; // 1 hour
+    public const TTL_REFERENCE_DATA = 86400; // 1 day
 
     /**
      * Get cached active users list

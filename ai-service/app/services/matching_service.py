@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import List, Dict, Optional

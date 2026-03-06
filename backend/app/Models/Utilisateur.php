@@ -13,7 +13,9 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class Utilisateur extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
 
     protected $table = 'utilisateurs';
 

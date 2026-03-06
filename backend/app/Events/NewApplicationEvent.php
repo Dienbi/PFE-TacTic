@@ -10,7 +10,9 @@ use Illuminate\Queue\SerializesModels;
 
 class NewApplicationEvent implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public function __construct(
         public int $applicationId,
@@ -18,7 +20,8 @@ class NewApplicationEvent implements ShouldBroadcastNow
         public string $jobPostTitre,
         public string $candidatNom,
         public string $candidatMatricule
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

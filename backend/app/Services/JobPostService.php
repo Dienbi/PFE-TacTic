@@ -14,7 +14,8 @@ class JobPostService
     public function __construct(
         protected JobPostRepository $jobPostRepository,
         protected CompetenceRepository $competenceRepository
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {
@@ -110,8 +111,12 @@ class JobPostService
 
         // Update the job post
         $updateData = [];
-        if (isset($data['titre'])) $updateData['titre'] = $data['titre'];
-        if (isset($data['description'])) $updateData['description'] = $data['description'];
+        if (isset($data['titre'])) {
+            $updateData['titre'] = $data['titre'];
+        }
+        if (isset($data['description'])) {
+            $updateData['description'] = $data['description'];
+        }
 
         $success = $this->jobPostRepository->update($id, $updateData);
 

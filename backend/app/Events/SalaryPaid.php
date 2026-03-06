@@ -14,7 +14,9 @@ use Illuminate\Queue\SerializesModels;
 
 class SalaryPaid implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public $message;
     public $salaireNet;

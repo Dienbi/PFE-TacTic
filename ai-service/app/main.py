@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import matching, predictions, training
 from app.models.schemas import HealthResponse
 import logging
-from datetime import datetime
 
 # Configure logging
 logging.basicConfig(

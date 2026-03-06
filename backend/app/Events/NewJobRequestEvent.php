@@ -10,14 +10,17 @@ use Illuminate\Queue\SerializesModels;
 
 class NewJobRequestEvent implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public function __construct(
         public int $jobRequestId,
         public string $titre,
         public string $demandeurNom,
         public string $equipeNom
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

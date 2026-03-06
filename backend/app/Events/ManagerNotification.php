@@ -11,7 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 class ManagerNotification implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public function __construct(
         public int $managerId,
@@ -19,7 +21,8 @@ class ManagerNotification implements ShouldBroadcastNow
         public string $title,
         public string $message,
         public array $data = []
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

@@ -18,7 +18,8 @@ class PaieService
         protected PointageRepositoryInterface $pointageRepository,
         protected CacheService $cacheService,
         protected PayrollCalculator $payrollCalculator
-    ) {}
+    ) {
+    }
 
     // ── CRUD ──────────────────────────────────────────────────────────
 
@@ -247,7 +248,7 @@ class PaieService
     public function getGlobalStats(): array
     {
         return $this->cacheService->getPayrollStats(
-            fn() => $this->paieRepository->getGlobalStats()
+            fn () => $this->paieRepository->getGlobalStats()
         );
     }
 
@@ -387,12 +388,13 @@ class PaieService
     {
         $user = $this->utilisateurRepository->find($userId);
         if ($user) {
-             try {
+            try {
                 $user->notify(new \App\Notifications\SalaireNotification(
                     "Votre salaire de base a été mis à jour: " . number_format($salaire, 2) . " TND",
                     'info'
                 ));
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+            }
         }
     }
 }

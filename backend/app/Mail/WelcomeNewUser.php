@@ -13,7 +13,8 @@ use Illuminate\Queue\SerializesModels;
 
 class WelcomeNewUser extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Create a new message instance.
@@ -21,7 +22,8 @@ class WelcomeNewUser extends Mailable
     public function __construct(
         public AccountRequest $accountRequest,
         public Utilisateur $utilisateur
-    ) {}
+    ) {
+    }
 
     /**
      * Get the message envelope.

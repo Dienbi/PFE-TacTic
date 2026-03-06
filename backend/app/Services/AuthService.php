@@ -11,7 +11,8 @@ class AuthService
 {
     public function __construct(
         protected UtilisateurRepository $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function login(string $email, string $password): ?array
     {

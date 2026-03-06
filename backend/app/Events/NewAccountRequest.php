@@ -10,7 +10,9 @@ use Illuminate\Queue\SerializesModels;
 
 class NewAccountRequest implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public array $accountRequest;
 

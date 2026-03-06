@@ -70,7 +70,10 @@ class AccountRequestController extends Controller
      */
     public function pending(): JsonResponse
     {
-        $requests = Cache::remember('account_requests_pending', 300, fn() =>
+        $requests = Cache::remember(
+            'account_requests_pending',
+            300,
+            fn () =>
             AccountRequest::pending()
                 ->orderBy('created_at', 'desc')
                 ->get()

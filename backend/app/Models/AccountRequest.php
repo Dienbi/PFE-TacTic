@@ -30,9 +30,9 @@ class AccountRequest extends Model
     ];
 
     // Status constants
-    const STATUS_PENDING = 'PENDING';
-    const STATUS_APPROVED = 'APPROVED';
-    const STATUS_REJECTED = 'REJECTED';
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_APPROVED = 'APPROVED';
+    public const STATUS_REJECTED = 'REJECTED';
 
     // Relationships
     public function approver()

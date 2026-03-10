@@ -50,7 +50,7 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         wssPort: REVERB_PORT,
         forceTLS: (process.env.REACT_APP_REVERB_SCHEME || 'http') === 'https',
         enabledTransports: ["ws", "wss"],
-        authEndpoint: `${API_URL}/api/broadcasting/auth`,
+        authEndpoint: `${API_URL}/broadcasting/auth`,
         auth: {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -115,9 +115,22 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         });
     }
 
-    // Cleanup
+    // Cleanup: leave all subscribed channels so re-mounting doesn't register duplicate listeners
     return () => {
-      // Don't disconnect - let connection persist
+      isSubscribed.current = false;
+      if (echoInstance) {
+        try {
+          echoInstance.leave(`user.${user.id}`);
+          if (user.role === "CHEF_EQUIPE") {
+            echoInstance.leave(`manager.${user.id}`);
+          }
+          if (user.role === "RH") {
+            echoInstance.leave("rh.attendance");
+          }
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
     };
   }, [showToast, options]);
 

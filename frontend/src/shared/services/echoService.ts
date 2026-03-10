@@ -43,7 +43,7 @@ class EchoService {
             wssPort: REVERB_PORT,
             forceTLS: (process.env.REACT_APP_REVERB_SCHEME || 'http') === 'https',
             enabledTransports: ['ws', 'wss'],
-            authEndpoint: `${API_URL}/api/broadcasting/auth`,
+            authEndpoint: `${API_URL}/broadcasting/auth`,
             auth: {
                 headers: {
                     Authorization: `Bearer ${token}`,

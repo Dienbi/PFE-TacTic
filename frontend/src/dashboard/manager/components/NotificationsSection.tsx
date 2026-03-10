@@ -183,9 +183,19 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         }
       });
 
-    // Cleanup only on actual unmount, not on StrictMode double-render
+    // Cleanup: leave channels so re-mounting doesn't register duplicate listeners
     return () => {
-      // Don't disconnect immediately - let connection persist
+      isSubscribed.current = false;
+      if (echoInstance) {
+        try {
+          echoInstance.leave(`user.${user.id}`);
+          if (user.role === "CHEF_EQUIPE") {
+            echoInstance.leave(`manager.${user.id}`);
+          }
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
     };
   }, [showToast]);
 

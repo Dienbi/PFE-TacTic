@@ -31,3 +31,8 @@ Broadcast::channel('user.{id}', function ($user, $id) {
 Broadcast::channel('rh.attendance', function ($user) {
     return $user->role->value === 'RH';
 });
+
+// RH activity log notifications channel
+Broadcast::channel('rh.notifications', function ($user) {
+    return $user->role->value === 'RH';
+});

@@ -72,7 +72,7 @@ The frontend never calls the Python service directly.
 - **Auth token:** Stored in `localStorage` as `token`. Header: `Authorization: Bearer <token>`.
 - **AI API client:** `frontend/src/api/aiApi.ts` — all AI calls go through Laravel proxy (`/ai/...`).
 - **Routing:** React Router v6, protected routes by role.
-- **UI:** Custom CSS (no Tailwind). Icons via `lucide-react`.
+- **UI:** Tailwind CSS + Lucide Icons. (Project is migrating from custom CSS to Tailwind for modern, consistent design).
 
 **Module structure:**
 
@@ -198,7 +198,9 @@ Default credentials: `admin@tactic.com` / `password` (role: RH)
 - **Match endpoint** — returns `MatchResponse` object; extract `.recommendations` array, not the root response.
 
 
-## Performance Expectations
-- **Laravel:** Heavy use of `with()` for eager loading to prevent N+1.
-- **React:** Use `React.memo` for expensive components in the Dashboard.
-- **Python:** Torch models should be loaded once at startup, not per request.
+## Performance & Quality Expectations
+- **Architecture:** Keep complexity low to ensure fast execution and response times.
+- **Laravel:** Heavy use of `with()` for eager loading to prevent N+1. Always use repositories.
+- **React:** Use functional components with hooks, `React.memo` for expensive dashboard components, and prioritize Tailwind CSS for styling.
+- **Python:** Torch models should be loaded once at startup, not per request. Use vectorized Pandas operations.
+- **Work Process:** For complex tasks, always start with a To-Do list to outline the approach.

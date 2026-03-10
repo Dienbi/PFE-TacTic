@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Users, Search, Settings2, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Users,
+  Search,
+  Settings2,
+  ChevronRight,
+} from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
@@ -28,12 +35,42 @@ interface UserData {
 }
 
 const TEAM_COLORS = [
-  { bg: "from-indigo-500 to-indigo-600", light: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-100" },
-  { bg: "from-violet-500 to-violet-600", light: "bg-violet-50", text: "text-violet-700", border: "border-violet-100" },
-  { bg: "from-emerald-500 to-emerald-600", light: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" },
-  { bg: "from-amber-500 to-orange-500", light: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" },
-  { bg: "from-sky-500 to-sky-600", light: "bg-sky-50", text: "text-sky-700", border: "border-sky-100" },
-  { bg: "from-rose-500 to-rose-600", light: "bg-rose-50", text: "text-rose-700", border: "border-rose-100" },
+  {
+    bg: "from-indigo-500 to-indigo-600",
+    light: "bg-indigo-50",
+    text: "text-indigo-700",
+    border: "border-indigo-100",
+  },
+  {
+    bg: "from-violet-500 to-violet-600",
+    light: "bg-violet-50",
+    text: "text-violet-700",
+    border: "border-violet-100",
+  },
+  {
+    bg: "from-emerald-500 to-emerald-600",
+    light: "bg-emerald-50",
+    text: "text-emerald-700",
+    border: "border-emerald-100",
+  },
+  {
+    bg: "from-amber-500 to-orange-500",
+    light: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-100",
+  },
+  {
+    bg: "from-sky-500 to-sky-600",
+    light: "bg-sky-50",
+    text: "text-sky-700",
+    border: "border-sky-100",
+  },
+  {
+    bg: "from-rose-500 to-rose-600",
+    light: "bg-rose-50",
+    text: "text-rose-700",
+    border: "border-rose-100",
+  },
 ];
 
 const Teams: React.FC = () => {
@@ -80,7 +117,9 @@ const Teams: React.FC = () => {
     const newTeamId = response.data.id;
     if (teamData.membre_ids && teamData.membre_ids.length > 0) {
       for (const memberId of teamData.membre_ids) {
-        await client.post(`/equipes/${newTeamId}/membres`, { utilisateur_id: memberId });
+        await client.post(`/equipes/${newTeamId}/membres`, {
+          utilisateur_id: memberId,
+        });
       }
     }
     setShowCreateModal(false);
@@ -88,7 +127,8 @@ const Teams: React.FC = () => {
   };
 
   const handleDeleteTeam = async (teamId: number) => {
-    if (!globalThis.confirm("Are you sure you want to delete this team?")) return;
+    if (!globalThis.confirm("Are you sure you want to delete this team?"))
+      return;
     try {
       setDeletingId(teamId);
       await client.delete(`/equipes/${teamId}`);
@@ -101,10 +141,13 @@ const Teams: React.FC = () => {
   };
 
   const filteredTeams = teams.filter((team) =>
-    team.nom.toLowerCase().includes(searchQuery.toLowerCase())
+    team.nom.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const totalMembers = teams.reduce((sum, t) => sum + (t.membres_count || 0), 0);
+  const totalMembers = teams.reduce(
+    (sum, t) => sum + (t.membres_count || 0),
+    0,
+  );
 
   if (isLoading) return <Loader fullScreen />;
 
@@ -117,13 +160,17 @@ const Teams: React.FC = () => {
           userRole={user?.role || "RH"}
         />
 
-        <div className="dashboard-content" style={{ maxWidth: 1400, margin: "0 auto" }}>
-
+        <div
+          className="dashboard-content"
+          style={{ maxWidth: 1400, margin: "0 auto" }}
+        >
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Teams</h1>
-              <p className="text-sm text-gray-500 mt-1">Manage and organize your workforce into teams</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Manage and organize your workforce into teams
+              </p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
@@ -141,7 +188,9 @@ const Teams: React.FC = () => {
                 <Users size={20} className="text-indigo-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{teams.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {teams.length}
+                </p>
                 <p className="text-xs text-gray-500">Total Teams</p>
               </div>
             </div>
@@ -150,7 +199,9 @@ const Teams: React.FC = () => {
                 <Users size={20} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{totalMembers}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {totalMembers}
+                </p>
                 <p className="text-xs text-gray-500">Total Members</p>
               </div>
             </div>
@@ -160,7 +211,7 @@ const Teams: React.FC = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {teams.filter(t => t.chef_equipe).length}
+                  {teams.filter((t) => t.chef_equipe).length}
                 </p>
                 <p className="text-xs text-gray-500">Teams with Manager</p>
               </div>
@@ -169,7 +220,10 @@ const Teams: React.FC = () => {
 
           {/* Search */}
           <div className="relative mb-6">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
             <input
               type="text"
               placeholder="Search teams..."
@@ -189,7 +243,9 @@ const Teams: React.FC = () => {
                 {searchQuery ? "No teams found" : "No teams yet"}
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                {searchQuery ? `No results for "${searchQuery}"` : "Create your first team to get started"}
+                {searchQuery
+                  ? `No results for "${searchQuery}"`
+                  : "Create your first team to get started"}
               </p>
               {!searchQuery && (
                 <button
@@ -221,11 +277,18 @@ const Teams: React.FC = () => {
                     <div className="p-5 flex flex-col flex-1">
                       {/* Top row: avatar + delete */}
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${color.bg} flex items-center justify-center shadow-sm`}>
-                          <span className="text-white font-bold text-base">{initials}</span>
+                        <div
+                          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${color.bg} flex items-center justify-center shadow-sm`}
+                        >
+                          <span className="text-white font-bold text-base">
+                            {initials}
+                          </span>
                         </div>
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleDeleteTeam(team.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTeam(team.id);
+                          }}
                           disabled={deletingId === team.id}
                           className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
                           title="Delete team"
@@ -235,14 +298,20 @@ const Teams: React.FC = () => {
                       </div>
 
                       {/* Team name + description */}
-                      <h3 className="font-semibold text-gray-900 text-base leading-tight mb-1">{team.nom}</h3>
+                      <h3 className="font-semibold text-gray-900 text-base leading-tight mb-1">
+                        {team.nom}
+                      </h3>
                       {team.description && (
-                        <p className="text-xs text-gray-400 line-clamp-2 mb-3">{team.description}</p>
+                        <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                          {team.description}
+                        </p>
                       )}
 
                       {/* Stats */}
                       <div className="flex items-center gap-3 mt-auto mb-4">
-                        <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${color.light} ${color.text}`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${color.light} ${color.text}`}
+                        >
                           <Users size={12} />
                           {team.membres_count || 0} members
                         </span>
@@ -252,7 +321,9 @@ const Teams: React.FC = () => {
                       {team.chef_equipe ? (
                         <div className="flex items-center gap-2 py-3 border-t border-gray-100">
                           <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-semibold text-gray-600">{managerInitials}</span>
+                            <span className="text-xs font-semibold text-gray-600">
+                              {managerInitials}
+                            </span>
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-medium text-gray-700 truncate">
@@ -263,13 +334,18 @@ const Teams: React.FC = () => {
                         </div>
                       ) : (
                         <div className="py-3 border-t border-gray-100">
-                          <p className="text-xs text-gray-400 italic">No manager assigned</p>
+                          <p className="text-xs text-gray-400 italic">
+                            No manager assigned
+                          </p>
                         </div>
                       )}
 
                       {/* Action button */}
                       <button
-                        onClick={() => { setSelectedTeam(team); setShowDetailsModal(true); }}
+                        onClick={() => {
+                          setSelectedTeam(team);
+                          setShowDetailsModal(true);
+                        }}
                         className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all duration-150"
                       >
                         Manage Team

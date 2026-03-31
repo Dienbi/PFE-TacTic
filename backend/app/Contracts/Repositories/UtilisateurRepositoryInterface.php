@@ -18,6 +18,8 @@ interface UtilisateurRepositoryInterface
 
     public function getActifs(): Collection;
 
+    public function countActifs(): int;
+
     public function getActifsPaginated(int $perPage = 15): LengthAwarePaginator;
 
     public function getByRole(Role $role): Collection;

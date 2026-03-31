@@ -23,16 +23,27 @@ class DashboardController extends Controller
     public function rhDashboardAll(Request $request): JsonResponse
     {
         $months = (int) $request->input('months', 6);
+        $attendanceLimit = (int) $request->input('attendance_limit', 10);
+        $performanceLimit = (int) $request->input('performance_limit', 10);
+        $recentLeavesLimit = (int) $request->input('recent_leaves_limit', 5);
         $noCache = $request->boolean('noCache');
 
         if ($noCache) {
-            Cache::forget("dashboard_all_{$months}_v2");
+            Cache::forget("dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}");
         }
 
-        $data = Cache::remember("dashboard_all_{$months}_v2", 300, function () use ($months) {
+        $cacheKey = "dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}";
+
+        $data = Cache::remember($cacheKey, 300, function () use ($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit) {
             $startDate = Carbon::now()->startOfMonth();
             $endDate   = Carbon::now()->endOfMonth();
             $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
+
+            $aiData = Cache::remember(
+                "ai_dashboard_{$attendanceLimit}_{$performanceLimit}",
+                600,
+                fn () => $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit)
+            );
 
             return [
                 'stats'   => Cache::remember(
@@ -51,9 +62,9 @@ class DashboardController extends Controller
                     fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
                 ),
                 'recent_leaves' => Cache::remember(
-                    'conges_en_attente',
+                    "conges_en_attente_{$recentLeavesLimit}",
                     300,
-                    fn () => $this->dashboardService->getRecentLeaves()
+                    fn () => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
                 ),
                 'pending_requests' => Cache::remember(
                     'account_requests_pending',
@@ -66,22 +77,10 @@ class DashboardController extends Controller
                     fn () => $this->dashboardService->getRecentActivityLogs()
                 ),
 
-                // AI Data integrated into the single call
-                'ai_attendance' => Cache::remember(
-                    'ai_attendance_all',
-                    600,
-                    fn () => $this->aiService->getAttendancePredictionsAll()
-                ),
-                'ai_performance' => Cache::remember(
-                    'ai_performance_all',
-                    600,
-                    fn () => $this->aiService->getPerformanceScoresAll()
-                ),
-                'ai_kpis' => Cache::remember(
-                    'ai_dashboard_kpis',
-                    600,
-                    fn () => $this->aiService->getDashboardKPIs()
-                ),
+                // AI Data integrated into the single call (parallelized in AIService)
+                'ai_attendance' => $aiData['ai_attendance'] ?? [],
+                'ai_performance' => $aiData['ai_performance'] ?? [],
+                'ai_kpis' => $aiData['ai_kpis'] ?? [],
             ];
         });
 

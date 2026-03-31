@@ -13,6 +13,8 @@ interface CongeRepositoryInterface
 
     public function getEnAttente(): Collection;
 
+    public function getEnAttenteLimited(int $limit = 5): Collection;
+
     public function getEnAttenteByEquipe(int $equipeId): Collection;
 
     public function approuver(int $congeId, int $approuveParId): bool;

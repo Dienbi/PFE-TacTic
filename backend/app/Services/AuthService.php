@@ -29,7 +29,8 @@ class AuthService
         $token = JWTAuth::fromUser($utilisateur);
         $this->utilisateurRepository->updateLastConnection($utilisateur->id);
 
-        ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id);
+        // Skip broadcast on login to avoid blocking the response on websocket delivery
+        ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id, false);
 
         return $this->respondWithToken($token, $utilisateur);
     }

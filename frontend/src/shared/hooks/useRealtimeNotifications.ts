@@ -39,7 +39,9 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
     if (!echoInstance) {
       const REVERB_APP_KEY = process.env.REACT_APP_REVERB_APP_KEY || '5uzfsf7jv9rmk46zgbrz';
       const REVERB_HOST = process.env.REACT_APP_REVERB_HOST || '127.0.0.1';
+      // Default to 6001 to match artisan reverb:start; keep env override for custom setups
       const REVERB_PORT = parseInt(process.env.REACT_APP_REVERB_PORT || '6001');
+      const REVERB_SCHEME = (process.env.REACT_APP_REVERB_SCHEME || 'http').toLowerCase();
       const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
       echoInstance = new Echo({
@@ -48,8 +50,8 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         wsHost: REVERB_HOST,
         wsPort: REVERB_PORT,
         wssPort: REVERB_PORT,
-        forceTLS: (process.env.REACT_APP_REVERB_SCHEME || 'http') === 'https',
-        enabledTransports: ["ws", "wss"],
+        forceTLS: REVERB_SCHEME === 'https',
+        enabledTransports: ["ws"],
         authEndpoint: `${API_URL}/broadcasting/auth`,
         auth: {
           headers: {

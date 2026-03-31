@@ -60,6 +60,47 @@ class AIService
         return $this->get('/api/predictions/dashboard-kpis');
     }
 
+    /**
+     * Fetch dashboard AI blocks in parallel to avoid sequential latency.
+     */
+    public function getDashboardAIData(int $attendanceLimit, int $performanceLimit): array
+    {
+        try {
+            $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) {
+                return [
+                    $pool->as('attendance')->timeout(120)->get($this->baseUrl . '/api/predictions/attendance/all'),
+                    $pool->as('performance')->timeout(120)->get($this->baseUrl . '/api/predictions/performance/all'),
+                    $pool->as('kpis')->timeout(120)->get($this->baseUrl . '/api/predictions/dashboard-kpis'),
+                ];
+            });
+
+            $attendance = ($responses['attendance']?->successful())
+                ? array_slice($responses['attendance']->json() ?? [], 0, $attendanceLimit)
+                : [];
+
+            $performance = ($responses['performance']?->successful())
+                ? array_slice($responses['performance']->json() ?? [], 0, $performanceLimit)
+                : [];
+
+            $kpis = ($responses['kpis']?->successful())
+                ? ($responses['kpis']->json() ?? [])
+                : [];
+
+            return [
+                'ai_attendance' => $attendance,
+                'ai_performance' => $performance,
+                'ai_kpis' => $kpis,
+            ];
+        } catch (\Exception $e) {
+            Log::error('AI Service dashboard pool failed: ' . $e->getMessage());
+            return [
+                'ai_attendance' => [],
+                'ai_performance' => [],
+                'ai_kpis' => [],
+            ];
+        }
+    }
+
     // ─── Job Matching ────────────────────────────────────────────
 
     /**

@@ -1,8 +1,8 @@
 {
-  "status": "commited",
+  "status": "init",
   "type": "backend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:8000",
+  "localEndpoint": "http://localhost:8000/",
   "backendAuthType": "Bearer token",
   "backendCredential": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NzIwMjIxMTcsImV4cCI6MTc3MjAyNTcxNywibmJmIjoxNzcyMDIyMTE3LCJqdGkiOiJRVmJNWEhFdnlPNjlzYlVyIiwic3ViIjoiMSIsInBydiI6ImQwOTA1YmNmNjVhNmQ5OTJkOTBjYmZlNDYyMjZiZDMxM2FlNTE5M2YiLCJyb2xlIjoiUkgiLCJtYXRyaWN1bGUiOiJFTVAwMDAwMSJ9.I8kwHIFud_6IOx6ymigvyflA489eg2Uh0T2yG2-HEts",
   "executionArgs": {
@@ -15,6 +15,6 @@
       "API_KEY": "sk-user-keQfW8QWTKiOzpxF5jath9vZrJGC9Q8U9eG8Daa6zoknojCeLLe5f0Nx-Kv7N62Nlq4UEfDYc7bFIUbbPSao9AjzDQTgnaa1hxK2ywVlD4PsfE3pnxUbkZVFScXepWvBtYM"
     }
   },
-  "serverPort": 50856,
+  "serverPort": 62388,
   "proxy": "http://27d8ac89-c77d-44db-9dc2-f62698123a3c:1zd4qOYENJWkRL1c3sqNUI0LG6Du8BYY@tun.testsprite.com:8080"
 }

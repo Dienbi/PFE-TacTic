@@ -32,6 +32,15 @@ class CongeRepository extends BaseRepository implements CongeRepositoryInterface
             ->get();
     }
 
+    public function getEnAttenteLimited(int $limit = 5): Collection
+    {
+        return $this->model->enAttente()
+            ->with('utilisateur')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     public function getEnAttenteByEquipe(int $equipeId): Collection
     {
         return $this->model->enAttente()

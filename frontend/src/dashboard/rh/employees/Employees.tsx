@@ -46,6 +46,7 @@ const Employees: React.FC = () => {
   const [archivedUsers, setArchivedUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"active" | "archived">("active");
@@ -55,6 +56,12 @@ const Employees: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [rhUser, setRhUser] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
+  const [searchTimer, setSearchTimer] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -93,10 +100,18 @@ const Employees: React.FC = () => {
     setIsLoading(true);
     try {
       const [usersRes, teamsRes] = await Promise.all([
-        client.get("/utilisateurs"),
+        client.get(`/utilisateurs?per_page=${perPage}`),
         client.get("/equipes"),
       ]);
-      setUsers(usersRes.data);
+      setUsers(usersRes.data.data ?? usersRes.data);
+      const pagination = usersRes.data.meta ?? usersRes.data;
+      if (pagination?.current_page) {
+        setMeta({
+          current_page: pagination.current_page,
+          last_page: pagination.last_page,
+          total: pagination.total,
+        });
+      }
       setTeams(teamsRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -132,12 +147,26 @@ const Employees: React.FC = () => {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsersPage = async (pageNumber = 1, perPageValue = perPage) => {
+    setIsLoading(true);
     try {
-      const response = await client.get("/utilisateurs");
-      setUsers(response.data);
+      const response = await client.get(
+        `/utilisateurs?per_page=${perPageValue}&page=${pageNumber}`,
+      );
+      setUsers(response.data.data ?? response.data);
+      const pagination = response.data.meta ?? response.data;
+      if (pagination?.current_page) {
+        setMeta({
+          current_page: pagination.current_page,
+          last_page: pagination.last_page,
+          total: pagination.total,
+        });
+      }
+      setPage(pageNumber);
     } catch (error) {
       console.error("Error fetching users:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -150,18 +179,42 @@ const Employees: React.FC = () => {
     }
   };
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const performSearch = async (term: string) => {
+    setIsSearching(true);
+    try {
+      const response = await client.get(
+        `/utilisateurs/search?q=${encodeURIComponent(term)}`,
+      );
+      setUsers(response.data);
+      setMeta({ current_page: 1, last_page: 1, total: response.data.length });
+    } catch (error) {
+      console.error("Error searching users:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
+
+    if (searchTimer) {
+      clearTimeout(searchTimer);
+    }
+
     if (term.length > 2) {
-      try {
-        const response = await client.get(`/utilisateurs/search?query=${term}`);
-        setUsers(response.data);
-      } catch (error) {
-        console.error("Error searching users:", error);
-      }
+      const timer = setTimeout(() => performSearch(term), 300);
+      setSearchTimer(timer);
     } else if (term.length === 0) {
-      fetchUsers();
+      fetchUsersPage(1);
+    }
+  };
+
+  const refreshUsers = () => {
+    if (searchTerm.length > 2) {
+      performSearch(searchTerm);
+    } else {
+      fetchUsersPage(page);
     }
   };
 
@@ -240,7 +293,7 @@ const Employees: React.FC = () => {
       } else {
         await client.post("/utilisateurs", dataToSend);
       }
-      fetchUsers();
+      fetchUsersPage(1);
       handleCloseModal();
     } catch (error) {
       console.error("Error saving user:", error);
@@ -252,7 +305,7 @@ const Employees: React.FC = () => {
     if (window.confirm("Are you sure you want to archive this user?")) {
       try {
         await client.delete(`/utilisateurs/${id}`);
-        fetchUsers();
+        refreshUsers();
         fetchArchivedUsers();
       } catch (error) {
         console.error("Error archiving user:", error);
@@ -263,7 +316,7 @@ const Employees: React.FC = () => {
   const handleRestore = async (id: number) => {
     try {
       await client.post(`/utilisateurs/${id}/restore`);
-      fetchUsers();
+      refreshUsers();
       fetchArchivedUsers();
     } catch (error) {
       console.error("Error restoring user:", error);
@@ -559,6 +612,29 @@ const Employees: React.FC = () => {
                 )}
               </tbody>
             </table>
+
+            {!isLoading && viewMode === "active" && meta.total > perPage && (
+              <div className="pagination-bar">
+                <button
+                  className="page-btn"
+                  disabled={meta.current_page <= 1 || isSearching}
+                  onClick={() => fetchUsersPage(meta.current_page - 1)}
+                >
+                  Précédent
+                </button>
+                <span className="page-info">
+                  Page {meta.current_page} / {meta.last_page} ({meta.total}{" "}
+                  utilisateurs)
+                </span>
+                <button
+                  className="page-btn"
+                  disabled={meta.current_page >= meta.last_page || isSearching}
+                  onClick={() => fetchUsersPage(meta.current_page + 1)}
+                >
+                  Suivant
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

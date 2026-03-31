@@ -46,7 +46,7 @@ class DashboardService
         $workingDays = $this->getWorkingDaysBetween($startOfMonth, $today);
 
         // Only count active employees for attendance rate
-        $activeEmployees = $this->utilisateurRepository->getActifs()->count();
+        $activeEmployees = $this->utilisateurRepository->countActifs();
         $totalPossibleAttendances = $activeEmployees * $workingDays;
 
         $prevMonthStart = Carbon::now()->subMonth()->startOfMonth();
@@ -229,7 +229,7 @@ class DashboardService
      */
     public function getRecentLeaves(int $limit = 5)
     {
-        return $this->congeRepository->getEnAttente()->take($limit);
+        return $this->congeRepository->getEnAttenteLimited($limit);
     }
 
     /**

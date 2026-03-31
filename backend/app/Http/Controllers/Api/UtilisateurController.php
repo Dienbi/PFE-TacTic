@@ -23,10 +23,13 @@ class UtilisateurController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        if ($request->has('paginate')) {
-            $users = $this->utilisateurService->getPaginated($request->get('per_page', 15));
-        } else {
+        $perPage = (int) $request->integer('per_page', 25);
+        $perPage = $perPage > 0 ? min($perPage, 100) : 25;
+
+        if ($request->boolean('all')) {
             $users = Cache::remember('users_all', 120, fn () => $this->utilisateurService->getAll());
+        } else {
+            $users = $this->utilisateurService->getPaginated($perPage);
         }
 
         return response()->json($users);

@@ -21,7 +21,11 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
 
     public function findByEmail(string $email): ?Utilisateur
     {
-        return $this->model->where('email', $email)->first();
+        // Select only fields required for authentication/token generation to reduce payload
+        return $this->model
+            ->select(['id', 'email', 'password', 'actif', 'nom', 'prenom', 'role', 'matricule', 'date_derniere_connexion'])
+            ->where('email', $email)
+            ->first();
     }
 
     public function findByEmailIncludingArchived(string $email): ?Utilisateur
@@ -41,9 +45,21 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
         );
     }
 
+    public function countActifs(): int
+    {
+        return $this->model->actif()->count();
+    }
+
     public function getActifsPaginated(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->model->actif()->paginate($perPage);
+        return $this->model
+            ->actif()
+            ->with('equipe')
+            ->select([
+                'id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif',
+                'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at'
+            ])
+            ->paginate($perPage);
     }
 
     public function getByRole(Role $role): Collection

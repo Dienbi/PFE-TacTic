@@ -19,6 +19,16 @@ class CacheService
     public const PREFIX_TEAMS = 'teams';
     public const PREFIX_TEAM_MEMBERS = 'team_members';
 
+    // Dashboard keys
+    public const KEY_DASHBOARD_STATS = 'dashboard_rh_stats';
+    public const KEY_DASHBOARD_TREND = 'dashboard_trend';
+    public const KEY_ABSENCE_DIST = 'absence_distribution';
+    public const KEY_RECENT_LEAVES = 'recent_leaves_list';
+    public const KEY_PENDING_REQUESTS = 'account_requests_pending';
+    public const KEY_RECENT_LOGS = 'recent_activity_logs';
+    public const KEY_DASHBOARD_ALL = 'dashboard_all_unified';
+    public const KEY_AI_DASHBOARD = 'ai_dashboard_data';
+
     // Cache TTLs in seconds
     public const TTL_ACTIVE_USERS = 300; // 5 minutes
     public const TTL_USER_PERMISSIONS = 3600; // 1 hour
@@ -158,6 +168,14 @@ class CacheService
         Cache::forget(self::PREFIX_TEAMS);
         // Note: For team members, we'd need cache tagging or a registry
         // For now, we flush teams list which is the most critical
+    }
+
+    /**
+     * Build a cache key for the unified dashboard
+     */
+    public static function getDashboardAllKey(int $months, int $att, int $perf, int $leaves, bool $withAi): string
+    {
+        return self::KEY_DASHBOARD_ALL . "_{$months}_{$att}_{$perf}_{$leaves}_ai" . ($withAi ? '1' : '0');
     }
 
     /**

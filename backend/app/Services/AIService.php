@@ -65,10 +65,17 @@ class AIService
      */
     public function getDashboardAIData(int $attendanceLimit, int $performanceLimit): array
     {
-        try {
-            $timeout = (int) config('services.ai.dashboard_timeout', 5);
+        // Try to get from cache first to avoid pooling overhead if we have a warm cache
+        $cacheKey = \App\Services\CacheService::KEY_AI_DASHBOARD . "_{$attendanceLimit}_{$performanceLimit}";
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return \Illuminate\Support\Facades\Cache::get($cacheKey);
+        }
 
-            $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) {
+        try {
+            // Aggressive timeout for dashboard: if AI is slow, don't hold up the rest of the stats
+            $timeout = (int) config('services.ai.dashboard_timeout', 3);
+
+            $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($timeout) {
                 return [
                     $pool->as('attendance')->timeout($timeout)->get($this->baseUrl . '/api/predictions/attendance/all'),
                     $pool->as('performance')->timeout($timeout)->get($this->baseUrl . '/api/predictions/performance/all'),
@@ -88,11 +95,18 @@ class AIService
                 ? ($responses['kpis']->json() ?? [])
                 : [];
 
-            return [
+            $result = [
                 'ai_attendance' => $attendance,
                 'ai_performance' => $performance,
                 'ai_kpis' => $kpis,
             ];
+
+            // Only cache if we actually got some AI data to avoid caching empty results during a temporary failure
+            if (!empty($attendance) || !empty($performance) || !empty($kpis)) {
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, 600);
+            }
+
+            return $result;
         } catch (\Exception $e) {
             Log::error('AI Service dashboard pool failed: ' . $e->getMessage());
             return [

@@ -31,11 +31,11 @@ class DashboardController extends Controller
         $withAi = $request->boolean('with_ai', true);
         $noCache = $request->boolean('noCache');
 
-        if ($noCache) {
-            Cache::forget("dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}");
-        }
+        $cacheKey = \App\Services\CacheService::getDashboardAllKey($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit, $withAi);
 
-        $cacheKey = "dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}_ai" . ($withAi ? '1' : '0');
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
 
         $fetch = function (string $label, string $key, int $ttl, callable $callback) {
             $hit = Cache::has($key);
@@ -67,7 +67,7 @@ class DashboardController extends Controller
 
             $aiData = $withAi ? $fetch(
                 'ai_dashboard',
-                "ai_dashboard_{$attendanceLimit}_{$performanceLimit}",
+                \App\Services\CacheService::KEY_AI_DASHBOARD . "_{$attendanceLimit}_{$performanceLimit}",
                 600,
                 fn () => $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit)
             ) : ['ai_attendance' => [], 'ai_performance' => [], 'ai_kpis' => []];
@@ -75,37 +75,37 @@ class DashboardController extends Controller
             return [
                 'stats'   => $fetch(
                     'dashboard_rh_stats',
-                    'dashboard_rh_stats',
+                    \App\Services\CacheService::KEY_DASHBOARD_STATS,
                     300,
                     fn () => $this->dashboardService->getRhDashboardStats()
                 ),
                 'trend'   => $fetch(
                     'dashboard_trend',
-                    "dashboard_trend_{$months}",
+                    \App\Services\CacheService::KEY_DASHBOARD_TREND . "_{$months}",
                     300,
                     fn () => $this->dashboardService->getAttendanceTrend($months)
                 ),
                 'absence' => $fetch(
                     'absence_distribution',
-                    $distKey,
+                    \App\Services\CacheService::KEY_ABSENCE_DIST . '_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d'),
                     300,
                     fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
                 ),
                 'recent_leaves' => $fetch(
                     'recent_leaves',
-                    "conges_en_attente_{$recentLeavesLimit}",
+                    \App\Services\CacheService::KEY_RECENT_LEAVES . "_{$recentLeavesLimit}",
                     300,
                     fn () => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
                 ),
                 'pending_requests' => $fetch(
                     'pending_account_requests',
-                    'account_requests_pending',
+                    \App\Services\CacheService::KEY_PENDING_REQUESTS,
                     300,
                     fn () => $this->dashboardService->getPendingAccountRequests()
                 ),
                 'recent_logs' => $fetch(
                     'recent_activity_logs',
-                    'recent_activity_logs',
+                    \App\Services\CacheService::KEY_RECENT_LOGS,
                     300,
                     fn () => $this->dashboardService->getRecentActivityLogs()
                 ),
@@ -135,7 +135,7 @@ class DashboardController extends Controller
     public function rhStats(Request $request): JsonResponse
     {
         $stats = Cache::remember(
-            'dashboard_rh_stats',
+            \App\Services\CacheService::KEY_DASHBOARD_STATS,
             300,
             fn () =>
             $this->dashboardService->getRhDashboardStats()
@@ -150,7 +150,7 @@ class DashboardController extends Controller
     {
         $months = $request->input('months', 6);
         $trend = Cache::remember(
-            "dashboard_trend_{$months}",
+            \App\Services\CacheService::KEY_DASHBOARD_TREND . "_{$months}",
             300,
             fn () =>
             $this->dashboardService->getAttendanceTrend($months)

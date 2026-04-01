@@ -33,21 +33,27 @@ const KPISection: React.FC<KPISectionProps> = ({
   const hasAiPayload = (data: DashboardKPIs | null) =>
     !!data &&
     typeof data === "object" &&
-    (data.attendance_predictions || data.performance_scores);
+    (!!data.attendance_predictions || !!data.performance_scores);
 
   useEffect(() => {
+    // If we already have AI data from the unified response, use it
     if (hasAiPayload(initialAiKpis)) {
       setAiKpis(initialAiKpis);
       return;
     }
 
-    if (!loading) {
+    // Only fetch if we're not loading and we don't have the data yet
+    if (!loading && !aiKpis) {
       aiApi
         .getDashboardKPIs()
-        .then((data) => setAiKpis(hasAiPayload(data) ? data : null))
+        .then((data) => {
+          if (hasAiPayload(data)) {
+            setAiKpis(data);
+          }
+        })
         .catch((err) => console.error("AI KPIs error:", err));
     }
-  }, [initialAiKpis, loading]);
+  }, [initialAiKpis, loading, aiKpis]);
 
   const formatCurrency = (value: number): string =>
     new Intl.NumberFormat("fr-TN", {

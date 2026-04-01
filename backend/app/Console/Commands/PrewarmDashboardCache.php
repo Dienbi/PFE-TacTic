@@ -32,48 +32,47 @@ class PrewarmDashboardCache extends Command
         $endDate   = \Carbon\Carbon::now()->endOfMonth();
         $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
 
-        // Pre-warm individual components
+        // Pre-warm individual components using CacheService constants
         $this->info('Caching RH stats...');
-        \Illuminate\Support\Facades\Cache::put('dashboard_rh_stats', $dashboardService->getRhDashboardStats(), 3600);
+        \Illuminate\Support\Facades\Cache::put(\App\Services\CacheService::KEY_DASHBOARD_STATS, $dashboardService->getRhDashboardStats(), 3600);
 
         $this->info('Caching attendance trend...');
-        \Illuminate\Support\Facades\Cache::put("dashboard_trend_{$months}", $dashboardService->getAttendanceTrend($months), 3600);
+        \Illuminate\Support\Facades\Cache::put(\App\Services\CacheService::KEY_DASHBOARD_TREND . "_{$months}", $dashboardService->getAttendanceTrend($months), 3600);
 
         $this->info('Caching absence distribution...');
-        \Illuminate\Support\Facades\Cache::put($distKey, $dashboardService->getAbsenceDistribution($startDate, $endDate), 3600);
+        $distCacheKey = \App\Services\CacheService::KEY_ABSENCE_DIST . '_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
+        \Illuminate\Support\Facades\Cache::put($distCacheKey, $dashboardService->getAbsenceDistribution($startDate, $endDate), 3600);
 
         $this->info('Caching recent leaves...');
-        \Illuminate\Support\Facades\Cache::put('conges_en_attente', $dashboardService->getRecentLeaves(), 3600);
+        \Illuminate\Support\Facades\Cache::put(\App\Services\CacheService::KEY_RECENT_LEAVES . "_5", $dashboardService->getRecentLeaves(5), 3600);
 
         $this->info('Caching pending requests...');
-        \Illuminate\Support\Facades\Cache::put('account_requests_pending', $dashboardService->getPendingAccountRequests(), 3600);
+        \Illuminate\Support\Facades\Cache::put(\App\Services\CacheService::KEY_PENDING_REQUESTS, $dashboardService->getPendingAccountRequests(), 3600);
 
         $this->info('Caching recent logs...');
-        \Illuminate\Support\Facades\Cache::put('recent_activity_logs', $dashboardService->getRecentActivityLogs(), 3600);
+        \Illuminate\Support\Facades\Cache::put(\App\Services\CacheService::KEY_RECENT_LOGS, $dashboardService->getRecentActivityLogs(), 3600);
 
         // Pre-warm AI Data
-        $this->info('Caching AI Attendance predictions...');
-        \Illuminate\Support\Facades\Cache::put('ai_attendance_all', $aiService->getAttendancePredictionsAll(), 3600);
-
-        $this->info('Caching AI Performance scores...');
-        \Illuminate\Support\Facades\Cache::put('ai_performance_all', $aiService->getPerformanceScoresAll(), 3600);
-
-        $this->info('Caching AI Dashboard KPIs...');
-        \Illuminate\Support\Facades\Cache::put('ai_dashboard_kpis', $aiService->getDashboardKPIs(), 3600);
+        $this->info('Caching AI Dashboard Data...');
+        $aiData = $aiService->getDashboardAIData(10, 10);
+        // getDashboardAIData already handles its own caching, but we ensure it's fresh
 
         // Pre-warm the unified all-in-one response
         $this->info('Caching unified dashboard response...');
         $unifiedData = [
-            'stats'   => \Illuminate\Support\Facades\Cache::get('dashboard_rh_stats'),
-            'trend'   => \Illuminate\Support\Facades\Cache::get("dashboard_trend_{$months}"),
-            'absence' => \Illuminate\Support\Facades\Cache::get($distKey),
-            'recent_leaves' => \Illuminate\Support\Facades\Cache::get('conges_en_attente'),
-            'pending_requests' => \Illuminate\Support\Facades\Cache::get('account_requests_pending'),
-            'recent_logs' => \Illuminate\Support\Facades\Cache::get('recent_activity_logs'),
-            'ai_attendance' => \Illuminate\Support\Facades\Cache::get('ai_attendance_all'),
-            'ai_performance' => \Illuminate\Support\Facades\Cache::get('ai_performance_all'),
+            'stats'   => \Illuminate\Support\Facades\Cache::get(\App\Services\CacheService::KEY_DASHBOARD_STATS),
+            'trend'   => \Illuminate\Support\Facades\Cache::get(\App\Services\CacheService::KEY_DASHBOARD_TREND . "_{$months}"),
+            'absence' => \Illuminate\Support\Facades\Cache::get($distCacheKey),
+            'recent_leaves' => \Illuminate\Support\Facades\Cache::get(\App\Services\CacheService::KEY_RECENT_LEAVES . "_5"),
+            'pending_requests' => \Illuminate\Support\Facades\Cache::get(\App\Services\CacheService::KEY_PENDING_REQUESTS),
+            'recent_logs' => \Illuminate\Support\Facades\Cache::get(\App\Services\CacheService::KEY_RECENT_LOGS),
+            'ai_attendance' => $aiData['ai_attendance'] ?? [],
+            'ai_performance' => $aiData['ai_performance'] ?? [],
+            'ai_kpis' => $aiData['ai_kpis'] ?? [],
         ];
-        \Illuminate\Support\Facades\Cache::put("dashboard_all_{$months}_v2", $unifiedData, 3600);
+
+        $unifiedKey = \App\Services\CacheService::getDashboardAllKey($months, 10, 10, 5, true);
+        \Illuminate\Support\Facades\Cache::put($unifiedKey, $unifiedData, 3600);
 
         $this->info('Dashboard cache pre-warming complete!');
     }

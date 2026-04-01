@@ -35,9 +35,9 @@ const RHDashboard: React.FC = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
 
-    // Single request for all dashboard data instead of 3 separate calls
+    // Single request for all dashboard data with default limits
     client
-      .get("/dashboard/all?months=6")
+      .get("/dashboard/all?months=6&attendance_limit=10&performance_limit=10&recent_leaves_limit=5&with_ai=1")
       .then((r) => setDashboardData(r.data))
       .catch((e) => console.error("Dashboard fetch error:", e))
       .finally(() => setDashboardLoading(false));
@@ -61,7 +61,25 @@ const RHDashboard: React.FC = () => {
           <section className="kpi-panel">
             <KPISection
               stats={dashboardData?.stats ?? null}
-              aiKpis={dashboardData?.ai_kpis ?? null}
+              aiKpis={dashboardData?.ai_kpis ? {
+                generated_at: new Date().toISOString(),
+                attendance_predictions: dashboardData.ai_attendance ? {
+                  predicted_absence_rate: dashboardData.ai_kpis?.predicted_absence_rate ?? 0,
+                  high_risk_employees: dashboardData.ai_kpis?.high_risk_employees ?? 0,
+                  medium_risk_employees: dashboardData.ai_kpis?.medium_risk_employees ?? 0,
+                  total_analyzed: dashboardData.ai_kpis?.total_analyzed ?? 0,
+                  top_at_risk: dashboardData.ai_attendance
+                } : null,
+                performance_scores: dashboardData.ai_performance ? {
+                  avg_performance: dashboardData.ai_kpis?.avg_performance ?? 0,
+                  min_performance: dashboardData.ai_kpis?.min_performance ?? 0,
+                  max_performance: dashboardData.ai_kpis?.max_performance ?? 0,
+                  total_scored: dashboardData.ai_kpis?.total_scored ?? 0,
+                  grade_distribution: dashboardData.ai_kpis?.grade_distribution ?? {},
+                  top_performers: dashboardData.ai_performance,
+                  needs_improvement: []
+                } : null
+              } : null}
               loading={dashboardLoading}
             />
           </section>

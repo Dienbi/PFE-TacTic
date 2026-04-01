@@ -6,8 +6,8 @@ import { useToast } from "../components/Toast";
 // @ts-ignore
 window.Pusher = Pusher;
 
-// Enable Pusher logging for debugging
-Pusher.logToConsole = true;
+const enablePusherDebug = process.env.REACT_APP_PUSHER_DEBUG === 'true';
+Pusher.logToConsole = enablePusherDebug;
 
 // Singleton Echo instance
 let echoInstance: Echo<any> | null = null;

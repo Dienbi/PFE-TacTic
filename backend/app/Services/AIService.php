@@ -66,11 +66,13 @@ class AIService
     public function getDashboardAIData(int $attendanceLimit, int $performanceLimit): array
     {
         try {
+            $timeout = (int) config('services.ai.dashboard_timeout', 5);
+
             $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) {
                 return [
-                    $pool->as('attendance')->timeout(120)->get($this->baseUrl . '/api/predictions/attendance/all'),
-                    $pool->as('performance')->timeout(120)->get($this->baseUrl . '/api/predictions/performance/all'),
-                    $pool->as('kpis')->timeout(120)->get($this->baseUrl . '/api/predictions/dashboard-kpis'),
+                    $pool->as('attendance')->timeout($timeout)->get($this->baseUrl . '/api/predictions/attendance/all'),
+                    $pool->as('performance')->timeout($timeout)->get($this->baseUrl . '/api/predictions/performance/all'),
+                    $pool->as('kpis')->timeout($timeout)->get($this->baseUrl . '/api/predictions/dashboard-kpis'),
                 ];
             });
 

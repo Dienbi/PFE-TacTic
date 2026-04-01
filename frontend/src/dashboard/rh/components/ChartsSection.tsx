@@ -36,6 +36,8 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   absenceData,
   loading,
 }) => {
+  const absenceTotal = absenceData.reduce((sum, item) => sum + (item?.value ?? 0), 0);
+
   if (loading) {
     return (
       <div className="charts-grid">
@@ -111,30 +113,45 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
       <div className="chart-card">
         <h3>Distribution des Absences</h3>
         <div style={{ width: "100%", height: 300 }}>
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={absenceData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {absenceData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend
-                layout="vertical"
-                verticalAlign="middle"
-                align="right"
-                iconType="circle"
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          {absenceData.length === 0 || absenceTotal === 0 ? (
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#6b7280",
+                fontWeight: 600,
+              }}
+            >
+              Aucune donnée d'absence
+            </div>
+          ) : (
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={absenceData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={110}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {absenceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend
+                  layout="vertical"
+                  verticalAlign="middle"
+                  align="right"
+                  iconType="circle"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>

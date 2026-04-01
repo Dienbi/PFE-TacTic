@@ -1,8 +1,8 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
-// Enable Pusher logging for debugging
-Pusher.logToConsole = true;
+const enablePusherDebug = process.env.REACT_APP_PUSHER_DEBUG === 'true';
+Pusher.logToConsole = enablePusherDebug;
 
 // Make Pusher available globally (required by Laravel Echo)
 declare global {

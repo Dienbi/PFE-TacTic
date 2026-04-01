@@ -8,8 +8,8 @@ import "./NotificationsSection.css";
 // @ts-ignore
 window.Pusher = Pusher;
 
-// Enable Pusher logging for debugging
-Pusher.logToConsole = true;
+const enablePusherDebug = process.env.REACT_APP_PUSHER_DEBUG === 'true';
+Pusher.logToConsole = enablePusherDebug;
 
 interface Notification {
   id: string;

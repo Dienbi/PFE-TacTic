@@ -23,19 +23,9 @@ class PaieController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->integer('per_page', 20);
-        $all = $this->paieService->getAll();
+        $paies = $this->paieService->getAllPaginated($perPage);
 
-        $page = $request->integer('page', 1);
-        $total = $all->count();
-        $items = $all->slice(($page - 1) * $perPage, $perPage)->values();
-
-        return response()->json([
-            'data' => $items,
-            'current_page' => $page,
-            'per_page' => $perPage,
-            'total' => $total,
-            'last_page' => (int) ceil($total / $perPage),
-        ]);
+        return response()->json($paies);
     }
 
     /**

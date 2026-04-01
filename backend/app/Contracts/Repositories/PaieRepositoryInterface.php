@@ -17,6 +17,8 @@ interface PaieRepositoryInterface
 
     public function getAllWithUtilisateur(): Collection;
 
+    public function paginateWithUtilisateur(int $perPage = 20);
+
     public function marquerPayee(int $paieId): bool;
 
     public function valider(int $paieId): bool;

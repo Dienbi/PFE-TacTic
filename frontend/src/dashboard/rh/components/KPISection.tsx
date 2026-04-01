@@ -26,19 +26,23 @@ interface KPISectionProps {
 
 const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, loading }) => {
   const [aiKpis, setAiKpis] = useState<DashboardKPIs | null>(initialAiKpis);
+  const hasAiPayload = (data: DashboardKPIs | null) =>
+    !!data && typeof data === "object" && (data.attendance_predictions || data.performance_scores);
 
   useEffect(() => {
-    if (initialAiKpis) {
+    if (hasAiPayload(initialAiKpis)) {
       setAiKpis(initialAiKpis);
       return;
     }
+
     if (!loading) {
       aiApi
         .getDashboardKPIs()
-        .then(setAiKpis)
+        .then((data) => setAiKpis(hasAiPayload(data) ? data : null))
         .catch((err) => console.error("AI KPIs error:", err));
     }
   }, [initialAiKpis, loading]);
+
   const formatCurrency = (value: number): string =>
     new Intl.NumberFormat("fr-TN", {
       style: "decimal",
@@ -48,29 +52,40 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, l
 
   if (loading || !stats) {
     return (
-      <div className="kpi-grid">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="kpi-card">
-            <div className="kpi-header">
-              <span className="kpi-title">Loading...</span>
+      <section className="kpi-panel">
+        <div className="kpi-grid">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="kpi-card">
+              <div className="kpi-header">
+                <div className="kpi-icon-pill" />
+                <span className="kpi-title">Chargement...</span>
+              </div>
+              <div className="kpi-value">—</div>
+              <div className="kpi-change text-gray-500">En cours</div>
             </div>
-            <div className="kpi-value">-</div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
     );
   }
 
-  const kpis = [
+  const kpis: Array<{
+    title: string;
+    value: string | number;
+    change: string;
+    icon: any;
+    color: string;
+    pillClass?: string;
+  }> = [
     {
-      title: "Total Employés",
+      title: "Employés",
       value: stats.total_employees.toString(),
       change:
         stats.employee_change > 0
-          ? `+${stats.employee_change}% ce mois`
+          ? `+${stats.employee_change} vs. mois dernier`
           : stats.employee_change < 0
-            ? `${stats.employee_change}% ce mois`
-            : "Aucun changement",
+            ? `${stats.employee_change} vs. mois dernier`
+            : "Stable",
       icon: Users,
       color:
         stats.employee_change > 0
@@ -78,7 +93,6 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, l
           : stats.employee_change < 0
             ? "text-red-500"
             : "text-gray-500",
-      bg: "bg-green-50",
     },
     {
       title: "Taux de Présence",
@@ -96,7 +110,6 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, l
           : stats.attendance_change < 0
             ? "text-red-500"
             : "text-gray-500",
-      bg: "bg-blue-50",
     },
     {
       title: "Heures Sup",
@@ -104,7 +117,6 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, l
       change: "Ratio moyen",
       icon: TrendingUp,
       color: "text-blue-500",
-      bg: "bg-purple-50",
     },
     {
       title: "Masse Salariale",
@@ -112,58 +124,55 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, l
       change: "Budget mensuel",
       icon: DollarSign,
       color: "text-gray-500",
-      bg: "bg-gray-50",
+    },
+  ];
+
+  const attendancePred = aiKpis?.attendance_predictions;
+  const perfScores = aiKpis?.performance_scores;
+
+  const aiCards: typeof kpis = [
+    {
+      title: "Score Performance IA",
+      value: perfScores ? perfScores.avg_performance.toFixed(1) : "—",
+      change: perfScores ? "Moyenne globale /100" : "Indisponible",
+      icon: Brain,
+      color: perfScores ? "text-purple-500" : "text-gray-500",
+      pillClass: "pill-purple",
+    },
+    {
+      title: "Risque Absence IA",
+      value: attendancePred
+        ? attendancePred.high_risk_employees + attendancePred.medium_risk_employees
+        : "—",
+      change: attendancePred
+        ? `${attendancePred.predicted_absence_rate.toFixed(1)}% taux prédit`
+        : "Indisponible",
+      icon: ShieldAlert,
+      color: attendancePred ? "text-orange-500" : "text-gray-500",
+      pillClass: "pill-amber",
     },
   ];
 
   return (
-    <div className="kpi-grid">
-      {kpis.map((kpi, index) => (
-        <div key={index} className="kpi-card">
-          <div className="kpi-header">
-            <span className="kpi-title">{kpi.title}</span>
-            <kpi.icon size={18} className="text-gray-400" />
+    <section className="kpi-panel">
+      <div className="kpi-grid">
+        {[...kpis, ...aiCards].map((kpi) => (
+          <div
+            key={kpi.title}
+            className={`kpi-card ${kpi.pillClass ? "kpi-card-ai" : ""}`}
+          >
+            <div className="kpi-header">
+              <div className={`kpi-icon-pill ${kpi.pillClass ?? ""}`}>
+                <kpi.icon size={18} />
+              </div>
+              <span className="kpi-title">{kpi.title}</span>
+            </div>
+            <div className="kpi-value">{kpi.value}</div>
+            <div className={`kpi-change ${kpi.color}`}>{kpi.change}</div>
           </div>
-          <div className="kpi-value">{kpi.value}</div>
-          <div className={`kpi-change ${kpi.color}`}>{kpi.change}</div>
-        </div>
-      ))}
-
-      {/* AI-powered KPI cards */}
-      <div className="kpi-card kpi-card-ai">
-        <div className="kpi-header">
-          <span className="kpi-title">Score Performance IA</span>
-          <Brain size={18} className="text-purple-500" />
-        </div>
-        <div className="kpi-value">
-          {aiKpis?.performance_scores
-            ? `${aiKpis.performance_scores.avg_performance.toFixed(1)}`
-            : "—"}
-        </div>
-        <div className="kpi-change text-purple-500">
-          {aiKpis?.performance_scores
-            ? "Moyenne globale /100"
-            : "Chargement..."}
-        </div>
+        ))}
       </div>
-
-      <div className="kpi-card kpi-card-ai">
-        <div className="kpi-header">
-          <span className="kpi-title">Risque Absence IA</span>
-          <ShieldAlert size={18} className="text-orange-500" />
-        </div>
-        <div className="kpi-value">
-          {aiKpis?.attendance_predictions
-            ? `${aiKpis.attendance_predictions.high_risk_employees + aiKpis.attendance_predictions.medium_risk_employees}`
-            : "—"}
-        </div>
-        <div className="kpi-change text-orange-500">
-          {aiKpis?.attendance_predictions
-            ? `${aiKpis.attendance_predictions.predicted_absence_rate.toFixed(1)}% taux prédit`
-            : "Chargement..."}
-        </div>
-      </div>
-    </div>
+    </section>
   );
 };
 

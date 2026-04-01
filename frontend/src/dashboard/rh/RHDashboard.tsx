@@ -4,9 +4,6 @@ import Navbar from "../../../src/shared/components/Navbar";
 import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
-import AttendancePredictions from "./components/AttendancePredictions";
-import PerformanceRanking from "./components/PerformanceRanking";
-import AITrainingPanel from "./components/AITrainingPanel";
 import { useRealtimeNotifications } from "../../shared/hooks/useRealtimeNotifications";
 import client from "../../api/client";
 import "./RHDashboard.css";
@@ -56,54 +53,39 @@ const RHDashboard: React.FC = () => {
         <Navbar userName={userName} userRole={userRole} />
 
         <div className="dashboard-content">
-          <KPISection
-            stats={dashboardData?.stats ?? null}
-            aiKpis={dashboardData?.ai_kpis ?? null}
-            loading={dashboardLoading}
-          />
-
-          <ChartsSection
-            trendData={dashboardData?.trend ?? []}
-            absenceData={dashboardData?.absence ?? []}
-            loading={dashboardLoading}
-          />
-
-          {/* ── AI Intelligence Section ───────────────────────────── */}
-          <div className="dashboard-ai-section">
-            <div className="ai-section-header">
-              <h2>🤖 Intelligence Artificielle</h2>
-              <span className="badge-ai">Powered by PyTorch</span>
-            </div>
-
-            <div className="ai-section-grid">
-              <AttendancePredictions
-                initialData={dashboardData?.ai_attendance}
-                loading={dashboardLoading}
-              />
-              <PerformanceRanking
-                initialData={dashboardData?.ai_performance}
-                loading={dashboardLoading}
-              />
-            </div>
-
-            <div style={{ marginTop: "1.5rem" }}>
-              <AITrainingPanel />
-            </div>
+          <div className="page-title-row">
+            <h1>Dashboard</h1>
+            <span className="page-sub">Vue d'ensemble RH</span>
           </div>
 
-          <div className="dashboard-middle-section">
-            <Suspense fallback={<LoadingFallback />}>
-              <AccountRequests
-                initialData={dashboardData?.pending_requests}
+          <section className="kpi-panel">
+            <KPISection
+              stats={dashboardData?.stats ?? null}
+              aiKpis={dashboardData?.ai_kpis ?? null}
+              loading={dashboardLoading}
+            />
+          </section>
+
+          <section className="chart-activity-row">
+            <div className="panel charts-wrapper">
+              <ChartsSection
+                trendData={dashboardData?.trend ?? []}
+                absenceData={dashboardData?.absence ?? []}
                 loading={dashboardLoading}
               />
-            </Suspense>
-          </div>
-
-          <div className="dashboard-bottom-grid">
+            </div>
             <Suspense fallback={<LoadingFallback />}>
               <ActivityLogs
                 initialData={dashboardData?.recent_logs}
+                loading={dashboardLoading}
+              />
+            </Suspense>
+          </section>
+
+          <section className="leaves-row">
+            <Suspense fallback={<LoadingFallback />}>
+              <AccountRequests
+                initialData={dashboardData?.pending_requests}
                 loading={dashboardLoading}
               />
             </Suspense>
@@ -111,7 +93,7 @@ const RHDashboard: React.FC = () => {
               initialData={dashboardData?.recent_leaves}
               loading={dashboardLoading}
             />
-          </div>
+          </section>
         </div>
       </div>
     </div>

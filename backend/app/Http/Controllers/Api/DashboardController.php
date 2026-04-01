@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -22,56 +23,88 @@ class DashboardController extends Controller
      */
     public function rhDashboardAll(Request $request): JsonResponse
     {
+        $totalStart = microtime(true);
         $months = (int) $request->input('months', 6);
         $attendanceLimit = (int) $request->input('attendance_limit', 10);
         $performanceLimit = (int) $request->input('performance_limit', 10);
         $recentLeavesLimit = (int) $request->input('recent_leaves_limit', 5);
+        $withAi = $request->boolean('with_ai', true);
         $noCache = $request->boolean('noCache');
 
         if ($noCache) {
             Cache::forget("dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}");
         }
 
-        $cacheKey = "dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}";
+        $cacheKey = "dashboard_all_{$months}_att{$attendanceLimit}_perf{$performanceLimit}_leaves{$recentLeavesLimit}_ai" . ($withAi ? '1' : '0');
 
-        $data = Cache::remember($cacheKey, 300, function () use ($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit) {
+        $fetch = function (string $label, string $key, int $ttl, callable $callback) {
+            $hit = Cache::has($key);
+            $segmentStart = microtime(true);
+
+            $result = Cache::remember($key, $ttl, function () use ($callback, $label) {
+                $computeStart = microtime(true);
+                $res = $callback();
+                Log::info('dashboard.segment.miss', [
+                    'label' => $label,
+                    'compute_ms' => round((microtime(true) - $computeStart) * 1000, 2),
+                ]);
+                return $res;
+            });
+
+            Log::info('dashboard.segment', [
+                'label' => $label,
+                'hit' => $hit,
+                'total_ms' => round((microtime(true) - $segmentStart) * 1000, 2),
+            ]);
+
+            return $result;
+        };
+
+        $data = Cache::remember($cacheKey, 300, function () use ($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit, $withAi, $fetch) {
             $startDate = Carbon::now()->startOfMonth();
             $endDate   = Carbon::now()->endOfMonth();
             $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
 
-            $aiData = Cache::remember(
+            $aiData = $withAi ? $fetch(
+                'ai_dashboard',
                 "ai_dashboard_{$attendanceLimit}_{$performanceLimit}",
                 600,
                 fn () => $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit)
-            );
+            ) : ['ai_attendance' => [], 'ai_performance' => [], 'ai_kpis' => []];
 
             return [
-                'stats'   => Cache::remember(
+                'stats'   => $fetch(
+                    'dashboard_rh_stats',
                     'dashboard_rh_stats',
                     300,
                     fn () => $this->dashboardService->getRhDashboardStats()
                 ),
-                'trend'   => Cache::remember(
+                'trend'   => $fetch(
+                    'dashboard_trend',
                     "dashboard_trend_{$months}",
                     300,
                     fn () => $this->dashboardService->getAttendanceTrend($months)
                 ),
-                'absence' => Cache::remember(
+                'absence' => $fetch(
+                    'absence_distribution',
                     $distKey,
                     300,
                     fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
                 ),
-                'recent_leaves' => Cache::remember(
+                'recent_leaves' => $fetch(
+                    'recent_leaves',
                     "conges_en_attente_{$recentLeavesLimit}",
                     300,
                     fn () => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
                 ),
-                'pending_requests' => Cache::remember(
+                'pending_requests' => $fetch(
+                    'pending_account_requests',
                     'account_requests_pending',
                     300,
                     fn () => $this->dashboardService->getPendingAccountRequests()
                 ),
-                'recent_logs' => Cache::remember(
+                'recent_logs' => $fetch(
+                    'recent_activity_logs',
                     'recent_activity_logs',
                     300,
                     fn () => $this->dashboardService->getRecentActivityLogs()
@@ -83,6 +116,15 @@ class DashboardController extends Controller
                 'ai_kpis' => $aiData['ai_kpis'] ?? [],
             ];
         });
+
+        Log::info('dashboard.all.complete', [
+            'path' => 'api/dashboard/all',
+            'months' => $months,
+            'attendance_limit' => $attendanceLimit,
+            'performance_limit' => $performanceLimit,
+            'recent_leaves_limit' => $recentLeavesLimit,
+            'total_ms' => round((microtime(true) - $totalStart) * 1000, 2),
+        ]);
 
         return response()->json($data);
     }

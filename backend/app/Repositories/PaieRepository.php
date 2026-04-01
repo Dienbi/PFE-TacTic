@@ -45,6 +45,18 @@ class PaieRepository extends BaseRepository implements PaieRepositoryInterface
             ->get();
     }
 
+    public function paginateWithUtilisateur(int $perPage = 20)
+    {
+        return $this->model
+            ->select([
+                'id', 'utilisateur_id', 'periode_debut', 'periode_fin', 'salaire_net', 'salaire_brut',
+                'statut', 'created_at', 'updated_at'
+            ])
+            ->with(['utilisateur:id,matricule,nom,prenom,role'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
     public function marquerPayee(int $paieId): bool
     {
         return $this->update($paieId, [

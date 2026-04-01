@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Utilisateur;
 use App\Repositories\UtilisateurRepository;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthService
@@ -16,21 +17,58 @@ class AuthService
 
     public function login(string $email, string $password): ?array
     {
+        $start = microtime(true);
+        $last = $start;
+        $metrics = [];
+
+        $checkpoint = function (string $label) use (&$last, &$metrics) {
+            $now = microtime(true);
+            $metrics[$label] = round(($now - $last) * 1000, 2);
+            $last = $now;
+        };
+
         $utilisateur = $this->utilisateurRepository->findByEmail($email);
+        $checkpoint('findByEmail');
 
         if (!$utilisateur || !Hash::check($password, $utilisateur->password)) {
+            Log::warning('auth.login.failed', [
+                'email' => $email,
+                'reason' => 'invalid_credentials',
+                'steps_ms' => $metrics,
+                'total_ms' => round((microtime(true) - $start) * 1000, 2),
+            ]);
             return null;
         }
 
         if (!$utilisateur->actif) {
+            Log::warning('auth.login.failed', [
+                'email' => $email,
+                'user_id' => $utilisateur->id,
+                'reason' => 'inactive_account',
+                'steps_ms' => $metrics,
+                'total_ms' => round((microtime(true) - $start) * 1000, 2),
+            ]);
             return null;
         }
 
+        $checkpoint('password_check');
+
         $token = JWTAuth::fromUser($utilisateur);
+        $checkpoint('jwt_create');
+
         $this->utilisateurRepository->updateLastConnection($utilisateur->id);
+        $checkpoint('update_last_connection');
 
         // Skip broadcast on login to avoid blocking the response on websocket delivery
         ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id, false);
+        $checkpoint('activity_log');
+
+        Log::info('auth.login.success', [
+            'email' => $email,
+            'user_id' => $utilisateur->id,
+            'steps_ms' => $metrics,
+            'total_ms' => round((microtime(true) - $start) * 1000, 2),
+        ]);
 
         return $this->respondWithToken($token, $utilisateur);
     }

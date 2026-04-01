@@ -23,9 +23,9 @@ class PaieService
 
     // ── CRUD ──────────────────────────────────────────────────────────
 
-    public function getAll(): Collection
+    public function getAllPaginated(int $perPage = 20)
     {
-        return $this->paieRepository->getAllWithUtilisateur();
+        return $this->paieRepository->paginateWithUtilisateur($perPage);
     }
 
     public function getById(int $id): ?Paie

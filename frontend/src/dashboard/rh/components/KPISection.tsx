@@ -24,10 +24,16 @@ interface KPISectionProps {
   loading: boolean;
 }
 
-const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, loading }) => {
+const KPISection: React.FC<KPISectionProps> = ({
+  stats,
+  aiKpis: initialAiKpis,
+  loading,
+}) => {
   const [aiKpis, setAiKpis] = useState<DashboardKPIs | null>(initialAiKpis);
   const hasAiPayload = (data: DashboardKPIs | null) =>
-    !!data && typeof data === "object" && (data.attendance_predictions || data.performance_scores);
+    !!data &&
+    typeof data === "object" &&
+    (data.attendance_predictions || data.performance_scores);
 
   useEffect(() => {
     if (hasAiPayload(initialAiKpis)) {
@@ -142,7 +148,8 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, aiKpis: initialAiKpis, l
     {
       title: "Risque Absence IA",
       value: attendancePred
-        ? attendancePred.high_risk_employees + attendancePred.medium_risk_employees
+        ? attendancePred.high_risk_employees +
+          attendancePred.medium_risk_employees
         : "—",
       change: attendancePred
         ? `${attendancePred.predicted_absence_rate.toFixed(1)}% taux prédit`

@@ -36,7 +36,10 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   absenceData,
   loading,
 }) => {
-  const absenceTotal = absenceData.reduce((sum, item) => sum + (item?.value ?? 0), 0);
+  const absenceTotal = absenceData.reduce(
+    (sum, item) => sum + (item?.value ?? 0),
+    0,
+  );
 
   if (loading) {
     return (

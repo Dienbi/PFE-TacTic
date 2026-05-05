@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -83,16 +84,19 @@ class AIService
                 ];
             });
 
-            $attendance = ($responses['attendance']?->successful())
-                ? array_slice($responses['attendance']->json() ?? [], 0, $attendanceLimit)
+            $attendanceResponse = $responses['attendance'] ?? null;
+            $attendance = ($attendanceResponse instanceof Response && $attendanceResponse->successful())
+                ? array_slice($attendanceResponse->json() ?? [], 0, $attendanceLimit)
                 : [];
 
-            $performance = ($responses['performance']?->successful())
-                ? array_slice($responses['performance']->json() ?? [], 0, $performanceLimit)
+            $performanceResponse = $responses['performance'] ?? null;
+            $performance = ($performanceResponse instanceof Response && $performanceResponse->successful())
+                ? array_slice($performanceResponse->json() ?? [], 0, $performanceLimit)
                 : [];
 
-            $kpis = ($responses['kpis']?->successful())
-                ? ($responses['kpis']->json() ?? [])
+            $kpisResponse = $responses['kpis'] ?? null;
+            $kpis = ($kpisResponse instanceof Response && $kpisResponse->successful())
+                ? ($kpisResponse->json() ?? [])
                 : [];
 
             $result = [

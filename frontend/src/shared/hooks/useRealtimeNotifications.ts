@@ -1,16 +1,6 @@
 import { useEffect, useRef } from "react";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 import { useToast } from "../components/Toast";
-
-// @ts-ignore
-window.Pusher = Pusher;
-
-const enablePusherDebug = process.env.REACT_APP_PUSHER_DEBUG === 'true';
-Pusher.logToConsole = enablePusherDebug;
-
-// Singleton Echo instance
-let echoInstance: Echo<any> | null = null;
+import echoService from "../services/echoService";
 
 interface UseRealtimeNotificationsOptions {
   onLeaveStatusUpdate?: (data: any) => void;
@@ -32,34 +22,9 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
 
     const user = JSON.parse(userStr);
     const token = localStorage.getItem("token");
-
     if (!token) return;
 
-    // Initialize Laravel Echo only once
-    if (!echoInstance) {
-      const REVERB_APP_KEY = process.env.REACT_APP_REVERB_APP_KEY || '5uzfsf7jv9rmk46zgbrz';
-      const REVERB_HOST = process.env.REACT_APP_REVERB_HOST || '127.0.0.1';
-      // Default to 6001 to match artisan reverb:start; keep env override for custom setups
-      const REVERB_PORT = parseInt(process.env.REACT_APP_REVERB_PORT || '6001');
-      const REVERB_SCHEME = (process.env.REACT_APP_REVERB_SCHEME || 'http').toLowerCase();
-      const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
-
-      echoInstance = new Echo({
-        broadcaster: "reverb",
-        key: REVERB_APP_KEY,
-        wsHost: REVERB_HOST,
-        wsPort: REVERB_PORT,
-        wssPort: REVERB_PORT,
-        forceTLS: REVERB_SCHEME === 'https',
-        enabledTransports: ["ws"],
-        authEndpoint: `${API_URL}/broadcasting/auth`,
-        auth: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      });
-    }
+    const echoInstance = echoService.connect();
 
     isSubscribed.current = true;
 
@@ -129,14 +94,14 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
           if (user.role === "RH") {
             echoInstance.leave("rh.attendance");
           }
-        } catch (e) {
-          // ignore cleanup errors
+        } catch (error) {
+          console.error("Failed to cleanup realtime channels", error);
         }
       }
     };
   }, [showToast, options]);
 
-  return { echoInstance };
+  return { echoInstance: echoService.getEcho() };
 };
 
 export default useRealtimeNotifications;

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+namespace: tactic-prod
+images:
+  - name: nexus.example.local/docker-hosted/tactic-backend
+    newName: REPLACE_NEXUS_REGISTRY/docker-hosted/tactic-backend
+    newTag: latest
+  - name: nexus.example.local/docker-hosted/tactic-frontend
+    newName: REPLACE_NEXUS_REGISTRY/docker-hosted/tactic-frontend
+    newTag: latest
+  - name: nexus.example.local/docker-hosted/tactic-ai-service
+    newName: REPLACE_NEXUS_REGISTRY/docker-hosted/tactic-ai-service
+    newTag: latest

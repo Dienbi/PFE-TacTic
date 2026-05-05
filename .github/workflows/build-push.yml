@@ -1,0 +1,68 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  REPOSITORY_NAME: docker-hosted
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set short SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Nexus Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.NEXUS_URL }}
+          username: ${{ secrets.NEXUS_USERNAME }}
+          password: ${{ secrets.NEXUS_PASSWORD }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.NEXUS_URL }}/${{ env.REPOSITORY_NAME }}/tactic-backend:sha-${{ steps.vars.outputs.SHORT_SHA }}
+            ${{ secrets.NEXUS_URL }}/${{ env.REPOSITORY_NAME }}/tactic-backend:latest
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/frontend/Dockerfile
+          build-args: |
+            REACT_APP_API_URL=/api
+          push: true
+          tags: |
+            ${{ secrets.NEXUS_URL }}/${{ env.REPOSITORY_NAME }}/tactic-frontend:sha-${{ steps.vars.outputs.SHORT_SHA }}
+            ${{ secrets.NEXUS_URL }}/${{ env.REPOSITORY_NAME }}/tactic-frontend:latest
+
+      - name: Build and push ai-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/ai-service/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.NEXUS_URL }}/${{ env.REPOSITORY_NAME }}/tactic-ai-service:sha-${{ steps.vars.outputs.SHORT_SHA }}
+            ${{ secrets.NEXUS_URL }}/${{ env.REPOSITORY_NAME }}/tactic-ai-service:latest

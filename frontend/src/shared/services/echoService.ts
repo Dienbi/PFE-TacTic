@@ -12,12 +12,14 @@ declare global {
     }
 }
 
-window.Pusher = Pusher;
+(globalThis as typeof globalThis & { Pusher: typeof Pusher }).Pusher = Pusher;
 
 const REVERB_APP_KEY = process.env.REACT_APP_REVERB_APP_KEY || '5uzfsf7jv9rmk46zgbrz';
-const REVERB_HOST = process.env.REACT_APP_REVERB_HOST || '127.0.0.1';
-const REVERB_PORT = parseInt(process.env.REACT_APP_REVERB_PORT || '6001');
+const REVERB_HOST = process.env.REACT_APP_REVERB_HOST || window.location.hostname;
+const REVERB_PORT = Number.parseInt(process.env.REACT_APP_REVERB_PORT || '6001', 10);
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+const REVERB_SCHEME = process.env.REACT_APP_REVERB_SCHEME || window.location.protocol.replace(':', '');
+const USE_TLS = REVERB_SCHEME === 'https';
 
 class EchoService {
     private echo: Echo<any> | null = null;
@@ -28,12 +30,6 @@ class EchoService {
             return this.echo;
         }
 
-        console.log('Connecting to Reverb:', {
-            host: REVERB_HOST,
-            port: REVERB_PORT,
-            key: REVERB_APP_KEY
-        });
-
         const token = localStorage.getItem('token');
         this.echo = new Echo({
             broadcaster: 'reverb',
@@ -41,8 +37,8 @@ class EchoService {
             wsHost: REVERB_HOST,
             wsPort: REVERB_PORT,
             wssPort: REVERB_PORT,
-            forceTLS: (process.env.REACT_APP_REVERB_SCHEME || 'http') === 'https',
-            enabledTransports: ['ws', 'wss'],
+            forceTLS: USE_TLS,
+            enabledTransports: USE_TLS ? ['ws', 'wss'] : ['ws'],
             authEndpoint: `${API_URL}/broadcasting/auth`,
             auth: {
                 headers: {
@@ -53,12 +49,10 @@ class EchoService {
 
         // Connection state tracking
         this.echo.connector.pusher.connection.bind('connected', () => {
-            console.log('Reverb connected');
             this.connected = true;
         });
 
         this.echo.connector.pusher.connection.bind('disconnected', () => {
-            console.log('Reverb disconnected');
             this.connected = false;
         });
 
@@ -84,7 +78,6 @@ class EchoService {
         const channel = echo.channel('rh-notifications');
         
         channel.listen('.new-account-request', (data: any) => {
-            console.log('New account request received:', data);
             callback(data);
         });
 
@@ -99,7 +92,6 @@ class EchoService {
         const channel = echo.private('rh.notifications');
 
         channel.listen('.NewActivityLog', (data: any) => {
-            console.log('New activity log received:', data);
             callback(data);
         });
 

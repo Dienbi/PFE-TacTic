@@ -9,7 +9,7 @@ load_dotenv()
 # Database URL from environment variables
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:password@localhost:5432/pfe_tactic"
+    "postgresql://postgres:admin@127.0.0.1:5433/tactic_db"
 )
 
 # Create SQLAlchemy engine

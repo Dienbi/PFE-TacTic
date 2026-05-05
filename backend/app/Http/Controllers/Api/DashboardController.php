@@ -18,6 +18,11 @@ class DashboardController extends Controller
     ) {
     }
 
+    private function shouldLogPerf(): bool
+    {
+        return filter_var(env('PERF_LOG_ENABLED', false), FILTER_VALIDATE_BOOL);
+    }
+
     /**
      * Get all RH dashboard data in one request (stats + trend + absence distribution + AI data)
      */
@@ -44,18 +49,22 @@ class DashboardController extends Controller
             $result = Cache::remember($key, $ttl, function () use ($callback, $label) {
                 $computeStart = microtime(true);
                 $res = $callback();
-                Log::info('dashboard.segment.miss', [
-                    'label' => $label,
-                    'compute_ms' => round((microtime(true) - $computeStart) * 1000, 2),
-                ]);
+                if ($this->shouldLogPerf()) {
+                    Log::info('dashboard.segment.miss', [
+                        'label' => $label,
+                        'compute_ms' => round((microtime(true) - $computeStart) * 1000, 2),
+                    ]);
+                }
                 return $res;
             });
 
-            Log::info('dashboard.segment', [
-                'label' => $label,
-                'hit' => $hit,
-                'total_ms' => round((microtime(true) - $segmentStart) * 1000, 2),
-            ]);
+            if ($this->shouldLogPerf()) {
+                Log::info('dashboard.segment', [
+                    'label' => $label,
+                    'hit' => $hit,
+                    'total_ms' => round((microtime(true) - $segmentStart) * 1000, 2),
+                ]);
+            }
 
             return $result;
         };
@@ -63,7 +72,6 @@ class DashboardController extends Controller
         $data = Cache::remember($cacheKey, 300, function () use ($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit, $withAi, $fetch) {
             $startDate = Carbon::now()->startOfMonth();
             $endDate   = Carbon::now()->endOfMonth();
-            $distKey   = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
 
             $aiData = $withAi ? $fetch(
                 'ai_dashboard',
@@ -117,14 +125,16 @@ class DashboardController extends Controller
             ];
         });
 
-        Log::info('dashboard.all.complete', [
-            'path' => 'api/dashboard/all',
-            'months' => $months,
-            'attendance_limit' => $attendanceLimit,
-            'performance_limit' => $performanceLimit,
-            'recent_leaves_limit' => $recentLeavesLimit,
-            'total_ms' => round((microtime(true) - $totalStart) * 1000, 2),
-        ]);
+        if ($this->shouldLogPerf()) {
+            Log::info('dashboard.all.complete', [
+                'path' => 'api/dashboard/all',
+                'months' => $months,
+                'attendance_limit' => $attendanceLimit,
+                'performance_limit' => $performanceLimit,
+                'recent_leaves_limit' => $recentLeavesLimit,
+                'total_ms' => round((microtime(true) - $totalStart) * 1000, 2),
+            ]);
+        }
 
         return response()->json($data);
     }

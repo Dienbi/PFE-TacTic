@@ -1,15 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { AlertCircle, Bell, UserCheck } from "lucide-react";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 import { useToast } from "../../../shared/components/Toast";
+import echoService from "../../../shared/services/echoService";
 import "./NotificationsSection.css";
-
-// @ts-ignore
-window.Pusher = Pusher;
-
-const enablePusherDebug = process.env.REACT_APP_PUSHER_DEBUG === "true";
-Pusher.logToConsole = enablePusherDebug;
 
 interface Notification {
   id: string;
@@ -23,9 +16,6 @@ interface Notification {
 interface NotificationsSectionProps {
   notifications?: Notification[];
 }
-
-// Keep Echo instance outside component to prevent recreation on re-renders
-let echoInstance: Echo<any> | null = null;
 
 const NotificationsSection: React.FC<NotificationsSectionProps> = ({
   notifications: propNotifications,
@@ -54,27 +44,9 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 
     const user = JSON.parse(userStr);
     const token = localStorage.getItem("token");
-
     if (!token) return;
 
-    // Initialize Laravel Echo only once
-    if (!echoInstance) {
-      echoInstance = new Echo({
-        broadcaster: "reverb",
-        key: process.env.REACT_APP_REVERB_APP_KEY || "tactic-key",
-        wsHost: process.env.REACT_APP_REVERB_HOST || "localhost",
-        wsPort: parseInt(process.env.REACT_APP_REVERB_PORT || "6001"),
-        wssPort: parseInt(process.env.REACT_APP_REVERB_PORT || "6001"),
-        forceTLS: (process.env.REACT_APP_REVERB_SCHEME || "http") === "https",
-        enabledTransports: ["ws", "wss"],
-        authEndpoint: "http://localhost:8000/api/broadcasting/auth",
-        auth: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      });
-    }
+    const echoInstance = echoService.connect();
 
     isSubscribed.current = true;
 
@@ -83,8 +55,6 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
       echoInstance
         .private(`manager.${user.id}`)
         .listen(".ManagerNotification", (data: any) => {
-          console.log("Manager notification received:", data);
-
           // Show toast notification
           showToast(data.type || "info", data.title, data.message);
 
@@ -109,8 +79,6 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
     echoInstance
       .private(`user.${user.id}`)
       .listen(".LeaveStatusNotification", (data: any) => {
-        console.log("Leave status notification received:", data);
-
         // Show toast notification
         showToast(data.type || "info", data.title, data.message);
 
@@ -130,8 +98,6 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         });
       })
       .listen(".SalaryPaid", (data: any) => {
-        console.log("Salary Paid event received:", data);
-
         showToast("success", "Salaire Versé", data.message);
 
         const newNotification: Notification = {
@@ -149,7 +115,6 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         });
       })
       .notification((notification: any) => {
-        console.log("Broadcasting Notification received:", notification);
         const msg = notification.message || notification.data?.message;
 
         let type = notification.alert_type || notification.data?.alert_type;
@@ -192,8 +157,8 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
           if (user.role === "CHEF_EQUIPE") {
             echoInstance.leave(`manager.${user.id}`);
           }
-        } catch (e) {
-          // ignore cleanup errors
+        } catch (error) {
+          console.error("Failed to cleanup notification channels", error);
         }
       }
     };

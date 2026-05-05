@@ -1,0 +1,16 @@
+.git
+.gitignore
+**/.DS_Store
+**/node_modules
+**/vendor
+**/venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/build
+**/dist
+**/.env
+**/.env.*
+**/storage/logs
+**/bootstrap/cache/*.php

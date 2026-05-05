@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\UserNotFoundException;
 use App\Models\Utilisateur;
 use App\Repositories\UtilisateurRepository;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,11 @@ class AuthService
     public function __construct(
         protected UtilisateurRepository $utilisateurRepository
     ) {
+    }
+
+    private function shouldLogPerf(): bool
+    {
+        return filter_var(env('PERF_LOG_ENABLED', false), FILTER_VALIDATE_BOOL);
     }
 
     public function login(string $email, string $password): ?array
@@ -31,23 +37,27 @@ class AuthService
         $checkpoint('findByEmail');
 
         if (!$utilisateur || !Hash::check($password, $utilisateur->password)) {
-            Log::warning('auth.login.failed', [
-                'email' => $email,
-                'reason' => 'invalid_credentials',
-                'steps_ms' => $metrics,
-                'total_ms' => round((microtime(true) - $start) * 1000, 2),
-            ]);
+            if ($this->shouldLogPerf()) {
+                Log::warning('auth.login.failed', [
+                    'email' => $email,
+                    'reason' => 'invalid_credentials',
+                    'steps_ms' => $metrics,
+                    'total_ms' => round((microtime(true) - $start) * 1000, 2),
+                ]);
+            }
             return null;
         }
 
         if (!$utilisateur->actif) {
-            Log::warning('auth.login.failed', [
-                'email' => $email,
-                'user_id' => $utilisateur->id,
-                'reason' => 'inactive_account',
-                'steps_ms' => $metrics,
-                'total_ms' => round((microtime(true) - $start) * 1000, 2),
-            ]);
+            if ($this->shouldLogPerf()) {
+                Log::warning('auth.login.failed', [
+                    'email' => $email,
+                    'user_id' => $utilisateur->id,
+                    'reason' => 'inactive_account',
+                    'steps_ms' => $metrics,
+                    'total_ms' => round((microtime(true) - $start) * 1000, 2),
+                ]);
+            }
             return null;
         }
 
@@ -63,12 +73,14 @@ class AuthService
         ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id, false);
         $checkpoint('activity_log');
 
-        Log::info('auth.login.success', [
-            'email' => $email,
-            'user_id' => $utilisateur->id,
-            'steps_ms' => $metrics,
-            'total_ms' => round((microtime(true) - $start) * 1000, 2),
-        ]);
+        if ($this->shouldLogPerf()) {
+            Log::info('auth.login.success', [
+                'email' => $email,
+                'user_id' => $utilisateur->id,
+                'steps_ms' => $metrics,
+                'total_ms' => round((microtime(true) - $start) * 1000, 2),
+            ]);
+        }
 
         return $this->respondWithToken($token, $utilisateur);
     }
@@ -123,7 +135,7 @@ class AuthService
     {
         $user = JWTAuth::user();
         if (!$user) {
-            throw new \Exception('User not found');
+            throw new UserNotFoundException();
         }
 
         // Use repository to update

@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import matching, predictions, training
@@ -19,10 +20,15 @@ app = FastAPI(
     version="2.0.0"
 )
 
+
+def _allowed_origins() -> list[str]:
+    raw_origins = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,7 +63,6 @@ def health_check():
 @app.on_event("startup")
 def on_startup():
     """Start the background scheduler on app startup."""
-    import os
     if os.getenv("ENABLE_SCHEDULER", "true").lower() == "true":
         from app.services.scheduler import start_scheduler
         start_scheduler()

@@ -36,8 +36,17 @@ Route::get('/test-cors', function () {
     return response()->json(['message' => 'CORS is working!', 'timestamp' => now()]);
 });
 
+// Backend health endpoint for liveness/readiness probes
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'service' => 'TacTic Backend API',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+});
+
 // Broadcasting auth route (must be before other authenticated routes)
-Broadcast::routes(['middleware' => ['auth:api']]);
+Broadcast::routes(['middleware' => ['jwt.auth']]);
 
 // Account request public routes
 Route::prefix('account-requests')->group(function () {

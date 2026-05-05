@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
 
 // Simple in-memory cache for GET requests
 const cache = new Map();
@@ -21,7 +21,6 @@ client.interceptors.request.use((config) => {
         const cachedResponse = cache.get(cacheKey);
 
         if (cachedResponse && (Date.now() - cachedResponse.timestamp < CACHE_TTL)) {
-            console.log(`Cache hit for ${config.url}`);
             // Return a resolved promise with the cached data
             // We need to return an object that looks like an axios response
             config.adapter = () => Promise.resolve({
@@ -43,8 +42,6 @@ client.interceptors.request.use(
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
-        } else {
-            console.warn('No token found in localStorage');
         }
         return config;
     },
@@ -67,12 +64,11 @@ client.interceptors.response.use(
     },
     (error) => {
         if (error.response?.status === 401) {
-            console.error('Authentication failed - redirecting to login');
             // Clear invalid token
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             // Redirect to login
-            window.location.href = '/login';
+            globalThis.location.href = '/login';
         }
         return Promise.reject(error);
     }

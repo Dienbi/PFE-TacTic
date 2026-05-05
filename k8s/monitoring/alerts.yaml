@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tactic-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: tactic.rules
+      rules:
+        - alert: HighErrorRate
+          expr: sum(rate(http_requests_total{status=~"5.."}[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High 5xx error rate"
+            description: "The application is serving elevated 5xx responses."
+
+        - alert: PodRestartSpike
+          expr: increase(kube_pod_container_status_restarts_total[10m]) > 3
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod restarts increased"
+            description: "One or more pods restarted more than 3 times in 10 minutes."

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tactic-dev
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tactic-prod
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring

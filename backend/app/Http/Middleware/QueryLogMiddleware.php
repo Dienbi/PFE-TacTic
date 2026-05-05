@@ -11,8 +11,9 @@ class QueryLogMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // Only log queries when debugging locally to avoid noisy logs in production
-        if (!app()->environment('local') && !config('app.debug')) {
+        // Keep query logging opt-in because serializing full query payloads is expensive.
+        $queryLogEnabled = filter_var(env('QUERY_LOG_ENABLED', false), FILTER_VALIDATE_BOOL);
+        if (!$queryLogEnabled) {
             return $next($request);
         }
 

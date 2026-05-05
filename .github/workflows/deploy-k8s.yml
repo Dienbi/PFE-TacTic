@@ -1,0 +1,50 @@
+name: Deploy to Kubernetes (Dev)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (e.g. sha-abc1234)"
+        required: true
+        default: "latest"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    env:
+      K8S_NAMESPACE: tactic-dev
+      IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+      NEXUS_REGISTRY: ${{ secrets.NEXUS_URL }}
+      NEXUS_REPO: docker-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          kubectl config current-context
+
+      - name: Apply manifests
+        run: kubectl apply -k k8s/overlays/dev
+
+      - name: Update deployment images
+        run: |
+          kubectl -n ${K8S_NAMESPACE} set image deployment/backend backend=${NEXUS_REGISTRY}/${NEXUS_REPO}/tactic-backend:${IMAGE_TAG}
+          kubectl -n ${K8S_NAMESPACE} set image deployment/frontend frontend=${NEXUS_REGISTRY}/${NEXUS_REPO}/tactic-frontend:${IMAGE_TAG}
+          kubectl -n ${K8S_NAMESPACE} set image deployment/ai-service ai-service=${NEXUS_REGISTRY}/${NEXUS_REPO}/tactic-ai-service:${IMAGE_TAG}
+
+      - name: Wait for rollout
+        run: |
+          kubectl -n ${K8S_NAMESPACE} rollout status deployment/backend --timeout=180s
+          kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend --timeout=180s
+          kubectl -n ${K8S_NAMESPACE} rollout status deployment/ai-service --timeout=180s
+
+      - name: Smoke checks
+        run: |
+          kubectl -n ${K8S_NAMESPACE} get pods
+          kubectl -n ${K8S_NAMESPACE} get svc

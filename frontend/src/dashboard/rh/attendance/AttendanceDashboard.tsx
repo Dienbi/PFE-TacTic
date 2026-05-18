@@ -3,7 +3,6 @@ import { Users, Clock, UserX, UserCheck, Calendar, Search } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
-import Loader from "../../../shared/components/Loader";
 import "./AttendanceDashboard.css";
 
 interface UserInfo {
@@ -37,7 +36,6 @@ interface AttendanceStats {
 
 const AttendanceDashboard: React.FC = () => {
   const [data, setData] = useState<AttendanceStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
@@ -53,14 +51,11 @@ const AttendanceDashboard: React.FC = () => {
   }, [date]);
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
       const response = await client.get(`/pointages/summary?date=${date}`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching attendance data:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -93,10 +88,6 @@ const AttendanceDashboard: React.FC = () => {
       )}
     </div>
   );
-
-  if (isLoading && !data) {
-    return <Loader fullScreen={true} />;
-  }
 
   return (
     <div className="dashboard-container">

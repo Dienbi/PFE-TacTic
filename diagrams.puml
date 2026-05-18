@@ -1,0 +1,189 @@
+@startuml tactic_diagrams
+
+' ==========================================
+' GLOBAL USE CASE DIAGRAM
+' ==========================================
+package "Global Use Case Diagram" {
+
+    left to right direction
+
+    actor "Employé" as Emp
+    actor "Chef d'équipe" as Chef
+    actor "Administrateur (RH)" as RH
+
+    Emp <|-- Chef
+    Chef <|-- RH
+
+    package "TAC-TIC HR System" {
+        usecase "S'authentifier" as UC_Auth
+        
+        ' Employee Use Cases
+        usecase "Consulter ses informations" as UC_Info
+        usecase "Pointer (Entrée/Sortie)" as UC_Pointer
+        usecase "Demander un congé" as UC_DemanderConge
+        usecase "Consulter ses fiches de paie" as UC_ConsulterPaie
+        usecase "Postuler à une offre interne" as UC_Postuler
+
+        ' Team Leader Use Cases
+        usecase "Valider/Refuser congés équipe" as UC_ValiderConge
+        usecase "Consulter pointages équipe" as UC_ConsulterPointageEquipe
+
+        ' HR Use Cases
+        usecase "Gérer les employés" as UC_GererEmployes
+        usecase "Gérer les équipes et postes" as UC_GererEquipes
+        usecase "Génération et simulation de la paie" as UC_GererPaie
+        usecase "Gérer les offres d'emploi" as UC_GererOffres
+        usecase "Utiliser les prédictions IA (Absence/Performance)" as UC_IA_Predict
+        usecase "Utiliser le Matching IA (Candidats/Postes)" as UC_IA_Match
+    }
+
+    Emp --> UC_Auth
+    Emp --> UC_Info
+    Emp --> UC_Pointer
+    Emp --> UC_DemanderConge
+    Emp --> UC_ConsulterPaie
+    Emp --> UC_Postuler
+
+    Chef --> UC_ValiderConge
+    Chef --> UC_ConsulterPointageEquipe
+
+    RH --> UC_GererEmployes
+    RH --> UC_GererEquipes
+    RH --> UC_GererPaie
+    RH --> UC_GererOffres
+    RH --> UC_IA_Predict
+    RH --> UC_IA_Match
+
+}
+
+newpage
+
+' ==========================================
+' GLOBAL CLASS DIAGRAM
+' ==========================================
+package "Global Class Diagram" {
+
+    class Utilisateur {
+        + id : BigInt
+        + matricule : String
+        + nom : String
+        + prenom : String
+        + email : String
+        + password : String
+        + role : Enum(RH, chef_equipe, employe)
+        + date_embauche : Date
+        + salaire_base : Decimal
+        + poste_id : BigInt
+        + equipe_id : BigInt
+        + created_at : Timestamp
+        + updated_at : Timestamp
+        + deleted_at : Timestamp
+    }
+
+    class Poste {
+        + id : BigInt
+        + titre : String
+        + description : Text
+        + created_at : Timestamp
+    }
+
+    class Equipe {
+        + id : BigInt
+        + nom : String
+        + description : Text
+        + chef_id : BigInt
+        + created_at : Timestamp
+    }
+
+    class Pointage {
+        + id : BigInt
+        + utilisateur_id : BigInt
+        + date_pointage : Date
+        + heure_entree : Time
+        + heure_sortie : Time
+        + duree_travail : Decimal
+        + statut : Enum(present, absent, retard)
+    }
+
+    class Conge {
+        + id : BigInt
+        + utilisateur_id : BigInt
+        + date_debut : Date
+        + date_fin : Date
+        + type : Enum(annuel, maladie, sans_solde)
+        + statut : Enum(en_attente, approuve, rejete)
+        + commentaire : Text
+        + validateur_id : BigInt
+    }
+
+    class Paie {
+        + id : BigInt
+        + utilisateur_id : BigInt
+        + periode_mois : Integer
+        + periode_annee : Integer
+        + salaire_base : Decimal
+        + heures_travaillees : Decimal
+        + deductions_conges : Decimal
+        + salaire_net : Decimal
+        + date_generation : Date
+    }
+
+    class Competence {
+        + id : BigInt
+        + nom : String
+        + categorie : String
+    }
+
+    class Utilisateur_Competence {
+        + utilisateur_id : BigInt
+        + competence_id : BigInt
+        + niveau : Integer
+    }
+
+    class JobPost {
+        + id : BigInt
+        + titre : String
+        + description : Text
+        + exigences : Text
+        + statut : Enum(ouvert, ferme)
+        + date_creation : Date
+    }
+
+    class JobApplication {
+        + id : BigInt
+        + job_post_id : BigInt
+        + utilisateur_id : BigInt
+        + statut : Enum(soumis, en_revue, accepte, rejete)
+        + date_application : Date
+    }
+
+    class AIRecommendation {
+        + id : BigInt
+        + job_application_id : BigInt
+        + matching_score : Decimal
+        + points_forts : Text
+        + lacunes : Text
+        + generer_le : Timestamp
+    }
+
+    ' Relationships
+    Utilisateur "n" --> "1" Poste : appartient à
+    Utilisateur "n" --> "1" Equipe : est membre de
+    Equipe "1" --> "1" Utilisateur : dirigée par
+    
+    Utilisateur "1" *-- "n" Pointage : effectue
+    Utilisateur "1" *-- "n" Conge : demande
+    Conge "n" --> "1" Utilisateur : validé par
+    Utilisateur "1" *-- "n" Paie : reçoit
+
+    Utilisateur "1" -- "n" Utilisateur_Competence
+    Competence "1" -- "n" Utilisateur_Competence
+
+    Utilisateur "1" *-- "n" JobApplication : soumet
+    JobPost "1" *-- "n" JobApplication : reçoit
+
+    JobApplication "1" -- "1" AIRecommendation : génère
+
+}
+
+@enduml

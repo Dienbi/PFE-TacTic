@@ -4,7 +4,6 @@ import { Save, X, Plus, Trash2 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import client from "../../api/client";
-import Loader from "../components/Loader";
 import "./Profile.css";
 
 const SUGGESTED_SKILLS = [
@@ -80,7 +79,6 @@ interface UserData {
 const EditProfile: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<UserData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"personal" | "skills">("personal");
   const [formData, setFormData] = useState({
     nom: "",
@@ -155,7 +153,6 @@ const EditProfile: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
     setSuccess("");
 
@@ -184,8 +181,6 @@ const EditProfile: React.FC = () => {
     } catch (err) {
       console.error("Update failed", err);
       setError("Failed to update profile. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -193,7 +188,6 @@ const EditProfile: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      {isLoading && <Loader fullScreen={true} />}
       <Sidebar />
       <div className="main-content">
         <Navbar userName={`${user.prenom} ${user.nom}`} userRole={user.role} />

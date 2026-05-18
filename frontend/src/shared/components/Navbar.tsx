@@ -16,18 +16,18 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="navbar">
-
+      <div style={{ flex: 1 }}></div>
       <div className="navbar-profile-container">
         <div className="navbar-profile" onClick={() => setIsOpen(!isOpen)}>
-          <div className="profile-info">
-            <span className="profile-name">{userName}</span>
-            <span className="profile-role">{userRole}</span>
-          </div>
           <div className="profile-avatar">
             {userName
               .split(" ")
               .map((n) => n[0])
               .join("")}
+          </div>
+          <div className="profile-info">
+            <span className="profile-name">{userName}</span>
+            <span className="profile-role">{userRole}</span>
           </div>
         </div>
 

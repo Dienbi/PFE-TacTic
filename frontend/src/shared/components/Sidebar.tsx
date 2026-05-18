@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import client from "../../api/client";
-import Loader from "./Loader";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -27,7 +26,6 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Get user from local storage for role fallback
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -52,7 +50,6 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const effectiveRole = mapRole(rawRole);
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
     try {
       await client.post("/auth/logout");
     } catch (error) {
@@ -148,7 +145,6 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
 
   return (
     <aside className="sidebar">
-      {isLoggingOut && <Loader fullScreen={true} />}
       <div className="sidebar-header">
         <h2>Gestion RH</h2>
         <span className="subtitle">Système RH</span>

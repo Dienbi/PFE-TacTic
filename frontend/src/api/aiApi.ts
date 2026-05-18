@@ -5,16 +5,19 @@ import client from "./client";
 export interface DailyForecast {
   date: string;
   day_name: string;
-  predicted_present: boolean;
-  probability: number;
+  presence_probability: number;
+  absence_probability: number;
+  risk_level: string;
 }
 
 export interface AttendancePrediction {
-  user_id: number;
-  employee_name: string;
-  forecast: DailyForecast[];
-  risk_level: string;
-  absence_probability: number;
+  utilisateur_id: number;
+  nom: string;
+  prenom: string;
+  matricule: string;
+  predictions: DailyForecast[];
+  avg_absence_risk: number;
+  generated_at: string;
 }
 
 export interface AttendanceSummary {
@@ -73,14 +76,14 @@ export interface CandidateRecommendation {
 export interface TrainingResult {
   model: string;
   status: string;
-  metrics: Record<string, any>;
-  message: string;
+  result?: Record<string, any>;
 }
 
 export interface TrainingStatusInfo {
-  model: string;
-  last_trained: string | null;
-  metrics: Record<string, any>;
+  training_in_progress: boolean;
+  models: Record<string, any>;
+  last_checked: string | null;
+  status?: string;
 }
 
 // ── API Object ──────────────────────────────────────────────────────────────
@@ -135,9 +138,9 @@ export const aiApi = {
     return r.data?.data ?? r.data;
   },
 
-  getTrainingStatus: async (): Promise<TrainingStatusInfo[]> => {
+  getTrainingStatus: async (): Promise<TrainingStatusInfo> => {
     const r = await client.get("/ai/train/status");
-    return r.data?.data ?? r.data ?? [];
+    return r.data?.data ?? r.data;
   },
 
   // ── Health ────────────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -125,6 +125,71 @@ class DataPipeline:
         if not rows:
             return pd.DataFrame()
         return pd.DataFrame(rows, columns=['competence_id', 'nom', 'niveau_requis'])
+
+    def get_competences(self) -> pd.DataFrame:
+        """Get full skill catalog."""
+        query = text("""
+            SELECT id, nom
+            FROM competences
+            ORDER BY nom
+        """)
+        rows = self.db.execute(query).fetchall()
+        if not rows:
+            return pd.DataFrame()
+        return pd.DataFrame(rows, columns=['id', 'nom'])
+
+    def get_chef_reviews(self) -> pd.DataFrame:
+        """Fetch chef review scores if a compatible table exists."""
+        candidate_tables = [
+            'chef_reviews',
+            'performance_reviews',
+            'evaluations',
+            'employee_reviews',
+        ]
+        score_columns = ['score', 'note', 'rating', 'evaluation']
+
+        for table in candidate_tables:
+            columns_query = text("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = :table
+            """)
+            cols = [row[0] for row in self.db.execute(columns_query, {'table': table}).fetchall()]
+            if not cols:
+                continue
+
+            if 'utilisateur_id' not in cols:
+                continue
+
+            score_col = next((c for c in score_columns if c in cols), None)
+            if not score_col:
+                continue
+
+            query = text(f"""
+                SELECT utilisateur_id, AVG({score_col}) as review_score
+                FROM {table}
+                GROUP BY utilisateur_id
+            """)
+            rows = self.db.execute(query).fetchall()
+            if not rows:
+                return pd.DataFrame()
+
+            df = pd.DataFrame(rows, columns=['utilisateur_id', 'review_score'])
+            if df.empty:
+                return df
+
+            max_score = df['review_score'].max()
+            if max_score <= 5:
+                df['review_score'] = df['review_score'] * 20
+            elif max_score <= 10:
+                df['review_score'] = df['review_score'] * 10
+            elif max_score <= 20:
+                df['review_score'] = df['review_score'] * 5
+
+            df['review_score'] = df['review_score'].clip(lower=0, upper=100).round(2)
+            return df
+
+        return pd.DataFrame()
 
     # ──────────────────────────────────────────────────────────────────
     # Feature engineering
@@ -385,7 +450,7 @@ class DataPipeline:
 
         return sequences
 
-    def build_matching_features(self, job_post_id: int) -> pd.DataFrame:
+    def build_matching_features(self, job_post_id: int, required_skill_ids: Optional[List[int]] = None) -> pd.DataFrame:
         """
         Build feature vectors for (employee, job_post) pairs for the matching model.
         """
@@ -393,7 +458,17 @@ class DataPipeline:
         if employees.empty:
             return pd.DataFrame()
 
-        job_skills = self.get_job_post_skills(job_post_id)
+        if required_skill_ids:
+            competences = self.get_competences()
+            if competences.empty:
+                job_skills = pd.DataFrame()
+            else:
+                filtered = competences[competences['id'].isin(required_skill_ids)]
+                job_skills = filtered.rename(columns={'id': 'competence_id'})
+                job_skills['niveau_requis'] = 3
+                job_skills = job_skills[['competence_id', 'nom', 'niveau_requis']]
+        else:
+            job_skills = self.get_job_post_skills(job_post_id)
         emp_skills = self.get_employee_skills()
         att_features = self.build_attendance_features()
         leave_features = self.build_leave_features()

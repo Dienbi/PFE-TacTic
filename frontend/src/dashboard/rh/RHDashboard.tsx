@@ -62,23 +62,19 @@ const RHDashboard: React.FC = () => {
             <KPISection
               stats={dashboardData?.stats ?? null}
               aiKpis={dashboardData?.ai_kpis ? {
-                generated_at: new Date().toISOString(),
-                attendance_predictions: dashboardData.ai_attendance ? {
-                  predicted_absence_rate: dashboardData.ai_kpis?.predicted_absence_rate ?? 0,
-                  high_risk_employees: dashboardData.ai_kpis?.high_risk_employees ?? 0,
-                  medium_risk_employees: dashboardData.ai_kpis?.medium_risk_employees ?? 0,
-                  total_analyzed: dashboardData.ai_kpis?.total_analyzed ?? 0,
-                  top_at_risk: dashboardData.ai_attendance
-                } : null,
-                performance_scores: dashboardData.ai_performance ? {
-                  avg_performance: dashboardData.ai_kpis?.avg_performance ?? 0,
-                  min_performance: dashboardData.ai_kpis?.min_performance ?? 0,
-                  max_performance: dashboardData.ai_kpis?.max_performance ?? 0,
-                  total_scored: dashboardData.ai_kpis?.total_scored ?? 0,
-                  grade_distribution: dashboardData.ai_kpis?.grade_distribution ?? {},
-                  top_performers: dashboardData.ai_performance,
-                  needs_improvement: []
-                } : null
+                ...dashboardData.ai_kpis,
+                attendance_predictions: dashboardData.ai_kpis.attendance_predictions
+                  ? {
+                      ...dashboardData.ai_kpis.attendance_predictions,
+                      top_at_risk: dashboardData.ai_attendance ?? [],
+                    }
+                  : null,
+                performance_scores: dashboardData.ai_kpis.performance_scores
+                  ? {
+                      ...dashboardData.ai_kpis.performance_scores,
+                      top_performers: dashboardData.ai_performance ?? [],
+                    }
+                  : null,
               } : null}
               loading={dashboardLoading}
             />

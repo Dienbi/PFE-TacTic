@@ -13,8 +13,20 @@ const AITrainingPanel: React.FC = () => {
   const [training, setTraining] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, TrainingResult>>({});
   const [trainingAll, setTrainingAll] = useState(false);
+  const trainingDisabled = true;
 
   const handleTrain = async (model: string) => {
+    if (trainingDisabled) {
+      setResults((prev) => ({
+        ...prev,
+        [model]: {
+          model,
+          status: "disabled",
+          result: { message: "Entraînement désactivé" },
+        },
+      }));
+      return;
+    }
     setTraining((prev) => ({ ...prev, [model]: true }));
     try {
       const result = await aiApi.triggerTraining(model);
@@ -25,8 +37,7 @@ const AITrainingPanel: React.FC = () => {
         [model]: {
           model,
           status: "error",
-          metrics: {},
-          message: err.message || "Échec",
+          result: { message: err.message || "Échec" },
         },
       }));
     } finally {
@@ -35,6 +46,19 @@ const AITrainingPanel: React.FC = () => {
   };
 
   const handleTrainAll = async () => {
+    if (trainingDisabled) {
+      MODELS.forEach((m) => {
+        setResults((prev) => ({
+          ...prev,
+          [m.key]: {
+            model: m.key,
+            status: "disabled",
+            result: { message: "Entraînement désactivé" },
+          },
+        }));
+      });
+      return;
+    }
     setTrainingAll(true);
     try {
       await aiApi.triggerTraining("all");
@@ -44,8 +68,7 @@ const AITrainingPanel: React.FC = () => {
           [m.key]: {
             model: m.key,
             status: "success",
-            metrics: {},
-            message: "Entraîné avec succès",
+            result: { message: "Entraîné avec succès" },
           },
         }));
       });
@@ -67,14 +90,18 @@ const AITrainingPanel: React.FC = () => {
         <button
           className="btn-train-all"
           onClick={handleTrainAll}
-          disabled={isAnyTraining}
+          disabled={isAnyTraining || trainingDisabled}
         >
           {trainingAll ? (
             <RefreshCw size={14} className="spinning" />
           ) : (
             <RefreshCw size={14} />
           )}
-          {trainingAll ? "En cours..." : "Tout entraîner"}
+          {trainingDisabled
+            ? "Désactivé"
+            : trainingAll
+              ? "En cours..."
+              : "Tout entraîner"}
         </button>
       </div>
 
@@ -93,14 +120,26 @@ const AITrainingPanel: React.FC = () => {
               <div className="model-status">
                 {result && !isTraining && (
                   <span
-                    className={`train-result ${result.status === "success" ? "result-success" : "result-error"}`}
+                    className={`train-result ${
+                      result.status === "success"
+                        ? "result-success"
+                        : result.status === "disabled"
+                          ? "result-pending"
+                          : "result-error"
+                    }`}
                   >
                     {result.status === "success" ? (
                       <CheckCircle size={14} />
+                    ) : result.status === "disabled" ? (
+                      <Clock size={14} />
                     ) : (
                       <XCircle size={14} />
                     )}
-                    {result.status === "success" ? "OK" : "Erreur"}
+                    {result.status === "success"
+                      ? "OK"
+                      : result.status === "disabled"
+                        ? "Désactivé"
+                        : "Erreur"}
                   </span>
                 )}
                 {isTraining && (
@@ -113,7 +152,7 @@ const AITrainingPanel: React.FC = () => {
               <button
                 className="btn-train-single"
                 onClick={() => handleTrain(m.key)}
-                disabled={isAnyTraining}
+                disabled={isAnyTraining || trainingDisabled}
               >
                 {isTraining ? (
                   <RefreshCw size={14} className="spinning" />

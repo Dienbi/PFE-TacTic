@@ -24,7 +24,6 @@ import {
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
 import client from "../api/client";
-import Loader from "../shared/components/Loader";
 import "./PayrollDashboard.css";
 
 // ── Interfaces ────────────────────────────────────────────────────
@@ -104,7 +103,6 @@ type ActiveTab = "dashboard" | "config" | "payslips" | "generate";
 const PayrollDashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
-  const [isLoading, setIsLoading] = useState(true);
 
   // Data
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
@@ -150,7 +148,6 @@ const PayrollDashboard: React.FC = () => {
   }, []);
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
     try {
       const [statsRes, empRes, payRes] = await Promise.all([
         client.get("/paies/global-stats"),
@@ -162,8 +159,6 @@ const PayrollDashboard: React.FC = () => {
       setPayrolls(payRes.data.data ?? payRes.data);
     } catch (error) {
       console.error("Error fetching payroll data:", error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -365,8 +360,6 @@ const PayrollDashboard: React.FC = () => {
     const name = `${e.prenom} ${e.nom} ${e.matricule}`.toLowerCase();
     return name.includes(searchTerm.toLowerCase());
   });
-
-  if (isLoading) return <Loader fullScreen={true} />;
 
   return (
     <div className="dashboard-container">

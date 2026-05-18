@@ -241,6 +241,10 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
+.employees-table td:last-child {
+    padding-right: 1rem;
+}
+
 .employees-table th {
     background-color: #f9fafb;
     color: #6b7280;
@@ -338,6 +342,18 @@
 .actions-cell {
     display: flex;
     gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.employees-table th:last-child,
+.employees-table td:last-child {
+    width: 220px;
+    max-width: 220px;
+}
+
+.employees-table td:last-child {
+    white-space: nowrap;
 }
 
 .action-btn {

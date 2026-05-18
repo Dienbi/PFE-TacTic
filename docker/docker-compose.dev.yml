@@ -49,6 +49,8 @@ services:
     container_name: tactic-backend
     environment:
       APP_ENV: local
+      APP_KEY: "base64:pQNZjqP0xcv1fK9lJdErjanG2ZXjtk0s3+cUbRHRXa8="
+      JWT_SECRET: "DFsW45mi16RXrdMUewQCKVDDDdzblnwIGT25UycdiS1VrF0JUWD7XZqTelAFUncc"
       APP_DEBUG: "true"
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql

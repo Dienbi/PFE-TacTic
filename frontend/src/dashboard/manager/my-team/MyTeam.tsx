@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
-import Loader from "../../../shared/components/Loader";
 import "./MyTeam.css";
 
 interface User {
@@ -38,7 +37,6 @@ interface Team {
 const MyTeam: React.FC = () => {
   const navigate = useNavigate();
   const [team, setTeam] = useState<Team | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -60,7 +58,6 @@ const MyTeam: React.FC = () => {
   }, []);
 
   const fetchMyTeam = async () => {
-    setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -88,8 +85,6 @@ const MyTeam: React.FC = () => {
       }
       // Fallback in case of error
       setTeam(null);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -121,10 +116,6 @@ const MyTeam: React.FC = () => {
 
       return matchesSearch && matchesStatus;
     }) || [];
-
-  if (isLoading) {
-    return <Loader fullScreen={true} />;
-  }
 
   return (
     <div className="dashboard-container">

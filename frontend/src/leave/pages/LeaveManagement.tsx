@@ -10,11 +10,12 @@ import {
   FileText,
   Download,
   AlertTriangle,
+  Eye,
+  X,
 } from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import client from "../../api/client";
-import Loader from "../../shared/components/Loader";
 import "./LeaveManagement.css";
 
 interface Conflict {
@@ -48,7 +49,6 @@ const LeaveManagement: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [leaves, setLeaves] = useState<LeaveRequestData[]>([]);
   const [pendingLeaves, setPendingLeaves] = useState<LeaveRequestData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"pending" | "all">("pending");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,6 +58,7 @@ const LeaveManagement: React.FC = () => {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [selectedLeave, setSelectedLeave] = useState<LeaveRequestData | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -68,7 +69,6 @@ const LeaveManagement: React.FC = () => {
   }, []);
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
       const [allResponse, pendingResponse] = await Promise.all([
         client.get("/conges"),
@@ -78,8 +78,6 @@ const LeaveManagement: React.FC = () => {
       setPendingLeaves(pendingResponse.data.data ?? pendingResponse.data);
     } catch (error) {
       console.error("Error fetching leaves:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -213,20 +211,17 @@ const LeaveManagement: React.FC = () => {
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  if (isLoading) {
-    return <Loader fullScreen={true} />;
-  }
-
   return (
-    <div className="dashboard-container">
-      <Sidebar role={user?.role} />
-      <div className="main-content">
-        <Navbar
-          userName={user ? `${user.prenom} ${user.nom}` : "RH"}
-          userRole={user?.role || "RH"}
-        />
+    <>
+      <div className="dashboard-container">
+        <Sidebar role={user?.role} />
+        <div className="main-content">
+          <Navbar
+            userName={user ? `${user.prenom} ${user.nom}` : "RH"}
+            userRole={user?.role || "RH"}
+          />
 
-        <div className="dashboard-content leave-management-page">
+          <div className="dashboard-content leave-management-page">
           <div className="page-header">
             <div>
               <h1>Gestion des Congés</h1>
@@ -378,7 +373,7 @@ const LeaveManagement: React.FC = () => {
                       <th>Motif</th>
                       <th>Certificat</th>
                       <th>Statut</th>
-                      {activeTab === "pending" && <th>Actions</th>}
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -439,43 +434,38 @@ const LeaveManagement: React.FC = () => {
                             }}
                           >
                             {getStatusBadge(leave.statut)}
-                            {leave.conflicts && leave.conflicts.length > 0 && (
-                              <div className="conflicts-list">
-                                {leave.conflicts.map((conflict, idx) => (
-                                  <div
-                                    key={idx}
-                                    className={`conflict-badge ${conflict.severity}`}
-                                  >
-                                    <AlertTriangle size={14} />
-                                    <span>{conflict.message}</span>
-                                  </div>
-                                ))}
-                              </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button
+                              className="btn btn-view"
+                              onClick={() => setSelectedLeave(leave)}
+                            >
+                              <Eye size={16} /> Voir détails
+                            </button>
+                            {activeTab === "pending" && (
+                              <>
+                                <button
+                                  className="btn btn-approve"
+                                  onClick={() => handleApprove(leave.id)}
+                                  disabled={processing === leave.id}
+                                >
+                                  <CheckCircle size={16} />
+                                  {processing === leave.id ? "..." : "Approuver"}
+                                </button>
+                                <button
+                                  className="btn btn-reject"
+                                  onClick={() => handleReject(leave.id)}
+                                  disabled={processing === leave.id}
+                                >
+                                  <XCircle size={16} />
+                                  Refuser
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>
-                        {activeTab === "pending" && (
-                          <td>
-                            <div className="action-buttons">
-                              <button
-                                className="btn btn-approve"
-                                onClick={() => handleApprove(leave.id)}
-                                disabled={processing === leave.id}
-                              >
-                                <CheckCircle size={16} />
-                                {processing === leave.id ? "..." : "Approuver"}
-                              </button>
-                              <button
-                                className="btn btn-reject"
-                                onClick={() => handleReject(leave.id)}
-                                disabled={processing === leave.id}
-                              >
-                                <XCircle size={16} />
-                                Refuser
-                              </button>
-                            </div>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -486,6 +476,98 @@ const LeaveManagement: React.FC = () => {
         </div>
       </div>
     </div>
+
+      {/* Details Modal */}
+      {selectedLeave && (
+        <div className="modal-overlay" onClick={() => setSelectedLeave(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Détails de la demande</h2>
+              <button 
+                className="btn-close" 
+                onClick={() => setSelectedLeave(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="details-grid">
+                <div className="detail-item">
+                  <label>Employé</label>
+                  <p className="detail-value">{selectedLeave.utilisateur.prenom} {selectedLeave.utilisateur.nom} <span className="text-muted">({selectedLeave.utilisateur.matricule})</span></p>
+                </div>
+                
+                <div className="detail-item">
+                  <label>Période</label>
+                  <p className="detail-value">{formatDate(selectedLeave.date_debut)} - {formatDate(selectedLeave.date_fin)}</p>
+                </div>
+
+                <div className="detail-item">
+                  <label>Durée</label>
+                  <p className="detail-value">{selectedLeave.nombre_jours} jour(s)</p>
+                </div>
+                
+                <div className="detail-item">
+                  <label>Type & Motif</label>
+                  <p className="detail-value">{getTypeLabel(selectedLeave.type)}{selectedLeave.motif ? ` - ${selectedLeave.motif}` : ''}</p>
+                </div>
+
+                <div className="detail-item full-width">
+                  <label>Statut</label>
+                  <div>{getStatusBadge(selectedLeave.statut)}</div>
+                </div>
+              </div>
+
+              {selectedLeave.conflicts && selectedLeave.conflicts.length > 0 && (
+                <div className="conflicts-section">
+                  <label>Avertissements & Conflits :</label>
+                  <div className="modal-conflicts-list">
+                    {selectedLeave.conflicts.map((conflict, idx) => (
+                      <div
+                        key={idx}
+                        className={`conflict-badge-modern ${conflict.severity}`}
+                      >
+                        <AlertTriangle size={18} className="flex-shrink-0" />
+                        <span>{conflict.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setSelectedLeave(null)}>
+                Fermer
+              </button>
+              {activeTab === "pending" && selectedLeave.statut === "EN_ATTENTE" && (
+                <div className="modal-actions">
+                  <button
+                    className="btn btn-approve"
+                    onClick={() => {
+                      handleApprove(selectedLeave.id);
+                      setSelectedLeave(null);
+                    }}
+                  >
+                    <CheckCircle size={16} /> Approuver
+                  </button>
+                  <button
+                    className="btn btn-reject"
+                    onClick={() => {
+                      handleReject(selectedLeave.id);
+                      setSelectedLeave(null);
+                    }}
+                  >
+                    <XCircle size={16} /> Refuser
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

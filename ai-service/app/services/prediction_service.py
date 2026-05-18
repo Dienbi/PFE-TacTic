@@ -1,5 +1,5 @@
 """
-Prediction Service — uses trained models to generate predictions and scores.
+Prediction Service — computes deterministic predictions and scores from live data.
 """
 
 import numpy as np
@@ -11,19 +11,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.services.data_pipeline import DataPipeline
-from app.models.attendance_model import AttendancePredictor
-from app.models.performance_model import PerformanceScorer
-from app.models.matching_model import ProfileMatcher
+from app.utils.groq_client import GroqClient
 
 logger = logging.getLogger(__name__)
 
 
 class PredictionService:
-    """Uses trained AI models to generate predictions."""
+    """Computes predictions and scores from database-driven features."""
     
     def __init__(self, db: Session):
         self.db = db
         self.pipeline = DataPipeline(db)
+        self.groq = GroqClient()
     
     # ────────────────────────────────────────────────────────────────
     # Attendance Predictions
@@ -36,91 +35,62 @@ class PredictionService:
         Returns:
             dict with user info and daily predictions
         """
-        predictor = AttendancePredictor()
-        if not predictor.is_trained:
-            raise RuntimeError("Attendance model not trained yet")
-        
-        # Build the most recent 30-day sequence for this user
-        sequences = self.pipeline.build_attendance_sequences(sequence_length=30)
-        
-        if user_id not in sequences:
+        att_features = self.pipeline.build_attendance_features(user_id)
+        if att_features.empty:
             raise ValueError(f"Not enough attendance data for user {user_id}")
-        
-        X, _ = sequences[user_id]
-        # Use the most recent sequence (last one)
-        last_sequence = X[-1]  # (30, 7)
-        
-        # Predict
-        predictions = predictor.predict(last_sequence)  # (7,) probabilities of being present
-        
-        # Get user info
+
+        leave_features = self.pipeline.build_leave_features(user_id)
+        att_row = att_features.iloc[0]
+        leave_row = leave_features.iloc[0] if not leave_features.empty else None
+
+        daily_forecast = self._build_attendance_forecast(att_row, leave_row)
+        avg_absence_risk = np.mean([d['absence_probability'] for d in daily_forecast]) if daily_forecast else 0
+
         user = self._get_user_info(user_id)
-        
-        # Build daily forecast
-        today = datetime.now().date()
-        daily_forecast = []
-        for i in range(7):
-            forecast_date = today + timedelta(days=i + 1)
-            # Skip weekends
-            while forecast_date.weekday() >= 5:
-                forecast_date += timedelta(days=1)
-            
-            presence_prob = float(predictions[i])
-            absence_prob = 1.0 - presence_prob
-            
-            risk_level = 'low' if absence_prob < 0.3 else ('medium' if absence_prob < 0.6 else 'high')
-            
-            daily_forecast.append({
-                'date': forecast_date.isoformat(),
-                'day_name': forecast_date.strftime('%A'),
-                'presence_probability': round(presence_prob, 4),
-                'absence_probability': round(absence_prob, 4),
-                'risk_level': risk_level,
-            })
-        
+
         return {
             'utilisateur_id': user_id,
             'nom': user.get('nom', ''),
             'prenom': user.get('prenom', ''),
             'matricule': user.get('matricule', ''),
             'predictions': daily_forecast,
-            'avg_absence_risk': round(float(np.mean(1 - predictions)), 4),
+            'avg_absence_risk': round(float(avg_absence_risk), 4),
             'generated_at': datetime.now().isoformat(),
         }
     
     def predict_attendance_all(self) -> List[Dict]:
         """Predict next 7 days attendance for all active employees."""
-        predictor = AttendancePredictor()
-        if not predictor.is_trained:
-            raise RuntimeError("Attendance model not trained yet")
-        
-        sequences = self.pipeline.build_attendance_sequences(sequence_length=30)
         employees = self.pipeline.get_all_employees()
+        att_features = self.pipeline.build_attendance_features()
+        leave_features = self.pipeline.build_leave_features()
         
         results = []
         for uid in employees['id'].tolist():
-            if uid not in sequences:
+            att_row = att_features[att_features['utilisateur_id'] == uid] if not att_features.empty else pd.DataFrame()
+            if att_row.empty:
                 continue
-            
+
+            leave_row = leave_features[leave_features['utilisateur_id'] == uid] if not leave_features.empty else pd.DataFrame()
+            leave_item = leave_row.iloc[0] if not leave_row.empty else None
+
             try:
-                X, _ = sequences[uid]
-                last_sequence = X[-1]
-                predictions = predictor.predict(last_sequence)
-                
+                daily_forecast = self._build_attendance_forecast(att_row.iloc[0], leave_item)
+                avg_absence_risk = np.mean([d['absence_probability'] for d in daily_forecast]) if daily_forecast else 0
+
                 user = employees[employees['id'] == uid].iloc[0]
-                avg_absence_risk = float(np.mean(1 - predictions))
-                
+                next_day_absence_prob = daily_forecast[0]['absence_probability'] if daily_forecast else 0
+
                 results.append({
                     'utilisateur_id': int(uid),
                     'nom': user.get('nom', ''),
                     'prenom': user.get('prenom', ''),
                     'matricule': user.get('matricule', ''),
-                    'avg_absence_risk': round(avg_absence_risk, 4),
-                    'risk_level': 'low' if avg_absence_risk < 0.3 else ('medium' if avg_absence_risk < 0.6 else 'high'),
-                    'next_day_absence_prob': round(float(1 - predictions[0]), 4),
+                    'avg_absence_risk': round(float(avg_absence_risk), 4),
+                    'risk_level': self._risk_level(avg_absence_risk),
+                    'next_day_absence_prob': round(float(next_day_absence_prob), 4),
                 })
             except Exception as e:
-                logger.warning(f"Failed to predict for user {uid}: {e}")
+                logger.warning(f"Failed to score attendance for user {uid}: {e}")
         
         # Sort by risk (highest first)
         results.sort(key=lambda x: x['avg_absence_risk'], reverse=True)
@@ -133,10 +103,6 @@ class PredictionService:
     
     def get_performance_score(self, user_id: int) -> Dict:
         """Get AI performance score for a single employee."""
-        scorer = PerformanceScorer()
-        if not scorer.is_trained:
-            raise RuntimeError("Performance model not trained yet")
-        
         emp_features = self.pipeline.build_employee_features()
         if emp_features.empty:
             raise ValueError("No employee data available")
@@ -145,15 +111,19 @@ class PredictionService:
         if user_row.empty:
             raise ValueError(f"Employee {user_id} not found")
         
-        available_cols = [c for c in PerformanceScorer.FEATURE_COLS if c in emp_features.columns]
-        X = user_row[available_cols].values.astype(np.float32)
+        chef_reviews = self.pipeline.get_chef_reviews()
+        chef_score = None
+        if not chef_reviews.empty:
+            review_row = chef_reviews[chef_reviews['utilisateur_id'] == user_id]
+            if not review_row.empty:
+                chef_score = float(review_row.iloc[0]['review_score'])
         
-        score = scorer.predict(X, available_cols)[0]
+        row = user_row.iloc[0]
+        score = self._compute_performance_score(row, chef_score)
         
         user = self._get_user_info(user_id)
         
         # Score breakdown
-        row = user_row.iloc[0]
         breakdown = {
             'attendance_rate': round(float(row.get('presence_rate', 0)) * 100, 1),
             'avg_hours_worked': round(float(row.get('avg_hours_worked', 0)), 1),
@@ -177,24 +147,25 @@ class PredictionService:
     
     def get_performance_all(self) -> List[Dict]:
         """Get AI performance scores for all active employees."""
-        scorer = PerformanceScorer()
-        if not scorer.is_trained:
-            raise RuntimeError("Performance model not trained yet")
-        
         emp_features = self.pipeline.build_employee_features()
         if emp_features.empty:
             return []
-        
-        available_cols = [c for c in PerformanceScorer.FEATURE_COLS if c in emp_features.columns]
-        X = emp_features[available_cols].values.astype(np.float32)
-        
-        scores = scorer.predict(X, available_cols)
+
+        chef_reviews = self.pipeline.get_chef_reviews()
+        chef_lookup = {}
+        if not chef_reviews.empty:
+            chef_lookup = {
+                int(row['utilisateur_id']): float(row['review_score'])
+                for _, row in chef_reviews.iterrows()
+            }
         
         results = []
-        for i, (_, row) in enumerate(emp_features.iterrows()):
-            score = float(scores[i])
+        for _, row in emp_features.iterrows():
+            uid = int(row['utilisateur_id'])
+            chef_score = chef_lookup.get(uid)
+            score = self._compute_performance_score(row, chef_score)
             results.append({
-                'utilisateur_id': int(row['utilisateur_id']),
+                'utilisateur_id': uid,
                 'nom': row.get('nom', ''),
                 'prenom': row.get('prenom', ''),
                 'matricule': row.get('matricule', ''),
@@ -216,39 +187,39 @@ class PredictionService:
         Use trained neural matcher to rank candidates for a job post.
         Falls back to rule-based scoring if model not trained.
         """
-        matcher = ProfileMatcher()
-        
         # Get job post info
         job_post = self._get_job_post(job_post_id)
         if not job_post:
             raise ValueError(f"Job post {job_post_id} not found")
         
-        # Build matching features
-        features_df = self.pipeline.build_matching_features(job_post_id)
+        job_skills = self.pipeline.get_job_post_skills(job_post_id)
+        inferred_skill_ids = []
+        model_used = 'deterministic_rules'
+        if job_skills.empty:
+            inferred_skill_ids = self._infer_job_post_skills(job_post)
+            if inferred_skill_ids:
+                model_used = 'deterministic_rules+groq'
+        
+        features_df = self.pipeline.build_matching_features(
+            job_post_id,
+            required_skill_ids=inferred_skill_ids if inferred_skill_ids else None,
+        )
         if features_df.empty:
             return {
                 'job_post_id': job_post_id,
                 'job_post_titre': job_post['titre'],
                 'total_candidates': 0,
                 'recommendations': [],
-                'model_used': 'none',
+                'model_used': 'deterministic_rules',
                 'generated_at': datetime.now().isoformat(),
             }
         
-        available_cols = [c for c in ProfileMatcher.FEATURE_COLS if c in features_df.columns]
-        X = features_df[available_cols].values.astype(np.float32)
-        
-        if matcher.is_trained:
-            scores = matcher.predict(X, available_cols)
-            model_used = 'neural_network'
-        else:
-            # Fallback: rule-based weighted scoring
-            scores = self._rule_based_matching(features_df)
-            model_used = 'rule_based_fallback'
+        scores = self._rule_based_matching(features_df)
         
         # Get employee details and skill match info
         emp_skills = self.pipeline.get_employee_skills()
-        job_skills = self.pipeline.get_job_post_skills(job_post_id)
+        if job_skills.empty and inferred_skill_ids:
+            job_skills = self._build_job_skills_from_ids(inferred_skill_ids)
         
         recommendations = []
         for i, (_, row) in enumerate(features_df.iterrows()):
@@ -405,19 +376,141 @@ class PredictionService:
                 })
         
         return {'matching': matching, 'missing': missing}
+
+    def _build_job_skills_from_ids(self, skill_ids: List[int]) -> pd.DataFrame:
+        if not skill_ids:
+            return pd.DataFrame()
+        catalog = self.pipeline.get_competences()
+        if catalog.empty:
+            return pd.DataFrame()
+        filtered = catalog[catalog['id'].isin(skill_ids)]
+        if filtered.empty:
+            return pd.DataFrame()
+        filtered = filtered.rename(columns={'id': 'competence_id'})
+        filtered['niveau_requis'] = 3
+        return filtered[['competence_id', 'nom', 'niveau_requis']]
+
+    def _infer_job_post_skills(self, job_post: Dict) -> List[int]:
+        if not self.groq.is_configured:
+            return []
+        text_blob = " ".join([job_post.get('titre', ''), job_post.get('description', '')]).strip()
+        if not text_blob:
+            return []
+
+        catalog = self.pipeline.get_competences()
+        if catalog.empty:
+            return []
+
+        skill_names = catalog['nom'].dropna().astype(str).tolist()
+        extracted = self.groq.extract_skills(text_blob, skill_names)
+        if not extracted:
+            return []
+
+        normalized = {name.strip().lower(): int(cid) for cid, name in catalog[['id', 'nom']].values}
+        result = []
+        for skill in extracted:
+            skill_id = normalized.get(skill.strip().lower())
+            if skill_id:
+                result.append(skill_id)
+        return list(dict.fromkeys(result))
     
     def _rule_based_matching(self, features_df) -> np.ndarray:
         """Fallback rule-based matching when neural model not available."""
         scores = []
         for _, row in features_df.iterrows():
             score = (
-                float(row.get('weighted_skill_match', 0)) * 60 +
+                float(row.get('weighted_skill_match', 0)) * 70 +
                 min(float(row.get('tenure_years', 0)) / 10, 1) * 20 +
-                float(row.get('availability', 0)) * 10 +
-                float(row.get('attendance_score', 0)) * 10
+                float(row.get('availability', 0)) * 10
             )
             scores.append(score)
         return np.array(scores)
+
+    @staticmethod
+    def _risk_level(absence_prob: float) -> str:
+        if absence_prob < 0.3:
+            return 'low'
+        if absence_prob < 0.6:
+            return 'medium'
+        return 'high'
+
+    @staticmethod
+    def _clamp(value: float, min_value: float = 0.0, max_value: float = 1.0) -> float:
+        return max(min_value, min(max_value, value))
+
+    def _compute_absence_components(self, att_row: pd.Series, leave_row: Optional[pd.Series]) -> Dict:
+        presence_rate = float(att_row.get('presence_rate', 0))
+        late_rate = float(att_row.get('late_rate', 0))
+        early_rate = float(att_row.get('early_departure_rate', 0))
+        justified_ratio = float(att_row.get('justified_absence_ratio', 0))
+        streak = float(att_row.get('max_attendance_streak', 0))
+
+        leave_frequency = float(leave_row.get('leave_frequency', 0)) if leave_row is not None else 0
+        sick_leave_ratio = float(leave_row.get('sick_leave_ratio', 0)) if leave_row is not None else 0
+
+        base_risk = 1 - presence_rate
+        behavior_penalty = late_rate * 0.2 + early_rate * 0.15 + justified_ratio * 0.05
+        leave_penalty = min(leave_frequency / 6.0, 1.0) * 0.15 + sick_leave_ratio * 0.1
+        streak_bonus = min(streak / 30.0, 1.0) * 0.1
+
+        return {
+            'base_risk': base_risk,
+            'behavior_penalty': behavior_penalty,
+            'leave_penalty': leave_penalty,
+            'streak_bonus': streak_bonus,
+        }
+
+    def _compute_daily_absence_prob(self, att_row: pd.Series, leave_row: Optional[pd.Series], dow: int) -> float:
+        comps = self._compute_absence_components(att_row, leave_row)
+        base_risk = comps['base_risk']
+        dow_rate = float(att_row.get(f'dow_{dow}_absence_rate', base_risk))
+
+        absence_prob = (
+            base_risk * 0.6 +
+            dow_rate * 0.4 +
+            comps['behavior_penalty'] * 0.5 +
+            comps['leave_penalty'] * 0.5 -
+            comps['streak_bonus']
+        )
+
+        return self._clamp(absence_prob)
+
+    def _build_attendance_forecast(self, att_row: pd.Series, leave_row: Optional[pd.Series]) -> List[Dict]:
+        today = datetime.now().date()
+        daily_forecast = []
+        day_offset = 1
+
+        while len(daily_forecast) < 7:
+            forecast_date = today + timedelta(days=day_offset)
+            day_offset += 1
+            if forecast_date.weekday() >= 5:
+                continue
+
+            dow = forecast_date.weekday()
+            absence_prob = self._compute_daily_absence_prob(att_row, leave_row, dow)
+            presence_prob = 1.0 - absence_prob
+
+            daily_forecast.append({
+                'date': forecast_date.isoformat(),
+                'day_name': forecast_date.strftime('%A'),
+                'presence_probability': round(presence_prob, 4),
+                'absence_probability': round(absence_prob, 4),
+                'risk_level': self._risk_level(absence_prob),
+            })
+
+        return daily_forecast
+
+    def _compute_performance_score(self, row: pd.Series, chef_score: Optional[float]) -> float:
+        attendance_score = float(row.get('presence_rate', 0)) * 100
+        if chef_score is not None:
+            score = attendance_score * 0.6 + chef_score * 0.4
+        else:
+            skill_score = min(float(row.get('avg_skill_level', 0)) * 20, 100)
+            tenure_score = min(float(row.get('tenure_months', 0)) / 60 * 100, 100)
+            overtime_score = min(float(row.get('overtime_ratio', 0)) * 200, 100)
+            score = attendance_score * 0.5 + skill_score * 0.2 + tenure_score * 0.2 + overtime_score * 0.1
+
+        return max(0, min(100, score))
     
     @staticmethod
     def _score_to_grade(score: float) -> str:

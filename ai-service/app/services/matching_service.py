@@ -12,20 +12,19 @@ class MatchingService:
     AI-based candidate matching service
     
     Scoring algorithm:
-    - Skill Match: 60% (required skills vs candidate skills)
+    - Skill Match: 70% (required skills vs candidate skills)
     - Experience: 20% (years since hire date)
     - Availability: 10% (DISPONIBLE status preferred)
-    - Workload: 10% (team workload consideration)
     """
     
     def __init__(self, db: Session):
         self.db = db
         
         # Scoring weights
-        self.SKILL_WEIGHT = 0.60
+        self.SKILL_WEIGHT = 0.70
         self.EXPERIENCE_WEIGHT = 0.20
         self.AVAILABILITY_WEIGHT = 0.10
-        self.WORKLOAD_WEIGHT = 0.10
+        self.WORKLOAD_WEIGHT = 0.00
     
     def match_candidates(self, job_post_id: int) -> Dict:
         """
@@ -211,7 +210,7 @@ class MatchingService:
             candidate['status']
         )
         
-        # 4. Workload Score (10%)
+        # 4. Workload Score (0%)
         team_members = self._get_team_workload(candidate['equipe_id'])
         workload_score = self._calculate_workload_score(team_members)
         

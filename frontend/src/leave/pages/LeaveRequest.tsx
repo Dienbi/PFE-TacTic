@@ -12,7 +12,6 @@ import {
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import client from "../../api/client";
-import Loader from "../../shared/components/Loader";
 import "./LeaveRequest.css";
 
 interface LeaveRequest {
@@ -204,10 +203,6 @@ const LeaveRequest: React.FC = () => {
     }
     return 0;
   };
-
-  if (isLoading && !user) {
-    return <Loader fullScreen={true} />;
-  }
 
   return (
     <div className="dashboard-container">

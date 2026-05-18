@@ -10,7 +10,6 @@ import {
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
-import Loader from "../../../shared/components/Loader";
 import CreateTeamModal from "./CreateTeamModal";
 import TeamDetailsModal from "./TeamDetailsModal";
 
@@ -76,7 +75,6 @@ const TEAM_COLORS = [
 const Teams: React.FC = () => {
   const [teams, setTeams] = useState<Equipe[]>([]);
   const [user, setUser] = useState<UserData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Equipe | null>(null);
@@ -93,13 +91,10 @@ const Teams: React.FC = () => {
 
   const fetchTeams = async () => {
     try {
-      setIsLoading(true);
       const response = await client.get("/equipes");
       setTeams(response.data);
     } catch (error) {
       console.error("Error fetching teams:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -148,8 +143,6 @@ const Teams: React.FC = () => {
     (sum, t) => sum + (t.membres_count || 0),
     0,
   );
-
-  if (isLoading) return <Loader fullScreen />;
 
   return (
     <div className="dashboard-container">

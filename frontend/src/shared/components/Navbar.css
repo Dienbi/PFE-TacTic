@@ -6,10 +6,11 @@
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-   /* position: sticky;*/
+    position: sticky;
     top: 0;
-    z-index: 90;
+    z-index: 95;
 }
+
 
 .navbar-title {
     font-family: 'Poppins', sans-serif;
@@ -24,15 +25,12 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-
 }
 
 .profile-info {
     display: flex;
     flex-direction: column;
-    text-align: right;
-        padding-left: 1000px;
-
+    text-align: left;
 }
 
 .profile-name {

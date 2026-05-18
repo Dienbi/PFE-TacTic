@@ -16,7 +16,6 @@ import {
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
 import client from "../api/client";
-import Loader from "../shared/components/Loader";
 import "./EmployeeSalary.css";
 
 interface PayslipRecord {
@@ -53,7 +52,6 @@ const EmployeeSalary: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [payslips, setPayslips] = useState<PayslipRecord[]>([]);
   const [stats, setStats] = useState<PayStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -62,7 +60,6 @@ const EmployeeSalary: React.FC = () => {
   }, []);
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
     try {
       const [payRes, statsRes] = await Promise.all([
         client.get("/paies/mes-paies"),
@@ -72,8 +69,6 @@ const EmployeeSalary: React.FC = () => {
       setStats(statsRes.data);
     } catch (error) {
       console.error("Error fetching salary data:", error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -159,8 +154,6 @@ const EmployeeSalary: React.FC = () => {
         );
     }
   };
-
-  if (isLoading) return <Loader fullScreen={true} />;
 
   return (
     <div className="dashboard-container">

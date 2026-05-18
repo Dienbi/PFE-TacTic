@@ -14,7 +14,6 @@ import {
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
 import client from "../api/client";
-import Loader from "../shared/components/Loader";
 import "./ManagerPayroll.css";
 
 interface TeamMember {
@@ -63,7 +62,6 @@ interface TeamPayrollData {
 const ManagerPayroll: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [teamData, setTeamData] = useState<TeamPayrollData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [expandedMember, setExpandedMember] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,7 +71,6 @@ const ManagerPayroll: React.FC = () => {
   }, []);
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
     try {
       const res = await client.get("/paies/team");
       setTeamData(res.data);
@@ -82,8 +79,6 @@ const ManagerPayroll: React.FC = () => {
         err.response?.data?.message ||
           "Impossible de charger les données de paie de l'équipe.",
       );
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -130,8 +125,6 @@ const ManagerPayroll: React.FC = () => {
         );
     }
   };
-
-  if (isLoading) return <Loader fullScreen={true} />;
 
   // Compute team-level aggregate stats
   const teamTotalNet =

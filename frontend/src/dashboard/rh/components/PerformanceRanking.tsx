@@ -122,8 +122,7 @@ const PerformanceRanking: React.FC<PerformanceRankingProps> = ({
         <div className="ranking-empty">
           <TrendingUp size={24} />
           <p>
-            Aucune donnée de performance disponible. Entraînez les modèles
-            d'abord.
+            Aucune donnée de performance disponible pour le moment.
           </p>
         </div>
       ) : (

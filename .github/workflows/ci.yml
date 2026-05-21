@@ -17,7 +17,7 @@ jobs:
   # ──────────────────────────────────────────────
   backend-tests:
     name: Backend – PHPUnit
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     services:
       postgres:
@@ -91,7 +91,7 @@ jobs:
   # ──────────────────────────────────────────────
   frontend-tests:
     name: Frontend – TypeScript & Build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     defaults:
       run:
@@ -124,7 +124,7 @@ jobs:
   # ──────────────────────────────────────────────
   ai-service-tests:
     name: AI Service – Lint & Import check
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     defaults:
       run:

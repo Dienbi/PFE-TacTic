@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   deploy-dev:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       K8S_NAMESPACE: tactic-dev
       IMAGE_TAG: ${{ github.event.inputs.image_tag }}

@@ -27,6 +27,11 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config-inline: |
+            [registry."host.docker.internal:8082"]
+              http = true
+              insecure = true
 
       - name: Login to Nexus Docker Registry
         run: echo "${{ secrets.NEXUS_PASSWORD }}" | docker login ${{ secrets.NEXUS_URL }} -u "${{ secrets.NEXUS_USERNAME }}" --password-stdin

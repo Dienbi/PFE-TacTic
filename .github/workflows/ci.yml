@@ -44,9 +44,16 @@ jobs:
 
       - name: Verify PHP runtime
         run: |
+          runner_setup_hint="Please ensure PHP 8.2+ and Composer are installed."
+          command -v php >/dev/null || { echo "Error: php is not installed on this self-hosted runner. ${runner_setup_hint}" >&2; exit 1; }
+          command -v composer >/dev/null || { echo "Error: composer is not installed on this self-hosted runner. ${runner_setup_hint}" >&2; exit 1; }
           php -v
           composer --version
-          php -r "exit(version_compare(PHP_VERSION, '8.2.0', '>=') ? 0 : 1);"
+          if ! php -r "exit(version_compare(PHP_VERSION, '8.2.0', '>=') ? 0 : 1);"; then
+            current_php_version="$(php -r 'echo PHP_VERSION;')"
+            echo "Error: PHP 8.2.0 or higher is required on this self-hosted runner. Current version: ${current_php_version}. ${runner_setup_hint}" >&2
+            exit 1
+          fi
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4

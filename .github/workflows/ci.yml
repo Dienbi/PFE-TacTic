@@ -42,14 +42,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install setup-php requirements
-        run: sudo apt-get update && sudo apt-get install -y software-properties-common curl jq unzip iproute2
-      - name: Set up PHP 8.2
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          extensions: pdo, pdo_pgsql, mbstring, xml, bcmath, tokenizer
-          coverage: none
+      - name: Verify PHP runtime
+        run: |
+          php -v
+          composer --version
+          php -r "exit(version_compare(PHP_VERSION, '8.2.0', '>=') ? 0 : 1);"
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4

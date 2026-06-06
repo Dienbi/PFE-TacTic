@@ -5,6 +5,8 @@ x-runner-image: &runner-image
   build:
     context: ../actions-runner
     dockerfile: Dockerfile
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
 
 services:
   github-runner-1:

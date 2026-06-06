@@ -12,6 +12,7 @@ jobs:
   backend-quality:
     name: Backend Tests + Static Analysis
     runs-on: self-hosted
+    container: composer:2
     services:
       postgres:
         image: postgres:15

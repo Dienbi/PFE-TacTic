@@ -39,8 +39,8 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: docker/backend/Dockerfile
+          context: backend
+          file: Dockerfile
           push: true
           tags: |
             ghcr.io/${{ env.IMAGE_OWNER }}/tactic-backend:sha-${{ steps.vars.outputs.SHORT_SHA }}

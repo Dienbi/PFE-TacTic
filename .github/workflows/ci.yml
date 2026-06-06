@@ -6,17 +6,13 @@ on:
   pull_request:
     branches: ["main", "develop"]
 
-# Cancel in-progress runs for the same branch when a new push arrives
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # ──────────────────────────────────────────────
-  # JOB 1 – Laravel Backend (PHPUnit)
-  # ──────────────────────────────────────────────
   backend-tests:
-    name: Backend – PHPUnit
+    name: Backend - PHPUnit
     runs-on: self-hosted
 
     services:
@@ -27,9 +23,9 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: admin
         ports:
-          - 5432:5432
+          - 5432/tcp
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -42,47 +38,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP 8.2
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          extensions: mbstring, pdo, pdo_pgsql, pgsql, bcmath, ctype, fileinfo, json, openssl, tokenizer, xml
-          coverage: none
-
-      - name: Verify PHP runtime
+      - name: Verify baked runner tools
         run: |
           php -v
           composer --version
+          pg_isready --version
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
           path: backend/vendor
-          key: composer-${{ hashFiles('backend/composer.lock') }}
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
           restore-keys: |
-            composer-
+            composer-${{ runner.os }}-
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Copy .env for testing
+      - name: Prepare Laravel test environment
         run: |
-          if [ -f .env.example ]; then
-            cp .env.example .env
-          else
-            echo "APP_KEY=" > .env
-          fi
-
-      - name: Generate application key
-        run: php artisan key:generate
-
-      - name: Create .env.testing for PostgreSQL
-        run: |
+          cp .env.example .env
+          php artisan key:generate
           cp .env .env.testing
 
+          sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env.testing || echo "APP_ENV=testing" >> .env.testing
+          sed -i 's/^CACHE_DRIVER=.*/CACHE_DRIVER=file/' .env.testing || echo "CACHE_DRIVER=file" >> .env.testing
           sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing || echo "DB_CONNECTION=pgsql" >> .env.testing
           sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing || echo "DB_HOST=127.0.0.1" >> .env.testing
-          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env.testing || echo "DB_PORT=5432" >> .env.testing
+          sed -i 's/^DB_PORT=.*/DB_PORT=${{ job.services.postgres.ports[5432] }}/' .env.testing || echo "DB_PORT=${{ job.services.postgres.ports[5432] }}" >> .env.testing
           sed -i 's/^DB_DATABASE=.*/DB_DATABASE=tactic_db/' .env.testing || echo "DB_DATABASE=tactic_db" >> .env.testing
           sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env.testing || echo "DB_USERNAME=postgres" >> .env.testing
           sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing || echo "DB_PASSWORD=admin" >> .env.testing
@@ -90,18 +73,20 @@ jobs:
       - name: Wait for PostgreSQL
         run: |
           for i in {1..30}; do
-            pg_isready -h 127.0.0.1 -p 5432 -U postgres && break
+            pg_isready -h 127.0.0.1 -p "${{ job.services.postgres.ports[5432] }}" -U postgres && exit 0
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
+          exit 1
 
       - name: Run database migrations
         run: php artisan migrate --env=testing --force
         env:
           APP_ENV: testing
+          CACHE_DRIVER: file
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
-          DB_PORT: 5432
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
           DB_DATABASE: tactic_db
           DB_USERNAME: postgres
           DB_PASSWORD: admin
@@ -110,18 +95,16 @@ jobs:
         run: php artisan test --env=testing
         env:
           APP_ENV: testing
+          CACHE_DRIVER: file
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
-          DB_PORT: 5432
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
           DB_DATABASE: tactic_db
           DB_USERNAME: postgres
           DB_PASSWORD: admin
 
-  # ──────────────────────────────────────────────
-  # JOB 2 – React Frontend (TypeScript + Build)
-  # ──────────────────────────────────────────────
   frontend-tests:
-    name: Frontend – TypeScript & Build
+    name: Frontend - TypeScript and Build
     runs-on: self-hosted
 
     defaults:
@@ -132,15 +115,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
+      - name: Verify baked runner tools
+        run: |
+          node --version
+          npm --version
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       - name: TypeScript type-check
         run: npx tsc --noEmit
@@ -150,11 +139,8 @@ jobs:
         env:
           CI: false
 
-  # ──────────────────────────────────────────────
-  # JOB 3 – Python AI Service (FastAPI + imports)
-  # ──────────────────────────────────────────────
   ai-service-tests:
-    name: AI Service – Lint & Import check
+    name: AI Service - Import Check
     runs-on: self-hosted
 
     defaults:
@@ -165,26 +151,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          cache: "pip"
-          cache-dependency-path: ai-service/requirements.txt
-
-      - name: Install dependencies (CPU-only torch for CI speed)
+      - name: Verify baked runner tools
         run: |
-          pip install --upgrade pip
+          python --version
+          pip --version
+
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('ai-service/requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Install dependencies in virtualenv
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
           grep -v '^torch' requirements.txt | pip install -r /dev/stdin
           pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-      - name: Check syntax (py_compile)
+      - name: Check syntax
         run: |
+          source .venv/bin/activate
           python -m py_compile app/main.py
           find app -name "*.py" -exec python -m py_compile {} \;
 
       - name: Verify FastAPI app can be imported
         run: |
+          source .venv/bin/activate
           python -c "import sys; sys.path.insert(0, '.'); from app.main import app; print('FastAPI app loaded OK')"
         env:
-          DATABASE_URL: "postgresql://postgres:admin@127.0.0.1:5432/tactic_db"
+          DATABASE_URL: postgresql://postgres:admin@127.0.0.1:5432/tactic_db

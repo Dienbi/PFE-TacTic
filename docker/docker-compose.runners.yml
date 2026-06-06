@@ -1,13 +1,19 @@
 name: tactic-runners
 
+x-runner-image: &runner-image
+  image: tactic-github-runner:ci
+  build:
+    context: ../actions-runner
+    dockerfile: Dockerfile
+
 services:
   github-runner-1:
-    image: myoung34/github-runner:latest
+    <<: *runner-image
     container_name: tactic-github-runner-1
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN}
+      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL before starting runners}
+      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN before starting runners}
       RUNNER_NAME_PREFIX: tactic-runner-1
       RANDOM_RUNNER_SUFFIX: "true"
       RUNNER_SCOPE: repo
@@ -17,12 +23,12 @@ services:
       - tactic-platform
 
   github-runner-2:
-    image: myoung34/github-runner:latest
+    <<: *runner-image
     container_name: tactic-github-runner-2
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN}
+      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL before starting runners}
+      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN before starting runners}
       RUNNER_NAME_PREFIX: tactic-runner-2
       RANDOM_RUNNER_SUFFIX: "true"
       RUNNER_SCOPE: repo
@@ -32,12 +38,12 @@ services:
       - tactic-platform
 
   github-runner-3:
-    image: myoung34/github-runner:latest
+    <<: *runner-image
     container_name: tactic-github-runner-3
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN}
+      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL before starting runners}
+      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN before starting runners}
       RUNNER_NAME_PREFIX: tactic-runner-3
       RANDOM_RUNNER_SUFFIX: "true"
       RUNNER_SCOPE: repo

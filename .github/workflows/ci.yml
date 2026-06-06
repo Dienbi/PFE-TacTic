@@ -18,7 +18,6 @@ jobs:
   backend-tests:
     name: Backend – PHPUnit
     runs-on: self-hosted
-    container: composer:2
 
     services:
       postgres:
@@ -43,24 +42,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, pdo, pdo_pgsql, pgsql, bcmath, ctype, fileinfo, json, openssl, tokenizer, xml
+          coverage: none
+
       - name: Verify PHP runtime
         run: |
           php -v
           composer --version
-          php -r "exit(version_compare(PHP_VERSION, '8.2.0', '>=') ? 0 : 1);"
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
           path: backend/vendor
           key: composer-${{ hashFiles('backend/composer.lock') }}
-          restore-keys: composer-
+          restore-keys: |
+            composer-
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy .env for testing
-        run: cp .env.example .env || echo "APP_KEY=" > .env
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            echo "APP_KEY=" > .env
+          fi
 
       - name: Generate application key
         run: php artisan key:generate
@@ -68,14 +79,34 @@ jobs:
       - name: Create .env.testing for PostgreSQL
         run: |
           cp .env .env.testing
-          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing
-          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing
-          sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env.testing
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=tactic_db/' .env.testing
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=postgres/' .env.testing
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing
 
-      - name: Run PHPUnit (PostgreSQL)
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing || echo "DB_CONNECTION=pgsql" >> .env.testing
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing || echo "DB_HOST=127.0.0.1" >> .env.testing
+          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env.testing || echo "DB_PORT=5432" >> .env.testing
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=tactic_db/' .env.testing || echo "DB_DATABASE=tactic_db" >> .env.testing
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env.testing || echo "DB_USERNAME=postgres" >> .env.testing
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing || echo "DB_PASSWORD=admin" >> .env.testing
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres && break
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Run database migrations
+        run: php artisan migrate --env=testing --force
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin
+
+      - name: Run PHPUnit
         run: php artisan test --env=testing
         env:
           APP_ENV: testing
@@ -117,7 +148,7 @@ jobs:
       - name: Production build
         run: npm run build
         env:
-          CI: false   # Treat warnings as warnings, not errors
+          CI: false
 
   # ──────────────────────────────────────────────
   # JOB 3 – Python AI Service (FastAPI + imports)
@@ -144,9 +175,7 @@ jobs:
       - name: Install dependencies (CPU-only torch for CI speed)
         run: |
           pip install --upgrade pip
-          # Install all requirements except torch (avoids downloading the large CUDA build)
           grep -v '^torch' requirements.txt | pip install -r /dev/stdin
-          # Install CPU-only torch
           pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Check syntax (py_compile)

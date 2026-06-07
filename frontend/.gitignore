@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-/.pnp
+/node_modules.broken.*/
 .pnp.js
 
 # testing

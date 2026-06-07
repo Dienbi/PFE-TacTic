@@ -1,119 +1,85 @@
 import requests
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://127.0.0.1:8000/api"
 TIMEOUT = 30
-RH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NzIwMjIxMTcsImV4cCI6MTc3MjAyNTcxNywibmJmIjoxNzcyMDIyMTE3LCJqdGkiOiJRVmJNWEhFdnlPNjlzYlVyIiwic3ViIjoiMSIsInBydiI6ImQwOTA1YmNmNjVhNmQ5OTJkOTBjYmZlNDYyMjZiZDMxM2FlNTE5M2YiLCJyb2xlIjoiUkgiLCJtYXRyaWN1bGUiOiJFTVAwMDAwMSJ9.I8kwHIFud_6IOx6ymigvyflA489eg2Uh0T2yG2-HEts"
+
+RH_EMAIL = "admin@tactic.com"
+RH_PASSWORD = "password"
+
+EMPLOYEE_EMAIL = "employee@tactic.com"
+EMPLOYEE_PASSWORD = "password"
+
+
+def login(email, password):
+    url = f"{BASE_URL}/auth/login"
+    payload = {"email": email, "password": password}
+    resp = requests.post(url, json=payload, timeout=TIMEOUT)
+    resp.raise_for_status()
+    data = resp.json()
+    token = data.get("token")
+    assert token is not None, "Login response missing token"
+    return token
+
+
+def get_any_employee_id(rh_token):
+    # Fetch users with role "EMPLOYE" to get an employee ID
+    url = f"{BASE_URL}/utilisateurs/role/EMPLOYE"
+    headers = {"Authorization": f"Bearer {rh_token}"}
+    resp = requests.get(url, headers=headers, timeout=TIMEOUT)
+    resp.raise_for_status()
+    users = resp.json()
+    # Return first employee id or None if none found
+    if users and isinstance(users, list):
+        return users[0].get("id")
+    return None
+
 
 def test_payroll_generation_simulation_and_access_control():
-    headers_rh = {
-        "Authorization": f"Bearer {RH_TOKEN}",
-        "Content-Type": "application/json"
+    # Login as RH (admin)
+    rh_token = login(RH_EMAIL, RH_PASSWORD)
+    rh_headers = {"Authorization": f"Bearer {rh_token}"}
+
+    # Login as employee
+    employee_token = login(EMPLOYEE_EMAIL, EMPLOYEE_PASSWORD)
+    employee_headers = {"Authorization": f"Bearer {employee_token}"}
+
+    # Get any employee id for simulation/generation payload
+    utilisateur_id = get_any_employee_id(rh_token)
+    assert utilisateur_id is not None, "No employee found to simulate/generate payroll"
+
+    # Prepare payroll period dates (last full month)
+    today = datetime.utcnow().date()
+    first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+    last_day_last_month = today.replace(day=1) - timedelta(days=1)
+
+    # 1. Test POST /paies/simuler with RH token
+    simuler_url = f"{BASE_URL}/paies/simuler"
+    simuler_payload = {
+        "utilisateur_id": utilisateur_id,
+        "periode_debut": first_day_last_month.isoformat(),
+        "periode_fin": last_day_last_month.isoformat()
     }
+    simuler_resp = requests.post(simuler_url, json=simuler_payload, headers=rh_headers, timeout=TIMEOUT)
+    assert simuler_resp.status_code == 200, f"Payroll simulation failed: {simuler_resp.status_code} {simuler_resp.text}"
+    simuler_data = simuler_resp.json()
+    assert isinstance(simuler_data, dict), "Simulation response should be a JSON object"
 
-    # Step 1: Need a user with employee role to test 403 Forbidden on payroll generate by employee.
-    # Adjust role to "Employee" with capital E to match backend accepted roles.
-    user_payload = {
-        "nom": "TestUser",
-        "prenom": "PayrollTest",
-        "email": "payrolltestemployee@example.com",
-        "role": "Employee",
-        "salaire_base": 3000
+    # 2. Test POST /paies/generer with valid payload and RH token
+    generer_url = f"{BASE_URL}/paies/generer"
+    generer_payload = {
+        "utilisateur_id": utilisateur_id,
+        "periode_debut": first_day_last_month.isoformat(),
+        "periode_fin": last_day_last_month.isoformat()
     }
+    generer_resp = requests.post(generer_url, json=generer_payload, headers=rh_headers, timeout=TIMEOUT)
+    assert generer_resp.status_code == 200, f"Payroll generation failed: {generer_resp.status_code} {generer_resp.text}"
+    generer_data = generer_resp.json()
+    assert generer_data.get("id") is not None, "Generated payroll response missing id"
 
-    created_employee_user_id = None
-    payroll_id = None
-
-    try:
-        # Create employee user
-        response = requests.post(
-            f"{BASE_URL}/api/utilisateurs",
-            json=user_payload,
-            headers=headers_rh,
-            timeout=TIMEOUT
-        )
-        assert response.status_code == 201, f"Failed to create employee user: {response.text}"
-        created_employee_user_id = response.json().get("id")
-        assert created_employee_user_id is not None, "Created employee user ID is None"
-
-        # 1. POST /api/paies/simuler with RH token to simulate payroll
-        simulate_payload = {
-            "utilisateur_id": created_employee_user_id,
-            "periode_debut": (date.today() - timedelta(days=30)).isoformat(),
-            "periode_fin": date.today().isoformat()
-        }
-        response = requests.post(
-            f"{BASE_URL}/api/paies/simuler",
-            json=simulate_payload,
-            headers=headers_rh,
-            timeout=TIMEOUT
-        )
-        assert response.status_code == 200, f"Payroll simulation failed: {response.text}"
-        simulation_result = response.json()
-        assert isinstance(simulation_result, dict), "Simulation result is not a dict"
-
-        # 2. POST /api/paies/generer with valid payload and RH token to generate payroll
-        response = requests.post(
-            f"{BASE_URL}/api/paies/generer",
-            json=simulate_payload,
-            headers=headers_rh,
-            timeout=TIMEOUT
-        )
-        assert response.status_code == 200, f"Payroll generation failed: {response.text}"
-        payroll = response.json()
-        payroll_id = payroll.get("id")
-        assert payroll_id is not None, "Generated payroll ID is None"
-
-        # 3. Verify that employee role cannot generate payroll and receives 403 Forbidden.
-        employee_token = get_employee_token_for_test()
-
-        if employee_token:
-            headers_employee = {
-                "Authorization": f"Bearer {employee_token}",
-                "Content-Type": "application/json"
-            }
-            response = requests.post(
-                f"{BASE_URL}/api/paies/generer",
-                json=simulate_payload,
-                headers=headers_employee,
-                timeout=TIMEOUT
-            )
-            assert response.status_code == 403, f"Employee role allowed payroll generation: {response.status_code} {response.text}"
-        else:
-            print("Warning: Employee token unavailable, skipping 403 Forbidden check for payroll generation by employee.")
-    finally:
-        # Cleanup: Delete created employee user
-        if created_employee_user_id:
-            try:
-                del_response = requests.delete(
-                    f"{BASE_URL}/api/utilisateurs/{created_employee_user_id}",
-                    headers=headers_rh,
-                    timeout=TIMEOUT
-                )
-                assert del_response.status_code == 200, f"Failed to delete created employee user: {del_response.text}"
-            except Exception as e:
-                print(f"Cleanup error: {e}")
-
-        # Cleanup: Optionally delete created payroll by RH
-        if payroll_id:
-            try:
-                del_pay_response = requests.delete(
-                    f"{BASE_URL}/api/paies/{payroll_id}",
-                    headers=headers_rh,
-                    timeout=TIMEOUT
-                )
-                if del_pay_response.status_code not in (200, 404):
-                    print(f"Warning: Failed to delete generated payroll record: {del_pay_response.status_code} {del_pay_response.text}")
-            except Exception as e:
-                print(f"Cleanup error (payroll delete): {e}")
-
-def get_employee_token_for_test():
-    """
-    Helper to retrieve an employee token for testing 403 Forbidden.
-    Attempts to login with a known employee credential. Since no employee credentials provided,
-    return None to skip test or hardcode dummy token if confident it triggers 403.
-    """
-    return None
+    # 3. Verify employee role cannot generate payroll and receives 403 Forbidden
+    generer_resp_employee = requests.post(generer_url, json=generer_payload, headers=employee_headers, timeout=TIMEOUT)
+    assert generer_resp_employee.status_code == 403, "Employee role should not be allowed to generate payroll"
 
 
 test_payroll_generation_simulation_and_access_control()

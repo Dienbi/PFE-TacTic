@@ -4,16 +4,19 @@
 
 ## 1️⃣ Document Metadata
 
-| Field               | Value                                          |
-| ------------------- | ---------------------------------------------- |
-| **Project Name**    | PFE_TACTIC — TACTIC HRIS (Laravel 10 REST API) |
-| **Date**            | 2026-02-25                                     |
-| **Prepared by**     | TestSprite AI + GitHub Copilot                 |
-| **Backend URL**     | http://localhost:8000                          |
-| **Auth Method**     | JWT Bearer Token                               |
-| **Total Tests Run** | 10                                             |
-| **Passed**          | 0                                              |
-| **Failed**          | 10                                             |
+| Field | Value |
+|-------|-------|
+| **Project Name** | PFE_TACTIC — TacTic HRIS (Laravel 10 REST API) |
+| **Date** | 2026-06-07 |
+| **Prepared by** | TestSprite AI + Cursor Agent |
+| **Backend URL** | http://127.0.0.1:8000 |
+| **API Base** | /api |
+| **Auth Method** | JWT Bearer (`access_token` field) |
+| **TestSprite Account** | Dienbi (Free plan, 150 credits) |
+| **Total Tests Run** | 10 |
+| **Passed** | 1 |
+| **Failed** | 9 |
+| **PHPUnit (local)** | 50/50 passed |
 
 ---
 
@@ -23,23 +26,22 @@
 
 #### TC001 — test_authentication_login_and_token_retrieval
 
-- **Test Code:** [TC001_test_authentication_login_and_token_retrieval.py](./tmp/TC001_test_authentication_login_and_token_retrieval.py)
-- **Status:** ❌ Failed
-- **Error:** `AssertionError: Expected 200, got 401`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/846ccf41-0772-4430-b016-c2759c9736b5
-- **Analysis:** The test used credentials that do not exist in the seeded database (TestSprite generated test-specific credentials). The real admin login is `admin@tactic.com / password`. **Fix:** Update `backendCredential` in `testsprite_tests/tmp/config.json` with a fresh JWT and ensure TestSprite test code uses the seeded credentials.
+- **Test Code:** [TC001_test_authentication_login_and_token_retrieval.py](./TC001_test_authentication_login_and_token_retrieval.py)
+- **Status:** ✅ Passed
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/fac6f26e-bf29-4b9a-9d1c-16f850017458
+- **Analysis:** Login with `admin@tactic.com / password` succeeds. Test correctly accepts both `token` and `access_token`. `/api/auth/me` returns 200 with a non-empty profile object.
 
 ---
 
-### REQ-02 · User Management (CRUD + Role Access Control)
+### REQ-02 · User Management (Utilisateur CRUD + RBAC)
 
 #### TC002 — test_user_management_create_update_and_role_restriction
 
-- **Test Code:** [TC002_test_user_management_create_update_and_role_restriction.py](./tmp/TC002_test_user_management_create_update_and_role_restriction.py)
+- **Test Code:** [TC002_test_user_management_create_update_and_role_restriction.py](./TC002_test_user_management_create_update_and_role_restriction.py)
 - **Status:** ❌ Failed
-- **Error:** `AssertionError: Expected 201 Created, got 200`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/c738e122-1ac5-47c7-99c2-4228dffeb4de
-- **Analysis:** The `POST /api/utilisateurs` endpoint returns HTTP `200` instead of `201 Created`. The test assertion is semantically correct (resource creation should return 201) but the API deviates from REST convention. **Fix:** In `UtilisateurController@store`, change `response()->json($user)` to `response()->json($user, 201)`.
+- **Error:** `AssertionError: Login response missing token or user`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/76361a19-c970-4a6d-bbe0-b1e662fe494b
+- **Analysis:** RH login succeeds, but the helper only reads `data.get("token")` — the API returns `access_token`. Secondary failure: test uses `employee@example.com` which does not exist. Seeded employee is `employe@tactic.com`. Role value should be `employe`, not `employee`.
 
 ---
 
@@ -47,167 +49,144 @@
 
 #### TC003 — test_account_requests_invite_token_flow
 
-- **Test Code:** [TC003_test_account_requests_invite_token_flow.py](./tmp/TC003_test_account_requests_invite_token_flow.py)
+- **Test Code:** [TC003_test_account_requests_invite_token_flow.py](./TC003_test_account_requests_invite_token_flow.py)
 - **Status:** ❌ Failed
-- **Error:** `AssertionError: Created account request not found in pending requests`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/198f3a73-ff3e-469d-81aa-53fed05f77fd
-- **Analysis:** A new account request was submitted via `POST /api/account-requests` but it did not appear in the `GET /api/account-requests/pending` response. Possible causes: (1) the request is saved with a status other than `pending`, (2) a filtering bug in the `pending` scope, or (3) a race condition. **Fix:** Verify `AccountRequestController@pending` filters by `statut = 'en_attente'` and that `AccountRequestController@store` defaults to that status.
+- **Error:** `AssertionError` on `set-password` with invalid token
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/d0d57167-f5bf-4936-90be-cd62c7350d59
+- **Analysis:** Submit and validate-token steps likely pass. Failure on `POST /api/account-requests/set-password` with invalid token — test expects 422 or 404 but API may return a different status. Verify actual response code and align test or API contract.
 
 ---
 
-### REQ-04 · Team Management (CRUD + Access Control)
+### REQ-04 · Team Management (Equipe)
 
 #### TC004 — test_team_management_create_update_and_access_control
 
-- **Test Code:** [TC004_test_team_management_create_update_and_access_control.py](./tmp/TC004_test_team_management_create_update_and_access_control.py)
+- **Test Code:** [TC004_test_team_management_create_update_and_access_control.py](./TC004_test_team_management_create_update_and_access_control.py)
 - **Status:** ❌ Failed
-- **Error:** `RuntimeError: Failed to get auth token: 401 Client Error: Unauthorized for url: http://localhost:8000/api/auth/login`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/323f8934-5cba-4e9d-8678-5e0eb9076252
-- **Analysis:** Same root cause as TC001 — test used non-existent test credentials for the `chef_equipe` role. The seeded manager credentials differ from what TestSprite auto-generated. **Fix:** Supply real seeded credentials for each role (RH: `admin@tactic.com`, or query a seeded `chef_equipe` user from the DB).
+- **Error:** `AssertionError: Login did not return a token`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/d8932028-a78b-4935-8b73-c629a078ee91
+- **Analysis:** RH login works but helper reads `token` not `access_token`. Also uses `manager@tactic.com` and `employee@tactic.com` — seeded accounts are `chef@tactic.com` and `employe@tactic.com`. Role filter uses `/utilisateurs/role/Manager` but API expects `chef_equipe`.
 
 ---
 
-### REQ-05 · Attendance Tracking (Clock-in/out & Absences)
+### REQ-05 · Attendance / Pointage
 
 #### TC005 — test_attendance_clock_in_out_and_absence_marking
 
-- **Test Code:** [TC005_test_attendance_clock_in_out_and_absence_marking.py](./tmp/TC005_test_attendance_clock_in_out_and_absence_marking.py)
+- **Test Code:** [TC005_test_attendance_clock_in_out_and_absence_marking.py](./TC005_test_attendance_clock_in_out_and_absence_marking.py)
 - **Status:** ❌ Failed
-- **Error:** `AssertionError: Clock in response missing Pointage ID`
-- **Actual Response:**
-  ```json
-  {
-    "message": "Entrée enregistrée.",
-    "pointage": { "id": 7351, "utilisateur_id": 1, ... }
-  }
-  ```
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/b130bdcd-29e4-4b1f-9b4f-b51b9b272675
-- **Analysis:** The API works correctly and returns the pointage ID nested under `response["pointage"]["id"]`. The test incorrectly expected the ID at the root level `response["id"]`. This is a **test code bug**, not an API bug. The API is functioning as expected. **Fix:** Update test assertion to use `response["pointage"]["id"]`.
+- **Error:** `Login failed for employee@tactic.com with status 401`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/e0ce2993-e985-47ae-86e4-95ed21c8cb84
+- **Analysis:** Wrong email — seeded employee is `employe@tactic.com` (French spelling). Even after login fix, clock-in response is `{ message, pointage }` not a flat Pointage object; test asserts `"id" in pointage_in` on root response.
 
 ---
 
-### REQ-06 · Leave Management (Submission, Approval, Restrictions)
+### REQ-06 · Leave Management (Conge)
 
 #### TC006 — test_leave_management_submission_approval_and_restrictions
 
-- **Test Code:** [TC006_test_leave_management_submission_approval_and_restrictions.py](./tmp/TC006_test_leave_management_submission_approval_and_restrictions.py)
+- **Test Code:** [TC006_test_leave_management_submission_approval_and_restrictions.py](./TC006_test_leave_management_submission_approval_and_restrictions.py)
 - **Status:** ❌ Failed
-- **Error:** `AssertionError: Leave submission failed with status 200`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/9e1e5aea-c82a-45c3-a2f1-4527bbfbce2f
-- **Analysis:** Same issue as TC002 — `POST /api/conges` returns HTTP `200` instead of `201`. The resource is being created successfully but with the wrong status code. **Fix:** In `CongeController@store`, change the response to return HTTP `201`.
+- **Error:** `AssertionError: Login response missing token or user`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/631805e2-68e7-4bbc-aaf4-594f2ecc8c6a
+- **Analysis:** Employee login uses `employee@example.com` (non-existent) and `token` field. Leave `type` should be enum value `ANNUEL`, not `"Congé annuel"`. PHPUnit `CongeApiTest` covers this correctly with `TypeConge::ANNUEL->value`.
 
 ---
 
-### REQ-07 · Payroll Generation & Access Control
+### REQ-07 · Payroll (Paie)
 
 #### TC007 — test_payroll_generation_simulation_and_access_control
 
-- **Test Code:** [TC007_test_payroll_generation_simulation_and_access_control.py](./tmp/TC007_test_payroll_generation_simulation_and_access_control.py)
+- **Test Code:** [TC007_test_payroll_generation_simulation_and_access_control.py](./TC007_test_payroll_generation_simulation_and_access_control.py)
 - **Status:** ❌ Failed
-- **Error:** `AssertionError: Failed to create employee user` — server returned the Laravel default HTML welcome page instead of JSON.
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/524a7c08-dc18-41bf-9280-103f8fda8cea
-- **Analysis:** The test attempted `POST /api/utilisateurs` but the response was the Laravel HTML welcome page (`Laravel v10.50.0`), which means the request hit the web `/` route instead of the API. The backend may be misconfigured or the test was sending to the wrong base URL (e.g., missing `/api` prefix or hitting a different port). Also, this test has a dependency on TC002's user creation issue. **Fix:** Verify the test base URL includes `/api`, and check that the `APP_URL` in `.env` is correctly set to `http://localhost:8000`.
+- **Error:** `AssertionError: Login response missing token`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/b28bea6b-4ebc-4c2b-95f8-6a86c0ac0ebb
+- **Analysis:** Same `token` vs `access_token` issue in login helper. Employee credentials are fabricated. RH payroll endpoints (`/paies/simuler`, `/paies/generer`) are covered by passing `PaieApiTest` in PHPUnit.
 
 ---
 
-### REQ-08 · Position Management (CRUD + Role Restrictions)
+### REQ-08 · Position Management (Poste)
 
 #### TC008 — test_position_management_crud_and_role_restrictions
 
-- **Test Code:** [TC008_test_position_management_crud_and_role_restrictions.py](./tmp/TC008_test_position_management_crud_and_role_restrictions.py)
+- **Test Code:** [TC008_test_position_management_crud_and_role_restrictions.py](./TC008_test_position_management_crud_and_role_restrictions.py)
 - **Status:** ❌ Failed
-- **Error:** `requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/2550f43c-679b-450f-8f96-7e7d39602f16
-- **Analysis:** A `DELETE /api/postes/{id}` call returned HTTP `204 No Content` (empty body) but the test tried to call `.json()` on the response, causing a JSON decode error. This is a **test code bug** — `DELETE` endpoints returning 204 have no body. The API behavior is correct per REST conventions. **Fix:** Update test to check `response.status_code == 204` instead of parsing JSON for delete operations.
+- **Error:** `AssertionError: No token received`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/1dd39abf-e21c-4860-8d17-88d70ab75102
+- **Analysis:** `token` field mismatch. No PHPUnit Feature tests exist for Poste module yet.
 
 ---
 
-### REQ-09 · Skills Management (CRUD & Validation)
+### REQ-09 · Skills Management (Competences)
 
 #### TC009 — test_skills_management_crud_and_validation
 
-- **Test Code:** [TC009_test_skills_management_crud_and_validation.py](./tmp/TC009_test_skills_management_crud_and_validation.py)
+- **Test Code:** [TC009_test_skills_management_crud_and_validation.py](./TC009_test_skills_management_crud_and_validation.py)
 - **Status:** ❌ Failed
-- **Error:** `RuntimeError: Failed to login as employee: 401 Client Error: Unauthorized`
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/4a5ddf67-5053-4dd8-a619-30505ee167ca
-- **Analysis:** Same root cause as TC001/TC004 — test-generated employee credentials do not match any seeded user. **Fix:** Use a real seeded `employe` email/password from the database. Run `SELECT email FROM utilisateurs WHERE role = 'employe' LIMIT 1;` to find a valid one.
+- **Error:** `AssertionError: No token in login response`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/a63baad9-a689-4f24-a11c-b67ca9bde344
+- **Analysis:** Same auth helper bug. No PHPUnit Feature tests for Competences yet.
 
 ---
 
-### REQ-10 · Job Recruitment Pipeline (End-to-End)
+### REQ-10 · Job Recruitment Pipeline
 
 #### TC010 — test_job_recruitment_pipeline_end_to_end_flow
 
-- **Test Code:** [TC010_test_job_recruitment_pipeline_end_to_end_flow.py](./tmp/TC010_test_job_recruitment_pipeline_end_to_end_flow.py)
+- **Test Code:** [TC010_test_job_recruitment_pipeline_end_to_end_flow.py](./TC010_test_job_recruitment_pipeline_end_to_end_flow.py)
 - **Status:** ❌ Failed
-- **Error:** `AssertionError` (generic, no detail)
-- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/cd76c2a3-0df4-4f07-9260-241282a529d5/7cc938b4-af48-4f86-a685-63fb032395cc
-- **Analysis:** The end-to-end flow (job request → approval → job post → publish → application → AI match) failed at an early step. Most likely caused by cascading failures from credential issues and HTTP 200/201 mismatches in prior steps. **Fix:** Resolve the authentication (TC001) and HTTP status code (TC002) issues first, then re-run this test.
+- **Error:** `Login failed for manager@tactic.com: Identifiants invalides ou compte désactivé`
+- **Visualization:** https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc/712991b0-283b-4745-8000-7e957af85ed3
+- **Analysis:** `manager@tactic.com` does not exist. Seeded chef_equipe is `chef@tactic.com / password`. AI match endpoint also requires ai-service on port 8001.
 
 ---
 
 ## 3️⃣ Coverage & Matching Metrics
 
-- **Pass rate:** 0 / 10 (0%)
+| Requirement | Total Tests | ✅ Passed | ❌ Failed |
+|-------------|-------------|-----------|-----------|
+| REQ-01 Authentication | 1 | 1 | 0 |
+| REQ-02 Utilisateur | 1 | 0 | 1 |
+| REQ-03 Account Requests | 1 | 0 | 1 |
+| REQ-04 Equipe | 1 | 0 | 1 |
+| REQ-05 Pointage | 1 | 0 | 1 |
+| REQ-06 Conge | 1 | 0 | 1 |
+| REQ-07 Paie | 1 | 0 | 1 |
+| REQ-08 Poste | 1 | 0 | 1 |
+| REQ-09 Competences | 1 | 0 | 1 |
+| REQ-10 Job Pipeline | 1 | 0 | 1 |
+| **Total** | **10** | **1** | **9** |
 
-| Requirement                      | Total Tests | ✅ Passed | ❌ Failed |
-| -------------------------------- | ----------- | --------- | --------- |
-| REQ-01: Authentication           | 1           | 0         | 1         |
-| REQ-02: User Management          | 1           | 0         | 1         |
-| REQ-03: Account Requests         | 1           | 0         | 1         |
-| REQ-04: Team Management          | 1           | 0         | 1         |
-| REQ-05: Attendance Tracking      | 1           | 0         | 1         |
-| REQ-06: Leave Management         | 1           | 0         | 1         |
-| REQ-07: Payroll                  | 1           | 0         | 1         |
-| REQ-08: Position Management      | 1           | 0         | 1         |
-| REQ-09: Skills Management        | 1           | 0         | 1         |
-| REQ-10: Job Recruitment Pipeline | 1           | 0         | 1         |
-| **Total**                        | **10**      | **0**     | **10**    |
+### PHPUnit vs TestSprite (focus modules)
 
-**Actual API behavior (from test evidence):**
+| Module | TestSprite | PHPUnit Feature |
+|--------|------------|-----------------|
+| Auth | ✅ TC001 | ✅ 3 tests |
+| Utilisateur | ❌ TC002 | ❌ missing |
+| Pointage | ❌ TC005 | ✅ 5 tests |
+| Conge | ❌ TC006 | ✅ 4 tests |
+| Paie | ❌ TC007 | ✅ 4 tests |
 
-- `POST /api/pointages/entree` → ✅ Works, returns `{ message, pointage: { id, ... } }`
-- `DELETE /api/postes/{id}` → ✅ Works, returns 204 No Content
-- `POST /api/conges` → ⚠️ Works but returns 200 instead of 201
-- `POST /api/utilisateurs` → ⚠️ Works but returns 200 instead of 201
-- `POST /api/auth/login` → ✅ Works with correct credentials
+**PHPUnit overall: 50/50 passed** — API behavior is correct; TestSprite failures are mostly test-script contract mismatches.
 
 ---
 
 ## 4️⃣ Key Gaps / Risks
 
-### 🔴 Critical Issues
+1. **TestSprite login helpers use `token` but API returns `access_token`** — TC001 was fixed; TC002–TC009 still fail on this. One-line fix: `token = data.get("access_token") or data.get("token")`.
 
-| #   | Issue                             | Affected Tests      | Root Cause                                                                                                        |
-| --- | --------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1   | **Wrong test credentials**        | TC001, TC004, TC009 | TestSprite auto-generated credentials that don't match seeded DB users. Real creds: `admin@tactic.com / password` |
-| 2   | **HTML response instead of JSON** | TC007               | Laravel returned welcome page — possible routing misconfiguration or wrong base URL in test                       |
+2. **Wrong seeded credentials in generated tests** — Use `admin@tactic.com`, `chef@tactic.com`, `employe@tactic.com` (all password: `password`). Not `manager@tactic.com` or `employee@tactic.com`.
 
-### 🟡 API Convention Issues (Easy Fixes)
+3. **Response shape mismatches** — Pointage clock-in returns `{ message, pointage: {...} }`; `/auth/me` returns `{ user: {...} }`; user update returns `{ message }` not the updated user object.
 
-| #   | Issue                                                    | Affected Tests | Fix                                                                                                       |
-| --- | -------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
-| 3   | **POST creation endpoints return 200 instead of 201**    | TC002, TC006   | Update `UtilisateurController@store` and `CongeController@store` to return `response()->json($data, 201)` |
-| 4   | **DELETE endpoints return 204 but tests call `.json()`** | TC008          | Test code bug — the API is correct. TestSprite needs to handle 204 responses                              |
+4. **Enum values** — Roles: `rh`, `chef_equipe`, `employe`. Leave types: `ANNUEL`, `MALADIE`, etc. (uppercase enum strings).
 
-### 🟢 Test Code Bugs (API is Correct)
+5. **Infrastructure (resolved for this run)** — Laravel was returning 500 due to Redis cache driver without Redis running, multiple stale processes on port 8000, and empty database. Fixed by: `CACHE_DRIVER=file`, single server instance, `php artisan db:seed`.
 
-| #   | Issue                                   | Affected Tests | Fix                                                                  |
-| --- | --------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| 5   | **Wrong response path for Pointage ID** | TC005          | Test should access `response["pointage"]["id"]` not `response["id"]` |
-| 6   | **JSON decode on 204 No Content**       | TC008          | Test should check status code only for DELETE operations             |
+6. **PHPUnit gaps** — `UtilisateurApiTest` still missing (highest priority). Poste, Competences, Equipe, Job modules have no Feature tests.
 
-### ⚠️ Functional Gaps
+7. **Recommend `.env` dev defaults** — Set `CACHE_DRIVER=file`, `SESSION_DRIVER=file`, `QUEUE_CONNECTION=sync` per AGENTS.md to avoid Redis dependency in local dev.
 
-| #   | Issue                                             | Affected Tests                                    |
-| --- | ------------------------------------------------- | ------------------------------------------------- |
-| 7   | **Account request not appearing in pending list** | TC003                                             |
-| 8   | **Job recruitment pipeline E2E not validated**    | TC010 — blocked by upstream failures              |
-| 9   | **AI module, Dashboard, Assignments endpoints**   | Not covered — 0 tests generated for these modules |
+---
 
-### Recommended Next Steps
-
-1. Fix credentials issue — provide a seeded employee password to TestSprite config
-2. Fix HTTP 201 return codes in `store()` methods across controllers
-3. Re-run tests after fixes
-4. Expand test coverage to AI module (`/api/ai/*`), Dashboard, and Assignments endpoints
+*Dashboard: https://www.testsprite.com/dashboard/mcp/tests/79670796-2870-4534-a1ac-983dcba4b2fc*

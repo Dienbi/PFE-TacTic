@@ -9,9 +9,6 @@ permissions:
   contents: read
   packages: write
 
-env:
-  IMAGE_OWNER: ${{ toLower(github.repository_owner) }}
-
 jobs:
   build-and-push:
     runs-on: self-hosted
@@ -19,9 +16,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set short SHA
+      - name: Set image metadata
         id: vars
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_OWNER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -43,8 +42,8 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.IMAGE_OWNER }}/tactic-backend:sha-${{ steps.vars.outputs.SHORT_SHA }}
-            ghcr.io/${{ env.IMAGE_OWNER }}/tactic-backend:latest
+            ghcr.io/${{ steps.vars.outputs.IMAGE_OWNER }}/tactic-backend:sha-${{ steps.vars.outputs.SHORT_SHA }}
+            ghcr.io/${{ steps.vars.outputs.IMAGE_OWNER }}/tactic-backend:latest
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
@@ -55,8 +54,8 @@ jobs:
             REACT_APP_API_URL=/api
           push: true
           tags: |
-            ghcr.io/${{ env.IMAGE_OWNER }}/tactic-frontend:sha-${{ steps.vars.outputs.SHORT_SHA }}
-            ghcr.io/${{ env.IMAGE_OWNER }}/tactic-frontend:latest
+            ghcr.io/${{ steps.vars.outputs.IMAGE_OWNER }}/tactic-frontend:sha-${{ steps.vars.outputs.SHORT_SHA }}
+            ghcr.io/${{ steps.vars.outputs.IMAGE_OWNER }}/tactic-frontend:latest
 
       - name: Build and push ai-service image
         uses: docker/build-push-action@v6
@@ -65,5 +64,150 @@ jobs:
           file: docker/ai-service/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.IMAGE_OWNER }}/tactic-ai-service:sha-${{ steps.vars.outputs.SHORT_SHA }}
-            ghcr.io/${{ env.IMAGE_OWNER }}/tactic-ai-service:latest
+            ghcr.io/${{ steps.vars.outputs.IMAGE_OWNER }}/tactic-ai-service:sha-${{ steps.vars.outputs.SHORT_SHA }}
+            ghcr.io/${{ steps.vars.outputs.IMAGE_OWNER }}/tactic-ai-service:latest
+
+  post-build-tests:
+    name: Post-build Tests
+    runs-on: self-hosted
+    needs: build-and-push
+    env:
+      POSTGRES_HOST: host.docker.internal
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: tactic_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify baked runner tools
+        run: |
+          php -v
+          composer --version
+          node --version
+          npm --version
+          python --version
+          pip --version
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare Laravel test environment
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          cp .env .env.testing
+
+          sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env.testing || echo "APP_ENV=testing" >> .env.testing
+          sed -i 's/^CACHE_DRIVER=.*/CACHE_DRIVER=array/' .env.testing || echo "CACHE_DRIVER=array" >> .env.testing
+          sed -i 's/^QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env.testing || echo "QUEUE_CONNECTION=sync" >> .env.testing
+          sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env.testing || echo "SESSION_DRIVER=array" >> .env.testing
+          sed -i 's/^MAIL_MAILER=.*/MAIL_MAILER=array/' .env.testing || echo "MAIL_MAILER=array" >> .env.testing
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing || echo "DB_CONNECTION=pgsql" >> .env.testing
+          sed -i "s/^DB_HOST=.*/DB_HOST=${POSTGRES_HOST}/" .env.testing || echo "DB_HOST=${POSTGRES_HOST}" >> .env.testing
+          sed -i 's/^DB_PORT=.*/DB_PORT=${{ job.services.postgres.ports[5432] }}/' .env.testing || echo "DB_PORT=${{ job.services.postgres.ports[5432] }}" >> .env.testing
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=tactic_db/' .env.testing || echo "DB_DATABASE=tactic_db" >> .env.testing
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env.testing || echo "DB_USERNAME=postgres" >> .env.testing
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing || echo "DB_PASSWORD=admin" >> .env.testing
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            pg_isready -h "${POSTGRES_HOST}" -p "${{ job.services.postgres.ports[5432] }}" -U postgres && exit 0
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          exit 1
+
+      - name: Run backend migrations
+        working-directory: backend
+        run: php artisan migrate --env=testing --force
+        env:
+          APP_ENV: testing
+          CACHE_DRIVER: array
+          DB_CONNECTION: pgsql
+          DB_HOST: ${{ env.POSTGRES_HOST }}
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin
+
+      - name: Run backend auth and CRUD tests
+        working-directory: backend
+        run: php artisan test --filter "AuthApiTest|UtilisateurApiTest|CongeApiTest|PaieApiTest|PointageApiTest"
+        env:
+          APP_ENV: testing
+          CACHE_DRIVER: array
+          DB_CONNECTION: pgsql
+          DB_HOST: ${{ env.POSTGRES_HOST }}
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --watchAll=false
+        env:
+          CI: true
+
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('ai-service/requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Install AI service test dependencies
+        working-directory: ai-service
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          grep -v '^torch' requirements.txt | pip install -r /dev/stdin
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install pytest httpx
+
+      - name: Run AI service tests
+        working-directory: ai-service
+        run: |
+          source .venv/bin/activate
+          PYTHONPATH=. ENABLE_SCHEDULER=false pytest tests -q
+        env:
+          DATABASE_URL: postgresql://postgres:admin@127.0.0.1:5432/tactic_db

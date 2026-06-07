@@ -1,9 +1,17 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+describe("App routing", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.pushState({}, "", "/");
+  });
+
+  test("redirects the root route to the login screen", () => {
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+  });
 });

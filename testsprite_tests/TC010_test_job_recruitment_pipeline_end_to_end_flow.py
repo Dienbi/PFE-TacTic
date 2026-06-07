@@ -1,86 +1,138 @@
 import requests
+import traceback
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://127.0.0.1:8000/api"
 TIMEOUT = 30
 
-# Tokens for different roles (these would realistically be obtained dynamically, hardcoded here per instructions)
-MANAGER_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NzIwMjIxMTcsImV4cCI6MTc3MjAyNTcxNywibmJmIjoxNzcyMDIyMTE3LCJqdGkiOiJRVmJNWEhFdnlPNjlzYlVyIiwic3ViIjoiMSIsInBydiI6ImQwOTA1YmNmNjVhNmQ5OTJkOTBjYmZlNDYyMjZiZDMxM2FlNTE5M2YiLCJyb2xlIjoiTUFOSUdFUiIsIm1hdHJpY3VsZSI6IkVNUDAwMDAxIn0.I8kwHIFud_6IOx6ymigvyflA489eg2Uh0T2yG2-HEts"  # Adjust role claim to MANAGER
-RH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NzIwMjIxMTcsImV4cCI6MTc3MjAyNTcxNywibmJmIjoxNzcyMDIyMTE3LCJqdGkiOiJRVmJNWEhFdnlPNjlzYlVyIiwic3ViIjoiMSIsInBydiI6ImQwOTA1YmNmNjVhNmQ5OTJkOTBjYmZlNDYyMjZiZDMxM2FlNTE5M2YiLCJyb2xlIjoiUkgifQ.DBbNQXCJHYf2iDbcEQo_9mzQmh00pWX8BBJksNDuhME"  # HR role token (RH claims)
-EMPLOYEE_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NzIwMjIxMTcsImV4cCI6MTc3MjAyNTcxNywibmJmIjoxNzcyMDIyMTE3LCJqdGkiOiJRVmJNWEhFdnlPNjlzYlVyIiwic3ViIjoiMSIsInBydiI6ImQwOTA1YmNmNjVhNmQ5OTJkOTBjYmZlNDYyMjZiZDMxM2FlNTE5M2YiLCJyb2xlIjoiRU1QTE9ZRUUifQ.RypvDpF8lGJL687nWD2cDk11BkdTTOQjXBvESuIfJI"  # Employee role token fixed
+
+def login(email: str, password: str) -> str:
+    url = f"{BASE_URL}/auth/login"
+    payload = {"email": email, "password": password}
+    response = requests.post(url, json=payload, timeout=TIMEOUT)
+    assert response.status_code == 200, f"Login failed for {email}: {response.text}"
+    data = response.json()
+    token = data.get("token")
+    assert token, f"No token received for {email}"
+    return token
+
 
 def test_job_recruitment_pipeline_end_to_end_flow():
-    headers_manager = {"Authorization": f"Bearer {MANAGER_TOKEN}"}
-    headers_rh = {"Authorization": f"Bearer {RH_TOKEN}"}
-    headers_employee = {"Authorization": f"Bearer {EMPLOYEE_TOKEN}"}
+    # Credentials
+    manager_email = "manager@tactic.com"
+    manager_password = "password"
+
+    rh_email = "admin@tactic.com"
+    rh_password = "password"
+
+    employee_email = "employee@tactic.com"
+    employee_password = "password"
+
+    # Login all users
+    manager_token = None
+    rh_token = None
+    employee_token = None
 
     job_request_id = None
     job_post_id = None
     application_id = None
 
+    headers_manager = None
+    headers_rh = None
+    headers_employee = None
+
     try:
-        # Step 1: Manager creates job request
-        postes_resp = requests.get(f"{BASE_URL}/api/postes", headers=headers_rh, timeout=TIMEOUT)
-        assert postes_resp.status_code == 200
+        manager_token = login(manager_email, manager_password)
+        headers_manager = {"Authorization": f"Bearer {manager_token}"}
+
+        rh_token = login(rh_email, rh_password)
+        headers_rh = {"Authorization": f"Bearer {rh_token}"}
+
+        employee_token = login(employee_email, employee_password)
+        headers_employee = {"Authorization": f"Bearer {employee_token}"}
+
+        # Step 1: Create Job Request with manager token
+        # Need a valid poste_id for the request; get first poste from RH token (assuming RH can list postes)
+        postes_resp = requests.get(f"{BASE_URL}/postes", headers=headers_rh, timeout=TIMEOUT)
+        assert postes_resp.status_code == 200, f"Failed to get postes: {postes_resp.text}"
         postes = postes_resp.json()
-        assert isinstance(postes, list)
-        if postes:
-            poste_id = postes[0].get("id")
-            assert poste_id is not None
-        else:
-            poste_payload = {"titre": "Test Position for Job Request", "description": "Created by test"}
-            poste_create = requests.post(f"{BASE_URL}/api/postes", json=poste_payload, headers=headers_rh, timeout=TIMEOUT)
-            assert poste_create.status_code == 201
-            poste_data = poste_create.json()
-            poste_id = poste_data.get("id")
-            assert poste_id is not None
+        assert isinstance(postes, list) and len(postes) > 0, "No postes found to create job request"
+        poste_id = postes[0].get("id")
+        assert poste_id, "poste_id missing in postes data"
 
-        job_request_payload = {"poste_id": poste_id, "description": "Need to recruit for test job position"}
-        jr_resp = requests.post(f"{BASE_URL}/api/job-requests", json=job_request_payload, headers=headers_manager, timeout=TIMEOUT)
-        assert jr_resp.status_code == 201
-        jr_data = jr_resp.json()
-        job_request_id = jr_data.get("id")
-        assert job_request_id is not None
+        job_request_payload = {
+            "poste_id": poste_id,
+            "description": "Need to fill this position urgently"
+        }
+        create_job_request_resp = requests.post(
+            f"{BASE_URL}/job-requests", headers=headers_manager, json=job_request_payload, timeout=TIMEOUT
+        )
+        assert create_job_request_resp.status_code == 201, f"Failed to create job request: {create_job_request_resp.text}"
+        job_request = create_job_request_resp.json()
+        job_request_id = job_request.get("id")
+        assert job_request_id is not None, "Created job request ID missing"
 
-        # Step 2: RH approves job request
-        approve_resp = requests.post(f"{BASE_URL}/api/job-requests/{job_request_id}/approve", headers=headers_rh, timeout=TIMEOUT)
-        assert approve_resp.status_code == 200
-        apr_data = approve_resp.json()
-        assert apr_data.get("id") == job_request_id
+        # Step 2: Approve job request with RH token
+        approve_resp = requests.post(
+            f"{BASE_URL}/job-requests/{job_request_id}/approve", headers=headers_rh, timeout=TIMEOUT
+        )
+        assert approve_resp.status_code == 200, f"Failed to approve job request: {approve_resp.text}"
+        approved_job_request = approve_resp.json()
+        assert approved_job_request.get("id") == job_request_id, "Approved job request ID mismatch"
 
-        # Step 3: RH creates job post
-        # Provide required valid payload for job post creation according to PRD reasoning
-        job_post_payload = {"poste_id": poste_id, "description": "Job post created by test"}
-        job_post_resp = requests.post(f"{BASE_URL}/api/job-posts", json=job_post_payload, headers=headers_rh, timeout=TIMEOUT)
-        assert job_post_resp.status_code == 201
-        jp_data = job_post_resp.json()
-        job_post_id = jp_data.get("id")
-        assert job_post_id is not None
+        # Step 3: Create job post with RH token
+        job_post_payload = {
+            "poste_id": poste_id,
+            "title": "Open Position for Automated Test",
+            "description": "Job post created during automated test",
+            "location": "Tunis",
+            "salary_range": "Negotiable",
+            "employment_type": "Full-time",
+            "requirements": "Test requirements",
+            "responsibilities": "Test responsibilities"
+        }
+        # Note: PRD doesn't specify exact payload for job-posts creation. Using common/reasonable fields; if ignored by API should still work.
+        # If extra fields cause error, try minimal payload with only poste_id.
 
-        # Step 4: Employee submits application for job_post_id
-        application_payload = {"job_post_id": job_post_id}
-        app_resp = requests.post(f"{BASE_URL}/api/applications", json=application_payload, headers=headers_employee, timeout=TIMEOUT)
-        assert app_resp.status_code == 201
-        app_data = app_resp.json()
-        application_id = app_data.get("id")
-        assert application_id is not None
+        # As per PRD, POST /api/job-posts with RH token returns 201 with job post object.
+        # Payload used is minimal with only poste_id. To be safe, send only poste_id.
+        minimal_payload = {
+            "poste_id": poste_id
+        }
+        create_job_post_resp = requests.post(
+            f"{BASE_URL}/job-posts", headers=headers_rh, json=minimal_payload, timeout=TIMEOUT
+        )
+        assert create_job_post_resp.status_code == 201, f"Failed to create job post: {create_job_post_resp.text}"
+        job_post = create_job_post_resp.json()
+        job_post_id = job_post.get("id")
+        assert job_post_id is not None, "Created job post ID missing"
 
-        # Step 5: RH gets AI ranked candidates for jobPostId
-        ai_match_resp = requests.get(f"{BASE_URL}/api/ai/match/{job_post_id}", headers=headers_rh, timeout=TIMEOUT)
-        assert ai_match_resp.status_code == 200
+        # Step 4: Submit application with employee token
+        application_payload = {
+            "job_post_id": job_post_id
+        }
+        create_application_resp = requests.post(
+            f"{BASE_URL}/applications", headers=headers_employee, json=application_payload, timeout=TIMEOUT
+        )
+        assert create_application_resp.status_code == 201, f"Failed to create application: {create_application_resp.text}"
+        application = create_application_resp.json()
+        application_id = application.get("id")
+        assert application_id is not None, "Created application ID missing"
+
+        # Step 5: Get AI-ranked candidates with RH token
+        ai_match_resp = requests.get(
+            f"{BASE_URL}/ai/match/{job_post_id}", headers=headers_rh, timeout=TIMEOUT
+        )
+        assert ai_match_resp.status_code == 200, f"Failed to get AI-ranked candidates: {ai_match_resp.text}"
         ranked_candidates = ai_match_resp.json()
-        assert isinstance(ranked_candidates, list)
+        assert isinstance(ranked_candidates, list), "AI-ranked candidates response is not a list"
 
+    except Exception:
+        traceback.print_exc()
+        assert False, "Test case test_job_recruitment_pipeline_end_to_end_flow failed due to an unexpected error."
     finally:
-        if application_id:
-            try:
-                withdraw_resp = requests.post(f"{BASE_URL}/api/applications/{application_id}/withdraw", headers=headers_employee, timeout=TIMEOUT)
-            except Exception:
-                pass
-        if job_post_id:
-            try:
-                close_resp = requests.post(f"{BASE_URL}/api/job-posts/{job_post_id}/close", headers=headers_rh, timeout=TIMEOUT)
-            except Exception:
-                pass
+        # Cleanup if applicable: delete created application, job post, job request if DELETE endpoints exist.
+        # PRD does not specify DELETE endpoints for these resources => no deletion here.
+        pass
 
 
 test_job_recruitment_pipeline_end_to_end_flow()

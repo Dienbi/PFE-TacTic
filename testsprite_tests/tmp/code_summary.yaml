@@ -1,98 +1,112 @@
 version: "2"
 type: backend
 tech_stack:
-  - language: PHP 8.1
-  - framework: Laravel 10
-  - database: MySQL
-  - other: JWT Authentication (php-open-source-saver/jwt-auth), Laravel Reverb (WebSocket), FastAPI AI Service (Python/PyTorch)
+  - PHP 8.2
+  - Laravel 10
+  - PostgreSQL
+  - JWT (php-open-source-saver/jwt-auth)
+  - PHPUnit
 features:
   - name: Authentication API
-    description: JWT-based login, logout, token refresh, profile management, and password management
+    description: JWT-based login, registration, token refresh, profile and password management
     files:
+      - backend/app/Http/Controllers/Api/AuthController.php
+      - backend/app/Services/AuthService.php
+      - backend/app/Http/Requests/LoginRequest.php
+      - backend/app/Http/Requests/RegisterRequest.php
+      - backend/app/Http/Requests/ChangePasswordRequest.php
       - backend/routes/api.php
-      - backend/app/Http/Controllers/AuthController.php
     endpoints:
       - method: POST
         path: /api/auth/login
-        description: Authenticate user and return JWT token
+        description: Login with email and password, returns access_token
         auth_required: false
         request_schema:
           body:
             email: string
             password: string
         response_schema:
-          "200": "{token: string, user: object}"
-          "401": Unauthorized
+          "200": "{ access_token, token_type, expires_in, user }"
+          "401": Invalid credentials or inactive account
+      - method: POST
+        path: /api/auth/register
+        description: Register a new user account
+        auth_required: false
+        response_schema:
+          "201": "{ access_token, user }"
       - method: POST
         path: /api/auth/logout
-        description: Invalidate JWT token
+        description: Invalidate current JWT token
         auth_required: true
         response_schema:
-          "200": Success message
+          "200": "{ message }"
       - method: POST
         path: /api/auth/refresh
         description: Refresh JWT token
         auth_required: true
         response_schema:
-          "200": "{token: string}"
+          "200": "{ access_token, token_type, expires_in }"
       - method: GET
         path: /api/auth/me
-        description: Get current authenticated user profile
+        description: Get authenticated user profile with competences
         auth_required: true
         response_schema:
-          "200": User object
+          "200": "{ user }"
       - method: POST
         path: /api/auth/change-password
-        description: Change user password
+        description: Change password for authenticated user
         auth_required: true
         request_schema:
           body:
             current_password: string
             new_password: string
         response_schema:
-          "200": Success message
-          "422": Validation error
+          "200": "{ message }"
+          "400": Wrong current password
       - method: PUT
         path: /api/auth/update-profile
-        description: Update current user profile
+        description: Update authenticated user profile fields
         auth_required: true
         response_schema:
-          "200": Updated user object
+          "200": "{ message, user }"
       - method: PUT
         path: /api/auth/update-skills
-        description: Update current user skills
+        description: Sync user competences/skills list
         auth_required: true
         response_schema:
-          "200": Updated user object
+          "200": "{ message, user }"
     depends_on: []
 
-  - name: User Management API
-    description: Full CRUD for users with role-based access, soft-delete, archive/restore, and skills management
+  - name: Utilisateur API
+    description: Employee/user CRUD, search, archive/restore, status and team assignment (RH-only mutations)
     files:
-      - backend/app/Http/Controllers/UtilisateurController.php
-      - backend/app/Models/Utilisateur.php
+      - backend/app/Http/Controllers/Api/UtilisateurController.php
+      - backend/app/Services/UtilisateurService.php
+      - backend/app/Repositories/UtilisateurRepository.php
+      - backend/app/Http/Requests/UtilisateurRequest.php
+      - backend/routes/api.php
     endpoints:
       - method: GET
         path: /api/utilisateurs
-        description: List all users
+        description: List users (paginated or all with ?all=true)
         auth_required: true
         response_schema:
-          "200": User[]
+          "200": Paginated users or array
       - method: GET
         path: /api/utilisateurs/search
-        description: Search users by name or matricule
+        description: Search users by query string q
         auth_required: true
         response_schema:
           "200": User[]
       - method: GET
         path: /api/utilisateurs/disponibles
-        description: List available users not assigned to a team
+        description: List available employees
         auth_required: true
         response_schema:
           "200": User[]
       - method: GET
         path: /api/utilisateurs/role/{role}
-        description: Filter users by role
+        description: Filter users by role (rh, chef_equipe, employe)
         auth_required: true
         response_schema:
           "200": User[]
@@ -101,306 +115,152 @@ features:
         description: Get single user by ID
         auth_required: true
         response_schema:
-          "200": User object
+          "200": User
           "404": Not found
       - method: POST
         path: /api/utilisateurs
-        description: Create a new user (RH only)
+        description: Create user (RH only)
         auth_required: true
-        request_schema:
-          body:
-            nom: string
-            prenom: string
-            email: string
-            role: string
-            salaire_base: number
         response_schema:
-          "201": User object
-          "422": Validation error
+          "201": User
+          "403": Forbidden for non-RH
       - method: PUT
         path: /api/utilisateurs/{id}
         description: Update user (RH only)
         auth_required: true
         response_schema:
-          "200": Updated user object
+          "200": "{ message }"
+          "403": Forbidden
       - method: DELETE
         path: /api/utilisateurs/{id}
-        description: Soft-delete user (RH only)
+        description: Soft-delete/archive user (RH only)
         auth_required: true
         response_schema:
-          "200": Success message
-      - method: DELETE
-        path: /api/utilisateurs/{id}/force
-        description: Permanently delete user (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
+          "200": "{ message }"
       - method: GET
         path: /api/utilisateurs/archived
-        description: List archived/soft-deleted users (RH only)
+        description: List archived users (RH only)
         auth_required: true
         response_schema:
           "200": User[]
       - method: POST
-        path: /api/utilisateurs/{id}/activate
-        description: Activate user account (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-      - method: POST
         path: /api/utilisateurs/{id}/restore
-        description: Restore soft-deleted user (RH only)
+        description: Restore archived user (RH only)
         auth_required: true
         response_schema:
-          "200": Success message
+          "200": "{ message }"
+          "404": Not found
+      - method: POST
+        path: /api/utilisateurs/{id}/activate
+        description: Activate deactivated user (RH only)
+        auth_required: true
+        response_schema:
+          "200": "{ message }"
       - method: PUT
         path: /api/utilisateurs/{id}/status
-        description: Update user status (RH only)
+        description: Update employee status enum (RH only)
         auth_required: true
         response_schema:
-          "200": Updated user object
+          "200": "{ message }"
       - method: PUT
         path: /api/utilisateurs/{id}/equipe
         description: Assign user to team (RH only)
         auth_required: true
         response_schema:
-          "200": Updated user object
+          "200": "{ message }"
       - method: PUT
         path: /api/utilisateurs/{id}/competences
-        description: Assign skills to user (RH only)
+        description: Update user competences (RH only)
         auth_required: true
         response_schema:
-          "200": Updated user object
-      - method: GET
-        path: /api/utilisateurs/logs
-        description: View activity logs (RH only)
-        auth_required: true
-        response_schema:
-          "200": ActivityLog[]
+          "200": "{ message }"
     depends_on:
       - Authentication API
 
-  - name: Account Requests API
-    description: Employee self-registration via invite token flow
+  - name: Pointage API
+    description: Attendance clock-in/out, personal history, RH/manager summary and absence management
     files:
-      - backend/app/Http/Controllers/AccountRequestController.php
-      - backend/app/Models/AccountRequest.php
-    endpoints:
-      - method: POST
-        path: /api/account-requests
-        description: Submit a new account/invite request
-        auth_required: false
-        request_schema:
-          body:
-            nom: string
-            prenom: string
-            email: string
-        response_schema:
-          "200": Success message
-      - method: GET
-        path: /api/account-requests/validate-token/{token}
-        description: Validate invite token
-        auth_required: false
-        response_schema:
-          "200": Token valid
-          "404": Invalid token
-      - method: POST
-        path: /api/account-requests/set-password
-        description: Set password via invite token
-        auth_required: false
-        request_schema:
-          body:
-            token: string
-            password: string
-        response_schema:
-          "200": Success message
-          "422": Validation error
-      - method: GET
-        path: /api/account-requests
-        description: List all account requests (RH only)
-        auth_required: true
-        response_schema:
-          "200": AccountRequest[]
-      - method: GET
-        path: /api/account-requests/pending
-        description: List pending account requests (RH only)
-        auth_required: true
-        response_schema:
-          "200": AccountRequest[]
-      - method: GET
-        path: /api/account-requests/pending-count
-        description: Count pending account requests (RH only)
-        auth_required: true
-        response_schema:
-          "200": "{count: number}"
-      - method: POST
-        path: /api/account-requests/{id}/approve
-        description: Approve an account request (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-      - method: POST
-        path: /api/account-requests/{id}/reject
-        description: Reject an account request (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-    depends_on:
-      - Authentication API
-
-  - name: Team Management API
-    description: CRUD for teams, manager/member assignment
-    files:
-      - backend/app/Http/Controllers/EquipeController.php
-      - backend/app/Models/Equipe.php
-    endpoints:
-      - method: GET
-        path: /api/equipes
-        description: List all teams
-        auth_required: true
-        response_schema:
-          "200": Team[]
-      - method: GET
-        path: /api/equipes/{id}
-        description: Get team by ID
-        auth_required: true
-        response_schema:
-          "200": Team object
-          "404": Not found
-      - method: GET
-        path: /api/equipes/{id}/membres
-        description: Get team members
-        auth_required: true
-        response_schema:
-          "200": User[]
-      - method: GET
-        path: /api/equipes/my-team
-        description: Get current user's team
-        auth_required: true
-        response_schema:
-          "200": Team object
-      - method: POST
-        path: /api/equipes
-        description: Create team (RH only)
-        auth_required: true
-        request_schema:
-          body:
-            nom: string
-            chef_id: integer
-        response_schema:
-          "201": Team object
-      - method: PUT
-        path: /api/equipes/{id}
-        description: Update team (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated team object
-      - method: DELETE
-        path: /api/equipes/{id}
-        description: Delete team (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-      - method: PUT
-        path: /api/equipes/{id}/chef
-        description: Assign manager to team (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated team object
-      - method: DELETE
-        path: /api/equipes/{id}/membres/{memberId}
-        description: Remove member from team (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-    depends_on:
-      - Authentication API
-      - User Management API
-
-  - name: Attendance API
-    description: Employee clock-in/out, absence marking, justification, and reports
-    files:
-      - backend/app/Http/Controllers/PointageController.php
-      - backend/app/Models/Pointage.php
+      - backend/app/Http/Controllers/Api/PointageController.php
+      - backend/app/Services/PointageService.php
+      - backend/app/Repositories/PointageRepository.php
+      - backend/routes/api.php
     endpoints:
       - method: GET
         path: /api/pointages/today
-        description: Get today's attendance records
+        description: Get today's attendance record for current user
         auth_required: true
         response_schema:
-          "200": Pointage[]
+          "200": Pointage or null
       - method: GET
         path: /api/pointages/mes-pointages
-        description: Get own attendance records
+        description: Paginated personal attendance history
         auth_required: true
         response_schema:
-          "200": Pointage[]
+          "200": Paginated Pointage[]
+      - method: POST
+        path: /api/pointages/entree
+        description: Clock in for today
+        auth_required: true
+        response_schema:
+          "200": "{ message, pointage }"
+      - method: POST
+        path: /api/pointages/sortie
+        description: Clock out for today
+        auth_required: true
+        response_schema:
+          "200": "{ message, pointage }"
       - method: GET
         path: /api/pointages/stats
-        description: Get own attendance stats
+        description: Personal attendance statistics
         auth_required: true
         response_schema:
           "200": Stats object
-      - method: POST
-        path: /api/pointages/entree
-        description: Clock in
-        auth_required: true
-        response_schema:
-          "200": Pointage object
-      - method: POST
-        path: /api/pointages/sortie
-        description: Clock out
-        auth_required: true
-        response_schema:
-          "200": Updated Pointage object
       - method: GET
-        path: /api/pointages/utilisateur/{id}
-        description: Get attendance for specific user (RH/Manager)
+        path: /api/pointages/summary
+        description: Daily attendance summary (RH/chef_equipe only)
+        auth_required: true
+        response_schema:
+          "200": "{ date, stats, lists }"
+          "403": Forbidden for employe
+      - method: GET
+        path: /api/pointages/date
+        description: Attendance by date (RH/chef_equipe)
         auth_required: true
         response_schema:
           "200": Pointage[]
       - method: POST
         path: /api/pointages/absence
-        description: Mark employee as absent (RH/Manager)
+        description: Mark absence for employee (RH/chef_equipe)
         auth_required: true
         response_schema:
-          "200": Pointage object
+          "201": Pointage
       - method: POST
         path: /api/pointages/{id}/justifier
-        description: Justify an absence (RH/Manager)
+        description: Justify an absence (RH/chef_equipe)
         auth_required: true
         response_schema:
-          "200": Updated Pointage object
-      - method: PUT
-        path: /api/pointages/{id}
-        description: Edit attendance record (RH/Manager)
-        auth_required: true
-        response_schema:
-          "200": Updated Pointage object
-      - method: DELETE
-        path: /api/pointages/{id}
-        description: Delete attendance record (RH/Manager)
-        auth_required: true
-        response_schema:
-          "200": Success message
+          "200": "{ message }"
     depends_on:
       - Authentication API
 
-  - name: Leave Management API
-    description: Leave request submission, approval/rejection, medical file upload, leave balance tracking
+  - name: Conge API
+    description: Leave request submission, approval workflow, balance deduction, team pending views
     files:
-      - backend/app/Http/Controllers/CongeController.php
-      - backend/app/Models/Conge.php
+      - backend/app/Http/Controllers/Api/CongeController.php
+      - backend/app/Services/CongeService.php
+      - backend/app/Repositories/CongeRepository.php
+      - backend/app/Services/LeaveConflictService.php
+      - backend/routes/api.php
     endpoints:
       - method: GET
         path: /api/conges/mes-conges
-        description: Get own leave requests
+        description: Paginated personal leave requests
         auth_required: true
         response_schema:
-          "200": Conge[]
+          "200": Paginated Conge[]
       - method: POST
         path: /api/conges
-        description: Submit a leave request
+        description: Submit leave request
         auth_required: true
         request_schema:
           body:
@@ -409,75 +269,89 @@ features:
             date_fin: date
             motif: string
         response_schema:
-          "201": Conge object
+          "201": Conge
           "422": Validation error
       - method: DELETE
         path: /api/conges/{id}/annuler
-        description: Cancel a leave request
+        description: Cancel own pending leave request
         auth_required: true
         response_schema:
-          "200": Success message
+          "200": "{ message }"
       - method: GET
         path: /api/conges
-        description: List all leave requests (RH/Manager)
+        description: List all leaves (RH/chef_equipe)
         auth_required: true
         response_schema:
           "200": Conge[]
       - method: GET
         path: /api/conges/en-attente
-        description: List pending leave requests (RH/Manager)
+        description: Pending leave requests (RH/chef_equipe)
         auth_required: true
         response_schema:
           "200": Conge[]
       - method: POST
         path: /api/conges/{id}/approuver
-        description: Approve a leave request (RH/Manager)
+        description: Approve leave (RH/chef_equipe), deducts solde_conge
         auth_required: true
         response_schema:
-          "200": Updated Conge object
+          "200": "{ message }"
+          "403": Forbidden for employe
       - method: POST
         path: /api/conges/{id}/refuser
-        description: Reject a leave request (RH/Manager)
+        description: Reject leave (RH/chef_equipe)
         auth_required: true
         response_schema:
-          "200": Updated Conge object
+          "200": "{ message }"
       - method: GET
-        path: /api/conges/{id}/medical-file
-        description: Download leave medical file (RH/Manager)
+        path: /api/conges/{id}
+        description: Show single leave request
         auth_required: true
         response_schema:
-          "200": File download
+          "200": Conge
     depends_on:
       - Authentication API
-      - User Management API
 
-  - name: Payroll API
-    description: Automated Tunisian payroll with CNSS/IRPP tax, overtime, bulk generation, payslip PDF download
+  - name: Paie API
+    description: Payroll simulation, generation, validation, payment marking, payslip download
     files:
-      - backend/app/Http/Controllers/PaieController.php
-      - backend/app/Models/Paie.php
+      - backend/app/Http/Controllers/Api/PaieController.php
+      - backend/app/Services/PaieService.php
+      - backend/app/Services/PayrollCalculator.php
+      - backend/app/Repositories/PaieRepository.php
+      - backend/routes/api.php
     endpoints:
       - method: GET
         path: /api/paies/mes-paies
-        description: Get own payslips
+        description: Employee's own payslips
         auth_required: true
         response_schema:
-          "200": Paie[]
+          "200": Paginated Paie[]
+      - method: GET
+        path: /api/paies/stats
+        description: Personal payroll stats
+        auth_required: true
+        response_schema:
+          "200": Stats object
       - method: GET
         path: /api/paies/{id}/download
-        description: Download payslip PDF
+        description: Download payslip PDF (owner or RH)
         auth_required: true
         response_schema:
           "200": PDF file
-      - method: GET
-        path: /api/paies
-        description: List all payroll records (RH only)
+          "403": Forbidden
+      - method: POST
+        path: /api/paies/simuler
+        description: Simulate payroll calculation (RH only)
         auth_required: true
+        request_schema:
+          body:
+            salaire_base: number
+            heures_supp: number
         response_schema:
-          "200": Paie[]
+          "200": "{ salaire_brut, salaire_net, cnss_employe, impot_mensuel }"
       - method: POST
         path: /api/paies/generer
-        description: Generate payroll for one employee (RH only)
+        description: Generate payslip for employee (RH only)
         auth_required: true
         request_schema:
           body:
@@ -485,380 +359,43 @@ features:
             periode_debut: date
             periode_fin: date
         response_schema:
-          "200": Paie object
-      - method: POST
-        path: /api/paies/generer-tous
-        description: Generate payroll for all employees (RH only)
+          "201": Paie
+          "403": Forbidden
+          "422": Validation error
+      - method: GET
+        path: /api/paies
+        description: List all payroll records (RH only)
         auth_required: true
         response_schema:
-          "200": Paie[]
-      - method: POST
-        path: /api/paies/simuler
-        description: Simulate payroll calculation (RH only)
-        auth_required: true
-        response_schema:
-          "200": Simulation result
+          "200": Paginated Paie[]
       - method: POST
         path: /api/paies/{id}/valider
-        description: Validate a payroll record (RH only)
+        description: Validate generated payslip (RH only)
         auth_required: true
         response_schema:
-          "200": Updated Paie object
+          "200": "{ message }"
       - method: POST
         path: /api/paies/{id}/payer
-        description: Mark payroll as paid (RH only)
+        description: Mark payslip as paid (RH only)
         auth_required: true
         response_schema:
-          "200": Updated Paie object
-    depends_on:
-      - Authentication API
-      - User Management API
-
-  - name: Position Management API
-    description: CRUD for job positions/titles
-    files:
-      - backend/app/Http/Controllers/PosteController.php
-      - backend/app/Models/Poste.php
-    endpoints:
+          "200": "{ message }"
       - method: GET
-        path: /api/postes
-        description: List all positions
-        auth_required: true
-        response_schema:
-          "200": Poste[]
-      - method: GET
-        path: /api/postes/actifs
-        description: List active positions
-        auth_required: true
-        response_schema:
-          "200": Poste[]
-      - method: GET
-        path: /api/postes/search
-        description: Search positions
-        auth_required: true
-        response_schema:
-          "200": Poste[]
-      - method: GET
-        path: /api/postes/{id}
-        description: Get position by ID
-        auth_required: true
-        response_schema:
-          "200": Poste object
-          "404": Not found
-      - method: POST
-        path: /api/postes
-        description: Create position (RH only)
-        auth_required: true
-        request_schema:
-          body:
-            titre: string
-            description: string
-        response_schema:
-          "201": Poste object
-      - method: PUT
-        path: /api/postes/{id}
-        description: Update position (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated Poste object
-      - method: DELETE
-        path: /api/postes/{id}
-        description: Delete position (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-    depends_on:
-      - Authentication API
-
-  - name: Skills Management API
-    description: CRUD for employee skills/competencies
-    files:
-      - backend/app/Http/Controllers/CompetenceController.php
-      - backend/app/Models/Competence.php
-    endpoints:
-      - method: GET
-        path: /api/competences
-        description: List all skills
-        auth_required: true
-        response_schema:
-          "200": Competence[]
-      - method: GET
-        path: /api/competences/search
-        description: Search skills
-        auth_required: true
-        response_schema:
-          "200": Competence[]
-      - method: GET
-        path: /api/competences/{id}
-        description: Get skill by ID
-        auth_required: true
-        response_schema:
-          "200": Competence object
-      - method: POST
-        path: /api/competences
-        description: Create skill (RH only)
-        auth_required: true
-        request_schema:
-          body:
-            nom: string
-            categorie: string
-        response_schema:
-          "201": Competence object
-      - method: PUT
-        path: /api/competences/{id}
-        description: Update skill (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated Competence object
-      - method: DELETE
-        path: /api/competences/{id}
-        description: Delete skill (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-    depends_on:
-      - Authentication API
-
-  - name: Assignments API
-    description: Manage employee-to-position assignments with start/end dates
-    files:
-      - backend/app/Http/Controllers/AffectationController.php
-      - backend/app/Models/Affectation.php
-    endpoints:
-      - method: GET
-        path: /api/affectations
-        description: List all assignments
-        auth_required: true
-        response_schema:
-          "200": Affectation[]
-      - method: GET
-        path: /api/affectations/actives
-        description: List active assignments
-        auth_required: true
-        response_schema:
-          "200": Affectation[]
-      - method: GET
-        path: /api/affectations/utilisateur/{id}
-        description: Get assignments for a user
-        auth_required: true
-        response_schema:
-          "200": Affectation[]
-      - method: POST
-        path: /api/affectations
-        description: Create assignment (RH only)
-        auth_required: true
-        request_schema:
-          body:
-            utilisateur_id: integer
-            poste_id: integer
-            date_debut: date
-        response_schema:
-          "201": Affectation object
-      - method: PUT
-        path: /api/affectations/{id}
-        description: Update assignment (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated Affectation object
-      - method: POST
-        path: /api/affectations/{id}/terminer
-        description: End an assignment (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated Affectation object
-      - method: DELETE
-        path: /api/affectations/{id}
-        description: Delete assignment (RH only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-    depends_on:
-      - Authentication API
-      - User Management API
-      - Position Management API
-
-  - name: Job Recruitment Pipeline API
-    description: "Full recruitment pipeline: manager job requests, HR job posts, employee applications, AI candidate ranking"
-    files:
-      - backend/app/Http/Controllers/JobRequestController.php
-      - backend/app/Http/Controllers/JobPostController.php
-      - backend/app/Http/Controllers/ApplicationController.php
-      - backend/app/Models/JobRequest.php
-      - backend/app/Models/JobPost.php
-      - backend/app/Models/JobApplication.php
-    endpoints:
-      - method: GET
-        path: /api/job-requests
-        description: List all job requests
-        auth_required: true
-        response_schema:
-          "200": JobRequest[]
-      - method: POST
-        path: /api/job-requests
-        description: Create job request (Manager only)
-        auth_required: true
-        request_schema:
-          body:
-            poste_id: integer
-            description: string
-        response_schema:
-          "201": JobRequest object
-      - method: POST
-        path: /api/job-requests/{id}/approve
-        description: Approve job request (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated JobRequest object
-      - method: POST
-        path: /api/job-requests/{id}/reject
-        description: Reject job request (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated JobRequest object
-      - method: GET
-        path: /api/job-posts
-        description: List all job posts
-        auth_required: true
-        response_schema:
-          "200": JobPost[]
-      - method: GET
-        path: /api/job-posts/open
-        description: List open job posts
-        auth_required: true
-        response_schema:
-          "200": JobPost[]
-      - method: POST
-        path: /api/job-posts
-        description: Create job post (RH only)
-        auth_required: true
-        response_schema:
-          "201": JobPost object
-      - method: POST
-        path: /api/job-posts/{id}/publish
-        description: Publish job post (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated JobPost object
-      - method: POST
-        path: /api/job-posts/{id}/close
-        description: Close job post (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated JobPost object
-      - method: GET
-        path: /api/applications
-        description: List all applications
-        auth_required: true
-        response_schema:
-          "200": Application[]
-      - method: POST
-        path: /api/applications
-        description: Submit job application (Employee only)
-        auth_required: true
-        request_schema:
-          body:
-            job_post_id: integer
-        response_schema:
-          "201": Application object
-      - method: POST
-        path: /api/applications/{id}/withdraw
-        description: Withdraw application (Employee only)
-        auth_required: true
-        response_schema:
-          "200": Success message
-      - method: POST
-        path: /api/applications/{id}/review
-        description: Review application (RH only)
-        auth_required: true
-        response_schema:
-          "200": Updated Application object
-    depends_on:
-      - Authentication API
-      - User Management API
-      - Position Management API
-
-  - name: Dashboard API
-    description: Role-specific dashboards with KPIs, attendance trends, absence distribution
-    files:
-      - backend/app/Http/Controllers/DashboardController.php
-    endpoints:
-      - method: GET
-        path: /api/dashboard/all
-        description: Get complete dashboard data (RH only)
-        auth_required: true
-        response_schema:
-          "200": Dashboard data object
-      - method: GET
-        path: /api/dashboard/rh-stats
-        description: Get HR KPI statistics (RH only)
+        path: /api/paies/global-stats
+        description: Global payroll statistics (RH only)
         auth_required: true
         response_schema:
           "200": Stats object
-      - method: GET
-        path: /api/dashboard/attendance-trend
-        description: Get attendance trend chart data (RH only)
-        auth_required: true
-        response_schema:
-          "200": Trend data array
-      - method: GET
-        path: /api/dashboard/absence-distribution
-        description: Get absence type distribution (RH only)
-        auth_required: true
-        response_schema:
-          "200": Distribution data array
     depends_on:
       - Authentication API
-      - Attendance API
-      - Leave Management API
-
-  - name: AI Module API
-    description: AI-powered attendance prediction, performance scoring, candidate ranking using trained PyTorch models
-    files:
-      - backend/app/Http/Controllers/AiController.php
-      - ai-service/app/main.py
-    endpoints:
-      - method: GET
-        path: /api/ai/health
-        description: Check AI service health
-        auth_required: true
-        response_schema:
-          "200": Health status
-      - method: GET
-        path: /api/ai/predictions/attendance/{userId}
-        description: Get attendance prediction for a user (RH only)
-        auth_required: true
-        response_schema:
-          "200": Prediction object
-      - method: GET
-        path: /api/ai/predictions/performance/{userId}
-        description: Get performance score for a user (RH only)
-        auth_required: true
-        response_schema:
-          "200": Performance score object
-      - method: GET
-        path: /api/ai/match/{jobPostId}
-        description: Get AI-ranked candidates for a job post (RH only)
-        auth_required: true
-        response_schema:
-          "200": Ranked candidates array
-      - method: GET
-        path: /api/ai/dashboard-kpis
-        description: Get AI-powered KPIs for dashboard (RH only)
-        auth_required: true
-        response_schema:
-          "200": KPIs object
-    depends_on:
-      - Authentication API
-      - User Management API
-      - Job Recruitment Pipeline API
 
 known_limitations:
-  - issue: AI service must be running separately on its own port for AI endpoints to function
-    location: ai-service/app/main.py
-    impact: AI endpoints will fail if FastAPI service is not started
-  - issue: Payroll uses hardcoded Tunisian CNSS/IRPP tax brackets
-    location: backend/app/Services/PayrollService.php
-    impact: Tax calculations only valid for Tunisian legal framework
-  - issue: Real-time features require Laravel Reverb to be running
-    location: backend/config/reverb.php
-    impact: WebSocket notifications unavailable if Reverb is not started
+  - issue: AI routes depend on external Python service at port 8001
+    location: backend/app/Services/AIService.php
+    impact: AI endpoints fail when ai-service is not running
+  - issue: Utilisateur index uses file cache driver (users_all key)
+    location: backend/app/Http/Controllers/Api/UtilisateurController.php
+    impact: Tests may need Cache::flush() when asserting fresh user lists
+  - issue: duree_travail in pointages must never be null (defaults to 0)
+    location: backend/database/migrations
+    impact: Factory/seeder data must respect NOT NULL constraint

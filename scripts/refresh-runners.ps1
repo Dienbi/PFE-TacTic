@@ -1,7 +1,7 @@
 param(
     [switch]$Recreate,
     [string]$RunnerToken,
-    [string]$RepoUrl = $env:GITHUB_RUNNER_REPO_URL
+    [string]$RepoUrl = $(if ($env:GITHUB_RUNNER_REPO_URL) { $env:GITHUB_RUNNER_REPO_URL } else { 'https://github.com/Dienbi/PFE-TacTic' })
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,7 +27,7 @@ $env:GITHUB_RUNNER_TOKEN = $RunnerToken
 
 $composeArgs = @(
     '-f', 'docker/docker-compose.runners.yml',
-    'up', '-d'
+    'up', '-d', '--build'
 )
 
 if ($Recreate) {

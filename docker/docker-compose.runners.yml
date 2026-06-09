@@ -19,10 +19,11 @@ services:
       RUNNER_NAME_PREFIX: tactic-runner-1
       RANDOM_RUNNER_SUFFIX: "true"
       RUNNER_SCOPE: repo
+      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - tactic-platform
+      - tactic-runners
 
   github-runner-2:
     <<: *runner-image
@@ -34,10 +35,11 @@ services:
       RUNNER_NAME_PREFIX: tactic-runner-2
       RANDOM_RUNNER_SUFFIX: "true"
       RUNNER_SCOPE: repo
+      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - tactic-platform
+      - tactic-runners
 
   github-runner-3:
     <<: *runner-image
@@ -49,12 +51,28 @@ services:
       RUNNER_NAME_PREFIX: tactic-runner-3
       RANDOM_RUNNER_SUFFIX: "true"
       RUNNER_SCOPE: repo
+      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - tactic-platform
+      - tactic-runners
+
+  github-runner-4:
+    <<: *runner-image
+    container_name: tactic-github-runner-4
+    restart: unless-stopped
+    environment:
+      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL before starting runners}
+      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN before starting runners}
+      RUNNER_NAME_PREFIX: tactic-runner-4
+      RANDOM_RUNNER_SUFFIX: "true"
+      RUNNER_SCOPE: repo
+      LABELS: self-hosted,linux,x64,docker,ci
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - tactic-runners
 
 networks:
-  tactic-platform:
-    external: true
-    name: tactic-platform_platform
+  tactic-runners:
+    driver: bridge

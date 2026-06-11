@@ -22,18 +22,20 @@ if ($RunnerToken -eq 'PASTE_A_FRESH_RUNNER_REGISTRATION_TOKEN_HERE') {
     throw 'Replace the placeholder token with a fresh GitHub runner registration token.'
 }
 
-$env:GITHUB_RUNNER_REPO_URL = $RepoUrl
-$env:GITHUB_RUNNER_TOKEN = $RunnerToken
+$envFile = Join-Path (Split-Path -Parent $PSScriptRoot) 'docker\.env.runners'
+@"
+GITHUB_RUNNER_REPO_URL=$RepoUrl
+GITHUB_RUNNER_TOKEN=$RunnerToken
+"@ | Set-Content -Path $envFile -Encoding utf8 -NoNewline
+Add-Content -Path $envFile -Value ""
 
-$composeArgs = @(
-    '-f', 'docker/docker-compose.runners.yml',
-    'up', '-d', '--build'
+$composeBase = @(
+    'compose',
+    '--env-file', $envFile,
+    '-f', 'docker/docker-compose.platform.yml'
 )
 
-if ($Recreate) {
-    $composeArgs += '--force-recreate'
-    $composeArgs += '--remove-orphans'
-}
-
-docker compose @composeArgs
-docker compose -f docker/docker-compose.runners.yml ps
+Write-Host 'Refreshing runners only (platform unchanged)...' -ForegroundColor Cyan
+docker @($composeBase + @('up', '-d', '--build', '--force-recreate', '--no-deps',
+    'github-runner-1', 'github-runner-2', 'github-runner-3', 'github-runner-4'))
+docker @($composeBase + @('ps', 'github-runner-1', 'github-runner-2', 'github-runner-3', 'github-runner-4'))

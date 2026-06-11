@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Pointages;
 
 use App\Enums\Role;
 use App\Models\Pointage;
@@ -21,7 +21,7 @@ class PointageApiTest extends TestCase
     {
         $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
 
-        $response = $this
+        $this
             ->actingAsApiUser($employee)
             ->postJson('/api/pointages/entree')
             ->assertOk()
@@ -46,13 +46,11 @@ class PointageApiTest extends TestCase
     {
         $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
 
-        // First clock in
         $this->actingAsApiUser($employee)
             ->postJson('/api/pointages/entree')
             ->assertOk();
 
-        // Then clock out
-        $response = $this
+        $this
             ->actingAsApiUser($employee)
             ->postJson('/api/pointages/sortie')
             ->assertOk()
@@ -74,6 +72,36 @@ class PointageApiTest extends TestCase
     }
 
     /** @test */
+    public function employee_cannot_clock_out_without_clocking_in(): void
+    {
+        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
+
+        $this
+            ->actingAsApiUser($employee)
+            ->postJson('/api/pointages/sortie')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['heure_sortie']);
+    }
+
+    /** @test */
+    public function employee_cannot_clock_in_twice_same_day(): void
+    {
+        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
+
+        $this->actingAsApiUser($employee)
+            ->postJson('/api/pointages/entree')
+            ->assertOk();
+
+        $this
+            ->actingAsApiUser($employee)
+            ->postJson('/api/pointages/entree')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['heure_entree']);
+
+        $this->assertEquals(1, Pointage::where('utilisateur_id', $employee->id)->count());
+    }
+
+    /** @test */
     public function employee_can_view_own_pointages(): void
     {
         $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
@@ -90,9 +118,9 @@ class PointageApiTest extends TestCase
     }
 
     /** @test */
-    public function rh_can_view_pointages_summary(): void
+    public function rh_can_view_pointage_summary(): void
     {
-        $rh = $this->createTestUser(['role' => Role::RH]);
+        $rh = $this->createTestRh();
 
         $this
             ->actingAsApiUser($rh)

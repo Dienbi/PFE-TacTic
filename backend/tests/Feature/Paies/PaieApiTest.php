@@ -1,9 +1,10 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Paies;
 
 use App\Enums\Role;
 use App\Enums\StatutPaie;
+use App\Models\Paie;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Feature\Concerns\AuthenticatesApiUsers;
@@ -19,7 +20,7 @@ class PaieApiTest extends TestCase
     /** @test */
     public function rh_can_simulate_payroll(): void
     {
-        $rh = $this->createTestUser(['role' => Role::RH]);
+        $rh = $this->createTestRh();
 
         $this
             ->actingAsApiUser($rh)
@@ -54,12 +55,9 @@ class PaieApiTest extends TestCase
     }
 
     /** @test */
-    public function rh_can_generate_payroll_for_employee(): void
+    public function rh_can_generate_payroll(): void
     {
-        $rh = $this->createTestUser([
-            'role' => Role::RH,
-            'email' => 'payroll.rh@tactic.test',
-        ]);
+        $rh = $this->createTestRh(['email' => 'payroll.rh@tactic.test']);
         $employee = $this->createTestUser([
             'email' => 'paid.employee@tactic.test',
             'salaire_base' => 2400,
@@ -93,7 +91,7 @@ class PaieApiTest extends TestCase
     /** @test */
     public function payroll_generation_validates_period_order(): void
     {
-        $rh = $this->createTestUser(['role' => Role::RH]);
+        $rh = $this->createTestRh();
         $employee = $this->createTestUser();
 
         $this
@@ -105,5 +103,44 @@ class PaieApiTest extends TestCase
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['periode_fin']);
+    }
+
+    /** @test */
+    public function cannot_generate_same_payroll_twice(): void
+    {
+        $rh = $this->createTestRh();
+        $employee = $this->createTestUser(['salaire_base' => 2000]);
+
+        $payload = [
+            'utilisateur_id' => $employee->id,
+            'periode_debut' => Carbon::parse('2026-01-01')->toDateString(),
+            'periode_fin' => Carbon::parse('2026-01-31')->toDateString(),
+        ];
+
+        $this->actingAsApiUser($rh)->postJson('/api/paies/generer', $payload)->assertCreated();
+
+        $this
+            ->actingAsApiUser($rh)
+            ->postJson('/api/paies/generer', $payload)
+            ->assertStatus(400)
+            ->assertJsonStructure(['message']);
+
+        $this->assertEquals(1, Paie::where('utilisateur_id', $employee->id)->count());
+    }
+
+    /** @test */
+    public function cannot_generate_payroll_for_nonexistent_employee(): void
+    {
+        $rh = $this->createTestRh();
+
+        $this
+            ->actingAsApiUser($rh)
+            ->postJson('/api/paies/generer', [
+                'utilisateur_id' => 99999,
+                'periode_debut' => Carbon::parse('2026-01-01')->toDateString(),
+                'periode_fin' => Carbon::parse('2026-01-31')->toDateString(),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['utilisateur_id']);
     }
 }

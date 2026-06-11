@@ -65,17 +65,18 @@ fi
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-export GITHUB_RUNNER_REPO_URL="$REPO_URL"
-export GITHUB_RUNNER_TOKEN="$RUNNER_TOKEN"
+ENV_RUNNERS="${ROOT_DIR}/docker/.env.runners"
+cat >"$ENV_RUNNERS" <<EOF
+GITHUB_RUNNER_REPO_URL=${REPO_URL}
+GITHUB_RUNNER_TOKEN=${RUNNER_TOKEN}
+EOF
 
-COMPOSE_ARGS=(-f docker/docker-compose.runners.yml up -d --build)
-if [[ "$RECREATE" == true ]]; then
-  COMPOSE_ARGS+=(--force-recreate --remove-orphans)
-fi
+COMPOSE=(docker compose --env-file "$ENV_RUNNERS" -f docker/docker-compose.platform.yml)
 
-echo "Building runner image and starting 4 runners for $REPO_URL ..."
-docker compose "${COMPOSE_ARGS[@]}"
-docker compose -f docker/docker-compose.runners.yml ps
+echo "Refreshing runners only for $REPO_URL ..."
+"${COMPOSE[@]}" up -d --build --force-recreate --no-deps \
+  github-runner-1 github-runner-2 github-runner-3 github-runner-4
+"${COMPOSE[@]}" ps github-runner-1 github-runner-2 github-runner-3 github-runner-4
 
 echo
 echo "Runners should appear under: $REPO_URL/settings/actions/runners"

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Utilisateurs;
 
 use App\Enums\EmployeStatus;
 use App\Enums\Role;
@@ -21,10 +21,7 @@ class UtilisateurApiTest extends TestCase
     /** @test */
     public function rh_can_create_user(): void
     {
-        $rh = $this->createTestUser([
-            'role' => Role::RH,
-            'email' => 'rh.create@tactic.test',
-        ]);
+        $rh = $this->createTestRh(['email' => 'rh.create@tactic.test']);
 
         $payload = [
             'nom' => 'Created',
@@ -85,10 +82,7 @@ class UtilisateurApiTest extends TestCase
     /** @test */
     public function rh_can_update_user(): void
     {
-        $rh = $this->createTestUser([
-            'role' => Role::RH,
-            'email' => 'rh.update@tactic.test',
-        ]);
+        $rh = $this->createTestRh(['email' => 'rh.update@tactic.test']);
         $user = $this->createTestUser([
             'email' => 'before.update@tactic.test',
             'salaire_base' => 1500,
@@ -123,12 +117,9 @@ class UtilisateurApiTest extends TestCase
     }
 
     /** @test */
-    public function rh_can_archive_and_restore_user(): void
+    public function rh_can_archive_user(): void
     {
-        $rh = $this->createTestUser([
-            'role' => Role::RH,
-            'email' => 'rh.archive@tactic.test',
-        ]);
+        $rh = $this->createTestRh(['email' => 'rh.archive@tactic.test']);
         $user = $this->createTestUser(['email' => 'archive.target@tactic.test']);
 
         $this
@@ -138,6 +129,15 @@ class UtilisateurApiTest extends TestCase
             ->assertJsonStructure(['message']);
 
         $this->assertTrue(Utilisateur::withTrashed()->findOrFail($user->id)->trashed());
+    }
+
+    /** @test */
+    public function rh_can_restore_user(): void
+    {
+        $rh = $this->createTestRh(['email' => 'rh.restore@tactic.test']);
+        $user = $this->createTestUser(['email' => 'restore.target@tactic.test']);
+
+        $this->actingAsApiUser($rh)->deleteJson("/api/utilisateurs/{$user->id}")->assertOk();
 
         $this
             ->actingAsApiUser($rh)
@@ -146,5 +146,32 @@ class UtilisateurApiTest extends TestCase
             ->assertJsonStructure(['message']);
 
         $this->assertFalse(Utilisateur::withTrashed()->findOrFail($user->id)->trashed());
+    }
+
+    /** @test */
+    public function email_must_be_unique(): void
+    {
+        $rh = $this->createTestRh();
+        $existing = $this->createTestUser(['email' => 'duplicate@tactic.test']);
+
+        $this
+            ->actingAsApiUser($rh)
+            ->postJson('/api/utilisateurs', [
+                'nom' => 'Duplicate',
+                'prenom' => 'User',
+                'email' => $existing->email,
+                'password' => 'password',
+                'telephone' => '22000000',
+                'adresse' => 'Tunis',
+                'date_embauche' => Carbon::parse('2026-01-10')->toDateString(),
+                'type_contrat' => TypeContrat::CDI->value,
+                'salaire_base' => 1800,
+                'status' => EmployeStatus::DISPONIBLE->value,
+                'role' => Role::EMPLOYE->value,
+                'actif' => true,
+                'solde_conge' => 24,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
     }
 }

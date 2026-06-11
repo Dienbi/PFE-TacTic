@@ -1,5 +1,9 @@
 name: tactic-platform
 
+# GitHub Actions self-hosted runners (4x) — need GITHUB_RUNNER_TOKEN in docker/.env.runners
+include:
+  - path: docker-compose.runners.yml
+
 services:
   sonar-db:
     image: postgres:15

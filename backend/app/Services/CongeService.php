@@ -115,6 +115,10 @@ class CongeService
 
         $conge = $this->congeRepository->findOrFail($congeId);
 
+        if ($conge->statut !== StatutConge::EN_ATTENTE) {
+            return false;
+        }
+
         // Deduct leave days
         if ($conge->type !== 'SANS_SOLDE') {
             $this->utilisateurRepository->updateSoldeConge(

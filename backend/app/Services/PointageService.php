@@ -8,6 +8,7 @@ use App\Models\Pointage;
 use App\Events\AttendanceNotification;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 class PointageService
 {
@@ -123,6 +124,13 @@ class PointageService
 
     public function pointerEntree(int $utilisateurId): Pointage
     {
+        $existing = $this->pointageRepository->getTodayPointage($utilisateurId);
+        if ($existing && $existing->heure_entree) {
+            throw ValidationException::withMessages([
+                'heure_entree' => ['Vous avez déjà pointé votre entrée aujourd\'hui.'],
+            ]);
+        }
+
         $pointage = $this->pointageRepository->pointer($utilisateurId, 'entree');
 
         // Log the check-in activity
@@ -162,6 +170,13 @@ class PointageService
 
     public function pointerSortie(int $utilisateurId, bool $isAutoCheckout = false): Pointage
     {
+        $existing = $this->pointageRepository->getTodayPointage($utilisateurId);
+        if (!$existing || !$existing->heure_entree) {
+            throw ValidationException::withMessages([
+                'heure_sortie' => ['Vous devez pointer votre entrée avant de pointer votre sortie.'],
+            ]);
+        }
+
         $pointage = $this->pointageRepository->pointer($utilisateurId, 'sortie');
 
         // Log the check-out activity

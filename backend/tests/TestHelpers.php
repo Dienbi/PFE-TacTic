@@ -7,11 +7,14 @@ use App\Enums\Role;
 use App\Enums\StatutPaie;
 use App\Enums\StatutConge;
 use App\Enums\TypeConge;
-use App\Models\Utilisateur;
-use App\Models\Paie;
+use App\Models\Competence;
 use App\Models\Conge;
 use App\Models\Equipe;
+use App\Models\Paie;
+use App\Models\Poste;
+use App\Models\Utilisateur;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 trait TestHelpers
 {
@@ -28,7 +31,20 @@ trait TestHelpers
             'role' => Role::EMPLOYE,
             'status' => EmployeStatus::DISPONIBLE,
             'salaire_base' => 1000.00,
-            'solde_conge' => 24,            'actif' => true,        ], $attributes));
+            'solde_conge' => 24,
+            'actif' => true,
+        ], $attributes));
+    }
+
+    /**
+     * Create a test RH user
+     */
+    protected function createTestRh(array $attributes = []): Utilisateur
+    {
+        return $this->createTestUser(array_merge([
+            'role' => Role::RH,
+            'salaire_base' => 3000.00,
+        ], $attributes));
     }
 
     /**
@@ -80,6 +96,47 @@ trait TestHelpers
             'nom' => 'Test Team',
             'chef_equipe_id' => $manager->id,
         ], $attributes));
+    }
+
+    /**
+     * Create a test position
+     */
+    protected function createTestPoste(array $attributes = []): Poste
+    {
+        return Poste::factory()->create(array_merge([
+            'titre' => 'Test Position',
+            'statut' => 'ACTIF',
+        ], $attributes));
+    }
+
+    /**
+     * Create a test competence
+     */
+    protected function createTestCompetence(array $attributes = []): Competence
+    {
+        return Competence::factory()->create(array_merge([
+            'nom' => 'Test Skill ' . fake()->unique()->numberBetween(1, 9999),
+        ], $attributes));
+    }
+
+    /**
+     * Assert query count stays within budget (for performance tests)
+     */
+    protected function assertQueryCount(callable $callback, int $maxQueries): void
+    {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $callback();
+
+        $queryCount = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        $this->assertLessThanOrEqual(
+            $maxQueries,
+            $queryCount,
+            "Expected at most {$maxQueries} queries, but {$queryCount} were executed."
+        );
     }
 
     /**

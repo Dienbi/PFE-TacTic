@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Enums\JobPostStatus;
 use App\Events\NewJobPostEvent;
 use App\Models\JobPost;
-use App\Repositories\JobPostRepository;
 use App\Repositories\CompetenceRepository;
+use App\Repositories\JobPostRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 class JobPostService
@@ -14,8 +14,7 @@ class JobPostService
     public function __construct(
         protected JobPostRepository $jobPostRepository,
         protected CompetenceRepository $competenceRepository
-    ) {
-    }
+    ) {}
 
     public function getAll(): Collection
     {
@@ -45,12 +44,12 @@ class JobPostService
     public function create(int $creatorId, array $data): JobPost|array
     {
         // Validate competences if provided
-        if (!empty($data['competences'])) {
+        if (! empty($data['competences'])) {
             $requestedIds = array_column($data['competences'], 'competence_id');
             $foundIds = \App\Models\Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
             $missingIds = array_diff($requestedIds, $foundIds);
-            if (!empty($missingIds)) {
-                return ['error' => 'Compétence(s) introuvable(s): ID ' . implode(', ', $missingIds)];
+            if (! empty($missingIds)) {
+                return ['error' => 'Compétence(s) introuvable(s): ID '.implode(', ', $missingIds)];
             }
 
             foreach ($data['competences'] as $comp) {
@@ -70,7 +69,7 @@ class JobPostService
         ]);
 
         // Attach competences if provided
-        if (!empty($data['competences'])) {
+        if (! empty($data['competences'])) {
             $this->jobPostRepository->attachCompetences($jobPost->id, $data['competences']);
         }
 
@@ -98,8 +97,8 @@ class JobPostService
             $requestedIds = array_column($data['competences'], 'competence_id');
             $foundIds = \App\Models\Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
             $missingIds = array_diff($requestedIds, $foundIds);
-            if (!empty($missingIds)) {
-                return ['error' => 'Compétence(s) introuvable(s): ID ' . implode(', ', $missingIds)];
+            if (! empty($missingIds)) {
+                return ['error' => 'Compétence(s) introuvable(s): ID '.implode(', ', $missingIds)];
             }
 
             foreach ($data['competences'] as $comp) {
@@ -132,11 +131,11 @@ class JobPostService
     {
         $jobPost = $this->jobPostRepository->findWithRelations($id);
 
-        if (!$jobPost) {
+        if (! $jobPost) {
             return ['error' => 'Poste introuvable.'];
         }
 
-        if (!$jobPost->isDraft()) {
+        if (! $jobPost->isDraft()) {
             return ['error' => 'Seuls les brouillons peuvent être publiés.'];
         }
 
@@ -159,7 +158,7 @@ class JobPostService
                     description: substr($jobPost->description, 0, 100)
                 ));
             } catch (\Exception $e) {
-                \Log::warning('Broadcast failed for NewJobPostEvent: ' . $e->getMessage());
+                \Log::warning('Broadcast failed for NewJobPostEvent: '.$e->getMessage());
             }
         }
 
@@ -170,7 +169,7 @@ class JobPostService
     {
         $jobPost = $this->jobPostRepository->findOrFail($id);
 
-        if (!$jobPost->isPublished()) {
+        if (! $jobPost->isPublished()) {
             return ['error' => 'Seuls les postes publiés peuvent être fermés.'];
         }
 

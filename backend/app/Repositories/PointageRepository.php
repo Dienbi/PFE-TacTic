@@ -47,13 +47,13 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
         $today = Carbon::today();
         $pointage = $this->getTodayPointage($utilisateurId);
 
-        if (!$pointage) {
+        if (! $pointage) {
             $pointage = $this->create([
                 'utilisateur_id' => $utilisateurId,
                 'date' => $today,
                 'heure_entree' => $type === 'entree' ? Carbon::now() : null,
             ]);
-        } elseif ($type === 'sortie' && !$pointage->heure_sortie) {
+        } elseif ($type === 'sortie' && ! $pointage->heure_sortie) {
             $pointage->heure_sortie = Carbon::now();
             $pointage->calculerDureeTravail();
         }
@@ -89,12 +89,12 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
     {
         $row = $this->model->where('utilisateur_id', $utilisateurId)
             ->byPeriod($startDate, $endDate)
-            ->selectRaw("
+            ->selectRaw('
                 COUNT(*) as total_jours,
                 COALESCE(SUM(duree_travail), 0) as total_heures,
                 SUM(CASE WHEN heure_entree IS NULL THEN 1 ELSE 0 END) as absences,
                 SUM(CASE WHEN absence_justifiee = true THEN 1 ELSE 0 END) as absences_justifiees
-            ")
+            ')
             ->first();
 
         return [
@@ -110,13 +110,13 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
         $today = Carbon::today();
         $pointage = $this->getTodayPointage($utilisateurId);
 
-        if (!$pointage) {
+        if (! $pointage) {
             $pointage = $this->create([
                 'utilisateur_id' => $utilisateurId,
                 'date' => $today,
                 'heure_entree' => Carbon::now(),
             ]);
-        } elseif (!$pointage->heure_entree) {
+        } elseif (! $pointage->heure_entree) {
             $pointage->heure_entree = Carbon::now();
             $pointage->save();
         }
@@ -128,9 +128,10 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
     {
         $pointage = $this->getTodayPointage($utilisateurId);
 
-        if ($pointage && $pointage->heure_entree && !$pointage->heure_sortie) {
+        if ($pointage && $pointage->heure_entree && ! $pointage->heure_sortie) {
             $pointage->heure_sortie = Carbon::now();
             $pointage->calculerDureeTravail();
+
             return true;
         }
 

@@ -10,7 +10,7 @@ enum JobPostStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'Brouillon',
             self::PUBLISHED => 'Publiée',
             self::CLOSED => 'Fermée',
@@ -19,7 +19,7 @@ enum JobPostStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'secondary',
             self::PUBLISHED => 'success',
             self::CLOSED => 'danger',

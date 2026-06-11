@@ -13,7 +13,7 @@ class QueryLogMiddleware
     {
         // Keep query logging opt-in because serializing full query payloads is expensive.
         $queryLogEnabled = filter_var(env('QUERY_LOG_ENABLED', false), FILTER_VALIDATE_BOOL);
-        if (!$queryLogEnabled) {
+        if (! $queryLogEnabled) {
             return $next($request);
         }
 

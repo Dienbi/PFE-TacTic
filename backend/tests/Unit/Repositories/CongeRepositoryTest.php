@@ -2,11 +2,9 @@
 
 namespace Tests\Unit\Repositories;
 
-use App\Models\Conge;
-use App\Models\Utilisateur;
-use App\Repositories\CongeRepository;
 use App\Enums\StatutConge;
 use App\Enums\TypeConge;
+use App\Repositories\CongeRepository;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

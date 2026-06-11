@@ -18,8 +18,7 @@ class PaieService
         protected PointageRepositoryInterface $pointageRepository,
         protected CacheService $cacheService,
         protected PayrollCalculator $payrollCalculator
-    ) {
-    }
+    ) {}
 
     // ── CRUD ──────────────────────────────────────────────────────────
 
@@ -311,7 +310,7 @@ class PaieService
         $manager = $this->utilisateurRepository->findOrFail($managerId);
         $equipe = $manager->equipeGeree;
 
-        if (!$equipe) {
+        if (! $equipe) {
             return ['error' => 'Aucune équipe gérée.'];
         }
 
@@ -369,7 +368,7 @@ class PaieService
                     // Notify user (database notification)
                     try {
                         $user->notify(new \App\Notifications\SalaireNotification(
-                            "Votre salaire de base a été augmenté de {$percentage}%. Nouveau salaire: " . number_format($user->salaire_base, 2) . " TND",
+                            "Votre salaire de base a été augmenté de {$percentage}%. Nouveau salaire: ".number_format($user->salaire_base, 2).' TND',
                             'success'
                         ));
                     } catch (\Throwable $e) {
@@ -390,7 +389,7 @@ class PaieService
         if ($user) {
             try {
                 $user->notify(new \App\Notifications\SalaireNotification(
-                    "Votre salaire de base a été mis à jour: " . number_format($salaire, 2) . " TND",
+                    'Votre salaire de base a été mis à jour: '.number_format($salaire, 2).' TND',
                     'info'
                 ));
             } catch (\Throwable $e) {

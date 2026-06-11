@@ -87,6 +87,7 @@ class JobRequest extends Model
     {
         $this->statut = JobRequestStatus::APPROVED;
         $this->raison_rejet = null;
+
         return $this->save();
     }
 
@@ -94,6 +95,7 @@ class JobRequest extends Model
     {
         $this->statut = JobRequestStatus::REJECTED;
         $this->raison_rejet = $raison;
+
         return $this->save();
     }
 }

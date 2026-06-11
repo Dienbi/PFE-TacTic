@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Models\AccountRequest;
 use App\Models\Utilisateur;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -22,8 +21,7 @@ class WelcomeNewUser extends Mailable
     public function __construct(
         public AccountRequest $accountRequest,
         public Utilisateur $utilisateur
-    ) {
-    }
+    ) {}
 
     /**
      * Get the message envelope.

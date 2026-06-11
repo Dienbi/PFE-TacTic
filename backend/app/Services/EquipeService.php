@@ -7,7 +7,6 @@ use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\Role;
 use App\Enums\StatutConge;
 use App\Events\ManagerNotification;
-use App\Models\Conge;
 use App\Models\Equipe;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,8 +16,7 @@ class EquipeService
     public function __construct(
         protected EquipeRepositoryInterface $equipeRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {
-    }
+    ) {}
 
     public function getAll(): Collection
     {
@@ -83,11 +81,11 @@ class EquipeService
                         $equipe->chef_id,
                         'info',
                         'New Team Member',
-                        $utilisateur->prenom . ' ' . $utilisateur->nom . ' has been added to your team.',
+                        $utilisateur->prenom.' '.$utilisateur->nom.' has been added to your team.',
                         ['equipe_id' => $equipeId, 'utilisateur_id' => $utilisateurId]
                     ));
                 } catch (\Exception $e) {
-                    \Log::warning('Broadcast failed for ManagerNotification: ' . $e->getMessage());
+                    \Log::warning('Broadcast failed for ManagerNotification: '.$e->getMessage());
                 }
             }
         }
@@ -141,20 +139,20 @@ class EquipeService
         $users->load([
             'conges' => function ($query) use ($today, $nextMonth) {
                 $query->where('statut', StatutConge::APPROUVE)
-                      ->where(function ($q) use ($today, $nextMonth) {
-                          // Active leaves
-                          $q->where(function ($q1) use ($today) {
-                              $q1->where('date_debut', '<=', $today)
-                                 ->where('date_fin', '>=', $today);
-                          })
-                          // Or upcoming leaves
-                          ->orWhere(function ($q2) use ($today, $nextMonth) {
-                              $q2->where('date_debut', '>', $today)
-                                 ->where('date_debut', '<=', $nextMonth);
-                          });
-                      })
-                      ->orderBy('date_debut');
-            }
+                    ->where(function ($q) use ($today, $nextMonth) {
+                        // Active leaves
+                        $q->where(function ($q1) use ($today) {
+                            $q1->where('date_debut', '<=', $today)
+                                ->where('date_fin', '>=', $today);
+                        })
+                        // Or upcoming leaves
+                            ->orWhere(function ($q2) use ($today, $nextMonth) {
+                                $q2->where('date_debut', '>', $today)
+                                    ->where('date_debut', '<=', $nextMonth);
+                            });
+                    })
+                    ->orderBy('date_debut');
+            },
         ]);
 
         foreach ($users as $user) {
@@ -169,7 +167,7 @@ class EquipeService
             });
 
             // Get upcoming leave from eager loaded relationship
-            $upcomingLeave = !$activeLeave ? $user->conges->first(function ($conge) use ($today) {
+            $upcomingLeave = ! $activeLeave ? $user->conges->first(function ($conge) use ($today) {
                 return $conge->date_debut > $today;
             }) : null;
 
@@ -189,7 +187,7 @@ class EquipeService
                     'leave_type' => $activeLeave->type->value,
                     'leave_end' => $activeLeave->date_fin->format('Y-m-d'),
                     'duration' => $leaveDuration,
-                    'message' => "En congé jusqu'au " . $activeLeave->date_fin->format('d/m/Y') . " ({$leaveDuration} jours)"
+                    'message' => "En congé jusqu'au ".$activeLeave->date_fin->format('d/m/Y')." ({$leaveDuration} jours)",
                 ];
             } elseif ($upcomingLeave) {
                 $leaveDuration = $upcomingLeave->date_debut->diffInDays($upcomingLeave->date_fin) + 1;
@@ -203,7 +201,7 @@ class EquipeService
                         'leave_start' => $upcomingLeave->date_debut->format('Y-m-d'),
                         'leave_end' => $upcomingLeave->date_fin->format('Y-m-d'),
                         'duration' => $leaveDuration,
-                        'message' => "Congé prévu du " . $upcomingLeave->date_debut->format('d/m/Y') . " au " . $upcomingLeave->date_fin->format('d/m/Y')
+                        'message' => 'Congé prévu du '.$upcomingLeave->date_debut->format('d/m/Y').' au '.$upcomingLeave->date_fin->format('d/m/Y'),
                     ];
                 }
             }
@@ -216,7 +214,7 @@ class EquipeService
                 'matricule' => $user->matricule,
                 'role' => $user->role->value,
                 'status' => $user->status->value,
-                'leave_info' => $leaveInfo
+                'leave_info' => $leaveInfo,
             ];
         }
 

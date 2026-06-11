@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Contracts\Repositories\UtilisateurRepositoryInterface;
-use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Contracts\Repositories\CongeRepositoryInterface;
+use App\Contracts\Repositories\PointageRepositoryInterface;
+use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -14,8 +14,7 @@ class DashboardService
         private UtilisateurRepositoryInterface $utilisateurRepository,
         private PointageRepositoryInterface $pointageRepository,
         private CongeRepositoryInterface $congeRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Get RH dashboard KPI statistics
@@ -26,13 +25,13 @@ class DashboardService
         $startOfMonthDate = Carbon::now()->startOfMonth()->toDateString();
         $userCounts = DB::table('utilisateurs')
             ->whereNull('deleted_at')
-            ->selectRaw("
+            ->selectRaw('
                 COUNT(*) as total,
                 SUM(CASE WHEN date_embauche < ? THEN 1 ELSE 0 END) as previous_month
-            ", [$startOfMonthDate])
+            ', [$startOfMonthDate])
             ->first();
 
-        $totalEmployees     = (int) ($userCounts->total ?? 0);
+        $totalEmployees = (int) ($userCounts->total ?? 0);
         $previousMonthCount = (int) ($userCounts->previous_month ?? 0);
 
         $newEmployeesThisMonth = $totalEmployees - $previousMonthCount;
@@ -55,14 +54,14 @@ class DashboardService
         // Optimized: single query to get current and previous attendance counts + total hours
         $pointageStats = DB::table('pointages')
             ->whereNotNull('heure_entree')
-            ->selectRaw("
+            ->selectRaw('
                 COUNT(*) FILTER (WHERE date BETWEEN ? AND ?) as current_month_count,
                 COUNT(*) FILTER (WHERE date BETWEEN ? AND ?) as prev_month_count,
                 SUM(duree_travail) FILTER (WHERE date BETWEEN ? AND ?) as total_hours
-            ", [
+            ', [
                 $startOfMonth->toDateString(), $today->toDateString(),
                 $prevMonthStart->toDateString(), $prevMonthEnd->toDateString(),
-                $startOfMonth->toDateString(), $today->toDateString()
+                $startOfMonth->toDateString(), $today->toDateString(),
             ])
             ->first();
 
@@ -102,7 +101,7 @@ class DashboardService
                     ->orWhereBetween('periode_fin', [$startOfMonth, $endOfMonth])
                     ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
                         $q->where('periode_debut', '<=', $startOfMonth)
-                          ->where('periode_fin', '>=', $endOfMonth);
+                            ->where('periode_fin', '>=', $endOfMonth);
                     });
             })
             ->sum('salaire_net') ?? 0;
@@ -179,7 +178,7 @@ class DashboardService
                     ->orWhereBetween('date_fin', [$startDate, $endDate])
                     ->orWhere(function ($q) use ($startDate, $endDate) {
                         $q->where('date_debut', '<=', $startDate)
-                          ->where('date_fin', '>=', $endDate);
+                            ->where('date_fin', '>=', $endDate);
                     });
             })
             ->selectRaw("
@@ -204,22 +203,22 @@ class DashboardService
             [
                 'name' => 'Congé',
                 'value' => max($totalConges - $maladie, 0),
-                'color' => '#3B82F6'
+                'color' => '#3B82F6',
             ],
             [
                 'name' => 'Maladie',
                 'value' => $maladie,
-                'color' => '#10B981'
+                'color' => '#10B981',
             ],
             [
                 'name' => 'Autre',
                 'value' => $autres,
-                'color' => '#F59E0B'
+                'color' => '#F59E0B',
             ],
             [
                 'name' => 'Absence',
                 'value' => $absences,
-                'color' => '#EF4444'
+                'color' => '#EF4444',
             ],
         ];
     }

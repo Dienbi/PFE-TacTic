@@ -13,8 +13,7 @@ class AuthService
 {
     public function __construct(
         protected UtilisateurRepository $utilisateurRepository
-    ) {
-    }
+    ) {}
 
     private function shouldLogPerf(): bool
     {
@@ -36,7 +35,7 @@ class AuthService
         $utilisateur = $this->utilisateurRepository->findByEmail($email);
         $checkpoint('findByEmail');
 
-        if (!$utilisateur || !Hash::check($password, $utilisateur->password)) {
+        if (! $utilisateur || ! Hash::check($password, $utilisateur->password)) {
             if ($this->shouldLogPerf()) {
                 Log::warning('auth.login.failed', [
                     'email' => $email,
@@ -45,10 +44,11 @@ class AuthService
                     'total_ms' => round((microtime(true) - $start) * 1000, 2),
                 ]);
             }
+
             return null;
         }
 
-        if (!$utilisateur->actif) {
+        if (! $utilisateur->actif) {
             if ($this->shouldLogPerf()) {
                 Log::warning('auth.login.failed', [
                     'email' => $email,
@@ -58,6 +58,7 @@ class AuthService
                     'total_ms' => round((microtime(true) - $start) * 1000, 2),
                 ]);
             }
+
             return null;
         }
 
@@ -122,7 +123,7 @@ class AuthService
     {
         $utilisateur = $this->utilisateurRepository->findOrFail($utilisateurId);
 
-        if (!Hash::check($currentPassword, $utilisateur->password)) {
+        if (! Hash::check($currentPassword, $utilisateur->password)) {
             return false;
         }
 
@@ -134,8 +135,8 @@ class AuthService
     public function updateProfile(array $data): Utilisateur
     {
         $user = JWTAuth::user();
-        if (!$user) {
-            throw new UserNotFoundException();
+        if (! $user) {
+            throw new UserNotFoundException;
         }
 
         // Use repository to update

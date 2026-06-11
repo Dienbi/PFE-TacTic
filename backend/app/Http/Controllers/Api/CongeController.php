@@ -14,8 +14,7 @@ class CongeController extends Controller
 {
     public function __construct(
         protected CongeService $congeService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all leave requests (paginated)
@@ -46,7 +45,7 @@ class CongeController extends Controller
     {
         $conge = $this->congeService->getById($id);
 
-        if (!$conge) {
+        if (! $conge) {
             return response()->json([
                 'message' => 'Demande de congé non trouvée.',
             ], 404);
@@ -73,8 +72,7 @@ class CongeController extends Controller
         $conges = Cache::remember(
             'conges_en_attente',
             300,
-            fn () =>
-            $this->congeService->getEnAttente()
+            fn () => $this->congeService->getEnAttente()
         );
 
         return response()->json($conges);
@@ -87,7 +85,7 @@ class CongeController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->equipeGeree) {
+        if (! $user->equipeGeree) {
             return response()->json([
                 'message' => 'Vous n\'êtes pas chef d\'équipe.',
             ], 403);
@@ -108,7 +106,7 @@ class CongeController extends Controller
         // Handle medical file upload for sick leave
         if ($request->hasFile('medical_file')) {
             $file = $request->file('medical_file');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $file->storeAs('medical_files', $filename, 'public');
             $data['medical_file'] = $filename;
         }
@@ -134,7 +132,7 @@ class CongeController extends Controller
     {
         $success = $this->congeService->approuver($id, $request->user()->id);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Erreur lors de l\'approbation.',
             ], 400);
@@ -153,7 +151,7 @@ class CongeController extends Controller
         $motif = $request->input('motif');
         $success = $this->congeService->refuser($id, $request->user()->id, $motif);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Erreur lors du refus.',
             ], 400);
@@ -171,7 +169,7 @@ class CongeController extends Controller
     {
         $success = $this->congeService->annuler($id);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Impossible d\'annuler cette demande.',
             ], 400);
@@ -202,15 +200,15 @@ class CongeController extends Controller
     {
         $conge = $this->congeService->getById($id);
 
-        if (!$conge || !$conge->medical_file) {
+        if (! $conge || ! $conge->medical_file) {
             return response()->json([
                 'message' => 'Fichier non trouvé.',
             ], 404);
         }
 
-        $filePath = storage_path('app/public/medical_files/' . $conge->medical_file);
+        $filePath = storage_path('app/public/medical_files/'.$conge->medical_file);
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             return response()->json([
                 'message' => 'Fichier non trouvé.',
             ], 404);

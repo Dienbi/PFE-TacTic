@@ -18,8 +18,7 @@ class NewJobPostEvent implements ShouldBroadcastNow
         public int $jobPostId,
         public string $titre,
         public string $description
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {

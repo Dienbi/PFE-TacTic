@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Contracts\Repositories\UtilisateurRepositoryInterface;
-use App\Models\Pointage;
 use App\Events\AttendanceNotification;
+use App\Models\Pointage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
@@ -15,8 +15,7 @@ class PointageService
     public function __construct(
         protected PointageRepositoryInterface $pointageRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {
-    }
+    ) {}
 
     public function getSummary(Carbon $date): array
     {
@@ -35,7 +34,7 @@ class PointageService
 
         foreach ($todayPointages as $pointage) {
             $user = $pointage->utilisateur;
-            if (!$user) {
+            if (! $user) {
                 continue;
             }
 
@@ -48,13 +47,13 @@ class PointageService
                 'poste' => $user->poste,
                 'heure_entree' => $pointage->heure_entree ? Carbon::parse($pointage->heure_entree)->format('H:i') : null,
                 'heure_sortie' => $pointage->heure_sortie ? Carbon::parse($pointage->heure_sortie)->format('H:i') : null,
-                'status' => 'PRESENT'
+                'status' => 'PRESENT',
             ];
 
             $present[] = $userInfo;
 
             // Check if currently checked in
-            if ($pointage->heure_entree && !$pointage->heure_sortie) {
+            if ($pointage->heure_entree && ! $pointage->heure_sortie) {
                 $currentlyIn[] = $userInfo;
             }
 
@@ -66,7 +65,7 @@ class PointageService
         }
 
         foreach ($allUsers as $user) {
-            if (!in_array($user->id, $presentIds)) {
+            if (! in_array($user->id, $presentIds)) {
                 $absent[] = [
                     'id' => $user->id,
                     'nom' => $user->nom,
@@ -74,7 +73,7 @@ class PointageService
                     'email' => $user->email,
                     'matricule' => $user->matricule,
                     'poste' => $user->poste,
-                    'status' => 'ABSENT'
+                    'status' => 'ABSENT',
                 ];
             }
         }
@@ -92,8 +91,8 @@ class PointageService
                 'present' => $present,
                 'late' => $late,
                 'absent' => $absent,
-                'currently_in' => $currentlyIn
-            ]
+                'currently_in' => $currentlyIn,
+            ],
         ];
     }
 
@@ -138,7 +137,7 @@ class PointageService
         if ($user) {
             ActivityLogger::log(
                 'CHECK_IN',
-                "{$user->prenom} {$user->nom} a pointé son entrée à " . Carbon::now()->format('H:i'),
+                "{$user->prenom} {$user->nom} a pointé son entrée à ".Carbon::now()->format('H:i'),
                 $utilisateurId
             );
 
@@ -151,17 +150,17 @@ class PointageService
                 event(new AttendanceNotification(
                     $isLate ? 'warning' : 'info',
                     $isLate ? 'Late Check-in' : 'Check-in',
-                    "{$user->prenom} {$user->nom} checked in at " . Carbon::now()->format('H:i') . ($isLate ? ' (late)' : ''),
+                    "{$user->prenom} {$user->nom} checked in at ".Carbon::now()->format('H:i').($isLate ? ' (late)' : ''),
                     [
                         'user_id' => $user->id,
                         'user_name' => "{$user->prenom} {$user->nom}",
                         'time' => Carbon::now()->format('H:i'),
                         'is_late' => $isLate,
-                        'action' => 'check_in'
+                        'action' => 'check_in',
                     ]
                 ));
             } catch (\Exception $e) {
-                \Log::warning('Broadcast failed for AttendanceNotification: ' . $e->getMessage());
+                \Log::warning('Broadcast failed for AttendanceNotification: '.$e->getMessage());
             }
         }
 
@@ -171,7 +170,7 @@ class PointageService
     public function pointerSortie(int $utilisateurId, bool $isAutoCheckout = false): Pointage
     {
         $existing = $this->pointageRepository->getTodayPointage($utilisateurId);
-        if (!$existing || !$existing->heure_entree) {
+        if (! $existing || ! $existing->heure_entree) {
             throw ValidationException::withMessages([
                 'heure_sortie' => ['Vous devez pointer votre entrée avant de pointer votre sortie.'],
             ]);
@@ -183,8 +182,8 @@ class PointageService
         $user = \App\Models\Utilisateur::find($utilisateurId);
         if ($user) {
             $message = $isAutoCheckout
-                ? "{$user->prenom} {$user->nom} - checkout automatique à " . Carbon::now()->format('H:i')
-                : "{$user->prenom} {$user->nom} a pointé sa sortie à " . Carbon::now()->format('H:i');
+                ? "{$user->prenom} {$user->nom} - checkout automatique à ".Carbon::now()->format('H:i')
+                : "{$user->prenom} {$user->nom} a pointé sa sortie à ".Carbon::now()->format('H:i');
 
             ActivityLogger::log(
                 $isAutoCheckout ? 'AUTO_CHECK_OUT' : 'CHECK_OUT',
@@ -197,17 +196,17 @@ class PointageService
                 event(new AttendanceNotification(
                     'info',
                     'Check-out',
-                    "{$user->prenom} {$user->nom} checked out at " . Carbon::now()->format('H:i'),
+                    "{$user->prenom} {$user->nom} checked out at ".Carbon::now()->format('H:i'),
                     [
                         'user_id' => $user->id,
                         'user_name' => "{$user->prenom} {$user->nom}",
                         'time' => Carbon::now()->format('H:i'),
                         'is_auto' => $isAutoCheckout,
-                        'action' => 'check_out'
+                        'action' => 'check_out',
                     ]
                 ));
             } catch (\Exception $e) {
-                \Log::warning('Broadcast failed for AttendanceNotification: ' . $e->getMessage());
+                \Log::warning('Broadcast failed for AttendanceNotification: '.$e->getMessage());
             }
         }
 

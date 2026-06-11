@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use App\Enums\ApplicationStatus;
-use App\Enums\EmployeStatus;
-use App\Enums\JobPostStatus;
-use App\Enums\Role;
 use App\Events\NewApplicationEvent;
 use App\Models\JobApplication;
 use App\Repositories\JobApplicationRepository;
@@ -19,8 +16,7 @@ class JobApplicationService
         protected JobApplicationRepository $jobApplicationRepository,
         protected JobPostRepository $jobPostRepository,
         protected UtilisateurRepository $utilisateurRepository
-    ) {
-    }
+    ) {}
 
     public function getAll(): Collection
     {
@@ -47,14 +43,14 @@ class JobApplicationService
         // Validate user is an employee
         $user = $this->utilisateurRepository->findOrFail($userId);
 
-        if (!$user->isEmploye()) {
+        if (! $user->isEmploye()) {
             return ['error' => 'Seuls les employés peuvent postuler à un poste.'];
         }
 
         // Validate job post exists and is published
         $jobPost = $this->jobPostRepository->findOrFail($data['job_post_id']);
 
-        if (!$jobPost->isPublished()) {
+        if (! $jobPost->isPublished()) {
             return ['error' => 'Ce poste n\'est pas disponible pour les candidatures.'];
         }
 
@@ -89,11 +85,11 @@ class JobApplicationService
                 applicationId: $application->id,
                 jobPostId: $jobPost->id,
                 jobPostTitre: $jobPost->titre,
-                candidatNom: $user->nom . ' ' . $user->prenom,
+                candidatNom: $user->nom.' '.$user->prenom,
                 candidatMatricule: $user->matricule
             ));
         } catch (\Exception $e) {
-            \Log::warning('Broadcast failed for NewApplicationEvent: ' . $e->getMessage());
+            \Log::warning('Broadcast failed for NewApplicationEvent: '.$e->getMessage());
         }
 
         return $application;
@@ -109,7 +105,7 @@ class JobApplicationService
         }
 
         // Check if can withdraw
-        if (!$application->canWithdraw()) {
+        if (! $application->canWithdraw()) {
             return ['error' => 'Cette candidature ne peut plus être retirée car elle a été examinée.'];
         }
 
@@ -132,11 +128,11 @@ class JobApplicationService
     {
         $application = $this->jobApplicationRepository->findWithRelations($applicationId);
 
-        if (!$application) {
+        if (! $application) {
             return ['error' => 'Candidature introuvable.'];
         }
 
-        if (!$application->isPending()) {
+        if (! $application->isPending()) {
             return ['error' => 'Cette candidature a déjà été examinée.'];
         }
 

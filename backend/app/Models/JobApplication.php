@@ -113,11 +113,12 @@ class JobApplication extends Model
 
     public function withdraw(): bool
     {
-        if (!$this->canWithdraw()) {
+        if (! $this->canWithdraw()) {
             return false;
         }
 
         $this->statut = ApplicationStatus::WITHDRAWN;
+
         return $this->save();
     }
 
@@ -126,6 +127,7 @@ class JobApplication extends Model
         $this->statut = ApplicationStatus::REVIEWED;
         $this->reviewed_at = now();
         $this->reviewed_by = $reviewerId;
+
         return $this->save();
     }
 
@@ -134,6 +136,7 @@ class JobApplication extends Model
         $this->statut = ApplicationStatus::ACCEPTED;
         $this->reviewed_at = now();
         $this->reviewed_by = $reviewerId;
+
         return $this->save();
     }
 
@@ -142,6 +145,7 @@ class JobApplication extends Model
         $this->statut = ApplicationStatus::REJECTED;
         $this->reviewed_at = now();
         $this->reviewed_by = $reviewerId;
+
         return $this->save();
     }
 }

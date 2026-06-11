@@ -80,4 +80,48 @@ class AuthorizationTest extends TestCase
             ->getJson('/api/pointages/summary')
             ->assertForbidden();
     }
+
+    /** @test */
+    public function employee_cannot_access_pending_leaves_list(): void
+    {
+        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
+
+        $this
+            ->actingAsApiUser($employee)
+            ->getJson('/api/conges/en-attente')
+            ->assertForbidden();
+    }
+
+    /** @test */
+    public function chef_cannot_create_users(): void
+    {
+        $manager = $this->createTestManager();
+
+        $this
+            ->actingAsApiUser($manager)
+            ->postJson('/api/utilisateurs', [
+                'nom' => 'Blocked',
+                'prenom' => 'Manager',
+                'email' => 'manager.blocked@tactic.test',
+                'password' => 'password',
+                'role' => Role::EMPLOYE->value,
+            ])
+            ->assertForbidden();
+    }
+
+    /** @test */
+    public function chef_cannot_generate_payroll(): void
+    {
+        $manager = $this->createTestManager();
+        $target = $this->createTestUser(['email' => 'chef.payroll.target@tactic.test']);
+
+        $this
+            ->actingAsApiUser($manager)
+            ->postJson('/api/paies/generer', [
+                'utilisateur_id' => $target->id,
+                'periode_debut' => Carbon::parse('2026-03-01')->toDateString(),
+                'periode_fin' => Carbon::parse('2026-03-31')->toDateString(),
+            ])
+            ->assertForbidden();
+    }
 }

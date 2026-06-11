@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\ChangePasswordRequest;
-use App\Services\AuthService;
 use App\Models\Competence;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,8 +15,7 @@ class AuthController extends Controller
 {
     public function __construct(
         protected AuthService $authService
-    ) {
-    }
+    ) {}
 
     /**
      * Login user and return JWT token
@@ -28,7 +27,7 @@ class AuthController extends Controller
             $request->password
         );
 
-        if (!$result) {
+        if (! $result) {
             return response()->json([
                 'message' => 'Identifiants invalides ou compte désactivé.',
             ], 401);
@@ -98,7 +97,7 @@ class AuthController extends Controller
             $request->new_password
         );
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Mot de passe actuel incorrect.',
             ], 400);
@@ -119,14 +118,14 @@ class AuthController extends Controller
         $rules = [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => 'required|email|unique:utilisateurs,email,' . $user->id,
+            'email' => 'required|email|unique:utilisateurs,email,'.$user->id,
             'telephone' => 'nullable|string|max:20',
             'adresse' => 'nullable|string|max:255',
         ];
 
         // Authorization for RH only fields
         if ($user->role === \App\Enums\Role::RH) {
-            $rules['matricule'] = 'required|string|unique:utilisateurs,matricule,' . $user->id;
+            $rules['matricule'] = 'required|string|unique:utilisateurs,matricule,'.$user->id;
             $rules['role'] = 'required|string|in:RH,CHEF_EQUIPE,EMPLOYE';
             $rules['date_embauche'] = 'nullable|date';
             $rules['salaire_base'] = 'nullable|numeric|min:0';
@@ -138,7 +137,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $updatedUser
+            'user' => $updatedUser,
         ]);
     }
 
@@ -153,7 +152,7 @@ class AuthController extends Controller
         ]);
 
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
@@ -178,7 +177,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Compétences mises à jour avec succès',
-            'user' => $user
+            'user' => $user,
         ]);
     }
 }

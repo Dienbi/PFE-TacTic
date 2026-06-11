@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\NewAccountRequest;
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeNewUser;
 use App\Models\AccountRequest;
 use App\Models\Utilisateur;
-use App\Mail\WelcomeNewUser;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -61,7 +61,7 @@ class AccountRequestController extends Controller
             ]));
         } catch (\Exception $e) {
             // Log error but don't fail the request
-            Log::warning('Failed to broadcast new account request: ' . $e->getMessage());
+            Log::warning('Failed to broadcast new account request: '.$e->getMessage());
         }
     }
 
@@ -73,8 +73,7 @@ class AccountRequestController extends Controller
         $requests = Cache::remember(
             'account_requests_pending',
             300,
-            fn () =>
-            AccountRequest::pending()
+            fn () => AccountRequest::pending()
                 ->orderBy('created_at', 'desc')
                 ->get()
         );
@@ -100,6 +99,7 @@ class AccountRequestController extends Controller
     public function show(int $id): JsonResponse
     {
         $request = AccountRequest::with('approver')->findOrFail($id);
+
         return response()->json($request);
     }
 
@@ -110,7 +110,7 @@ class AccountRequestController extends Controller
     {
         $accountRequest = AccountRequest::findOrFail($id);
 
-        if (!$accountRequest->isPending()) {
+        if (! $accountRequest->isPending()) {
             return response()->json([
                 'message' => 'Cette demande a déjà été traitée.',
             ], 400);
@@ -167,7 +167,8 @@ class AccountRequestController extends Controller
         );
 
         Cache::forget('account_requests_pending');
-        Cache::forget("dashboard_all_6_v2");
+        Cache::forget('dashboard_all_6_v2');
+
         return response()->json([
             'message' => 'La demande a été approuvée. Un email a été envoyé à l\'utilisateur.',
             'generated_email' => $generatedEmail,
@@ -181,7 +182,7 @@ class AccountRequestController extends Controller
     {
         $accountRequest = AccountRequest::findOrFail($id);
 
-        if (!$accountRequest->isPending()) {
+        if (! $accountRequest->isPending()) {
             return response()->json([
                 'message' => 'Cette demande a déjà été traitée.',
             ], 400);
@@ -205,7 +206,8 @@ class AccountRequestController extends Controller
         );
 
         Cache::forget('account_requests_pending');
-        Cache::forget("dashboard_all_6_v2");
+        Cache::forget('dashboard_all_6_v2');
+
         return response()->json([
             'message' => 'La demande a été refusée.',
         ]);
@@ -218,13 +220,13 @@ class AccountRequestController extends Controller
     {
         $accountRequest = AccountRequest::where('temp_token', $token)->first();
 
-        if (!$accountRequest) {
+        if (! $accountRequest) {
             return response()->json([
                 'message' => 'Token invalide.',
             ], 404);
         }
 
-        if (!$accountRequest->isTokenValid()) {
+        if (! $accountRequest->isTokenValid()) {
             return response()->json([
                 'message' => 'Ce lien a expiré ou a déjà été utilisé.',
             ], 400);
@@ -254,13 +256,13 @@ class AccountRequestController extends Controller
 
         $accountRequest = AccountRequest::where('temp_token', $request->token)->first();
 
-        if (!$accountRequest) {
+        if (! $accountRequest) {
             return response()->json([
                 'message' => 'Token invalide.',
             ], 404);
         }
 
-        if (!$accountRequest->isTokenValid()) {
+        if (! $accountRequest->isTokenValid()) {
             return response()->json([
                 'message' => 'Ce lien a expiré ou a déjà été utilisé.',
             ], 400);
@@ -269,7 +271,7 @@ class AccountRequestController extends Controller
         // Find and update the user
         $user = Utilisateur::where('email', $accountRequest->generated_email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'message' => 'Utilisateur introuvable.',
             ], 404);
@@ -301,6 +303,7 @@ class AccountRequestController extends Controller
     public function pendingCount(): JsonResponse
     {
         $count = AccountRequest::pending()->count();
+
         return response()->json(['count' => $count]);
     }
 
@@ -311,6 +314,7 @@ class AccountRequestController extends Controller
     {
         $lastUser = Utilisateur::orderBy('id', 'desc')->first();
         $nextId = $lastUser ? $lastUser->id + 1 : 1;
-        return 'EMP' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+
+        return 'EMP'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
     }
 }

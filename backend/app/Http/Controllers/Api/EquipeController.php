@@ -12,8 +12,7 @@ class EquipeController extends Controller
 {
     public function __construct(
         protected EquipeService $equipeService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all teams
@@ -43,7 +42,7 @@ class EquipeController extends Controller
     {
         $equipe = $this->equipeService->getById($id);
 
-        if (!$equipe) {
+        if (! $equipe) {
             return response()->json([
                 'message' => 'Équipe non trouvée.',
             ], 404);

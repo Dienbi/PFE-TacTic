@@ -60,6 +60,7 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         if ($result) {
             $this->cacheService->invalidateTeams();
         }
+
         return $result;
     }
 
@@ -69,6 +70,7 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         if ($result) {
             $this->cacheService->invalidateTeams();
         }
+
         return $result;
     }
 
@@ -80,7 +82,7 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
     public function addMember(int $equipeId, int $utilisateurId): bool
     {
         $utilisateur = Utilisateur::find($utilisateurId);
-        if (!$utilisateur) {
+        if (! $utilisateur) {
             return false;
         }
         $utilisateur->equipe_id = $equipeId;
@@ -88,13 +90,14 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         if ($result) {
             $this->cacheService->invalidateTeams();
         }
+
         return $result;
     }
 
     public function removeMember(int $utilisateurId): bool
     {
         $utilisateur = Utilisateur::find($utilisateurId);
-        if (!$utilisateur) {
+        if (! $utilisateur) {
             return false;
         }
         $utilisateur->equipe_id = null;
@@ -102,6 +105,7 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         if ($result) {
             $this->cacheService->invalidateTeams();
         }
+
         return $result;
     }
 

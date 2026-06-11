@@ -21,12 +21,11 @@ class LeaveStatusNotification implements ShouldBroadcastNow
         public string $title,
         public string $message,
         public array $data = []
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {
-        return new PrivateChannel('user.' . $this->userId);
+        return new PrivateChannel('user.'.$this->userId);
     }
 
     public function broadcastWith(): array

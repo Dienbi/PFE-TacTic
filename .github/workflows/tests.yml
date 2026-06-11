@@ -1,0 +1,91 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  backend-tests:
+    name: Backend - PHPUnit (all suites)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: tactic_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, pdo, pgsql, bcmath
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Prepare Laravel test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          cp .env .env.testing
+          sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env.testing
+          sed -i 's/^CACHE_DRIVER=.*/CACHE_DRIVER=array/' .env.testing
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing
+          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env.testing
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=tactic_db/' .env.testing
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env.testing
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres && exit 0
+            sleep 2
+          done
+          exit 1
+        working-directory: backend
+
+      - name: Run PHPUnit (Unit + Feature + Integration + Performance)
+        run: php artisan test --env=testing
+        env:
+          APP_ENV: testing
+          CACHE_DRIVER: array
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin

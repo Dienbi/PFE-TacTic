@@ -17,66 +17,66 @@ class JobPostRepository extends BaseRepository
     public function getPublished(): Collection
     {
         return $this->model->published()
-                          ->withCount('applications')
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('published_at', 'desc')
-                          ->get();
+            ->withCount('applications')
+            ->with(['createdBy', 'competences'])
+            ->orderBy('published_at', 'desc')
+            ->get();
     }
 
     public function getPublishedPaginated(int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->published()
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('published_at', 'desc')
-                          ->paginate($perPage);
+            ->with(['createdBy', 'competences'])
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage);
     }
 
     public function getOpen(): Collection
     {
         return $this->model->open()
-                          ->withCount('applications')
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('published_at', 'desc')
-                          ->get();
+            ->withCount('applications')
+            ->with(['createdBy', 'competences'])
+            ->orderBy('published_at', 'desc')
+            ->get();
     }
 
     public function getOpenPaginated(int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->open()
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('published_at', 'desc')
-                          ->paginate($perPage);
+            ->with(['createdBy', 'competences'])
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage);
     }
 
     public function getDrafts(): Collection
     {
         return $this->model->draft()
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('created_at', 'desc')
-                          ->get();
+            ->with(['createdBy', 'competences'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function getClosed(): Collection
     {
         return $this->model->closed()
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('closed_at', 'desc')
-                          ->get();
+            ->with(['createdBy', 'competences'])
+            ->orderBy('closed_at', 'desc')
+            ->get();
     }
 
     public function getAll(): Collection
     {
         return $this->model->withCount('applications')
-                          ->with(['createdBy', 'competences', 'jobRequest'])
-                          ->orderBy('created_at', 'desc')
-                          ->get();
+            ->with(['createdBy', 'competences', 'jobRequest'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function getAllPaginated(int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->with(['createdBy', 'competences', 'jobRequest'])
-                          ->orderBy('created_at', 'desc')
-                          ->paginate($perPage);
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
     public function findWithRelations(int $id): ?JobPost
@@ -93,50 +93,50 @@ class JobPostRepository extends BaseRepository
     public function getWithApplicationCount(): Collection
     {
         return $this->model->withCount('applications')
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('created_at', 'desc')
-                          ->get();
+            ->with(['createdBy', 'competences'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function getForEmployee(int $userId): Collection
     {
         return $this->model->published()
-                          ->whereDoesntHave('applications', function ($query) use ($userId) {
-                              $query->where('utilisateur_id', $userId)
-                                    ->whereNotIn('statut', ['retiree']);
-                          })
-                          ->withCount('applications')
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('published_at', 'desc')
-                          ->get();
+            ->whereDoesntHave('applications', function ($query) use ($userId) {
+                $query->where('utilisateur_id', $userId)
+                    ->whereNotIn('statut', ['retiree']);
+            })
+            ->withCount('applications')
+            ->with(['createdBy', 'competences'])
+            ->orderBy('published_at', 'desc')
+            ->get();
     }
 
     public function getForEmployeePaginated(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->published()
-                          ->whereDoesntHave('applications', function ($query) use ($userId) {
-                              $query->where('utilisateur_id', $userId)
-                                    ->whereNotIn('statut', ['retiree']);
-                          })
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('published_at', 'desc')
-                          ->paginate($perPage);
+            ->whereDoesntHave('applications', function ($query) use ($userId) {
+                $query->where('utilisateur_id', $userId)
+                    ->whereNotIn('statut', ['retiree']);
+            })
+            ->with(['createdBy', 'competences'])
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage);
     }
 
     public function getByCreator(int $userId): Collection
     {
         return $this->model->where('created_by', $userId)
-                          ->with(['competences'])
-                          ->orderBy('created_at', 'desc')
-                          ->get();
+            ->with(['competences'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function getByStatus(JobPostStatus $status): Collection
     {
         return $this->model->where('statut', $status)
-                          ->with(['createdBy', 'competences'])
-                          ->orderBy('created_at', 'desc')
-                          ->get();
+            ->with(['createdBy', 'competences'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function countByStatus(JobPostStatus $status): int
@@ -156,7 +156,7 @@ class JobPostRepository extends BaseRepository
 
         foreach ($competences as $competence) {
             $syncData[$competence['competence_id']] = [
-                'niveau_requis' => $competence['niveau_requis']
+                'niveau_requis' => $competence['niveau_requis'],
             ];
         }
 

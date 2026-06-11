@@ -12,8 +12,7 @@ class JobRequestController extends Controller
 {
     public function __construct(
         protected JobRequestService $jobRequestService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -34,7 +33,7 @@ class JobRequestController extends Controller
     {
         $jobRequest = $this->jobRequestService->getById($id);
 
-        if (!$jobRequest) {
+        if (! $jobRequest) {
             return response()->json(['message' => 'Demande de poste non trouvée.'], 404);
         }
 

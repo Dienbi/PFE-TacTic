@@ -44,8 +44,8 @@ class JobPost extends Model
     public function competences()
     {
         return $this->belongsToMany(Competence::class, 'job_post_competence')
-                    ->withPivot('niveau_requis')
-                    ->withTimestamps();
+            ->withPivot('niveau_requis')
+            ->withTimestamps();
     }
 
     public function applications()
@@ -62,7 +62,7 @@ class JobPost extends Model
     public function scopePublished($query)
     {
         return $query->where('statut', JobPostStatus::PUBLISHED)
-                     ->whereNotNull('published_at');
+            ->whereNotNull('published_at');
     }
 
     public function scopeClosed($query)
@@ -73,7 +73,7 @@ class JobPost extends Model
     public function scopeOpen($query)
     {
         return $query->where('statut', JobPostStatus::PUBLISHED)
-                     ->whereNull('closed_at');
+            ->whereNull('closed_at');
     }
 
     // Helper Methods
@@ -96,6 +96,7 @@ class JobPost extends Model
     {
         $this->statut = JobPostStatus::PUBLISHED;
         $this->published_at = now();
+
         return $this->save();
     }
 
@@ -103,6 +104,7 @@ class JobPost extends Model
     {
         $this->statut = JobPostStatus::CLOSED;
         $this->closed_at = now();
+
         return $this->save();
     }
 

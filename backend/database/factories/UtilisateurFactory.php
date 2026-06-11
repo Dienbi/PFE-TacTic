@@ -8,7 +8,6 @@ use App\Enums\TypeContrat;
 use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class UtilisateurFactory extends Factory
 {
@@ -20,7 +19,7 @@ class UtilisateurFactory extends Factory
             'nom' => fake()->lastName(),
             'prenom' => fake()->firstName(),
             'email' => fake()->unique()->safeEmail(),
-            'matricule' => 'EMP' . fake()->unique()->numberBetween(1000, 9999),
+            'matricule' => 'EMP'.fake()->unique()->numberBetween(1000, 9999),
             'password' => Hash::make('password'),
             'telephone' => fake()->phoneNumber(),
             'adresse' => fake()->address(),

@@ -21,13 +21,12 @@ class JobRequestReviewedEvent implements ShouldBroadcastNow
         public string $titre,
         public bool $approved,
         public ?string $raison = null
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {
         // Private channel for the manager who made the request
-        return new PrivateChannel('user.' . $this->userId);
+        return new PrivateChannel('user.'.$this->userId);
     }
 
     public function broadcastWith(): array
@@ -36,7 +35,7 @@ class JobRequestReviewedEvent implements ShouldBroadcastNow
             ? "Votre demande de poste '{$this->titre}' a été approuvée."
             : "Votre demande de poste '{$this->titre}' a été rejetée.";
 
-        if (!$this->approved && $this->raison) {
+        if (! $this->approved && $this->raison) {
             $message .= " Raison: {$this->raison}";
         }
 

@@ -57,7 +57,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
             ->with('equipe')
             ->select([
                 'id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif',
-                'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at'
+                'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at',
             ])
             ->paginate($perPage);
     }
@@ -106,6 +106,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
         if ($user) {
             return $user->delete(); // This performs soft delete
         }
+
         return false;
     }
 
@@ -118,6 +119,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
         if ($user && $user->trashed()) {
             return $user->restore();
         }
+
         return false;
     }
 
@@ -130,6 +132,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
         if ($user) {
             return $user->forceDelete();
         }
+
         return false;
     }
 
@@ -155,6 +158,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
     public function updateSoldeConge(int $id, int $jours): bool
     {
         $utilisateur = $this->findOrFail($id);
+
         return $utilisateur->update(['solde_conge' => $utilisateur->solde_conge - $jours]);
     }
 
@@ -162,16 +166,17 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
     {
         $lastUser = $this->model->withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $lastUser ? $lastUser->id + 1 : 1;
-        return 'EMP' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+
+        return 'EMP'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
     }
 
     public function searchByName(string $search): Collection
     {
         return $this->model->where(function ($query) use ($search) {
             $query->where('nom', 'ILIKE', "%{$search}%")
-                  ->orWhere('prenom', 'ILIKE', "%{$search}%")
-                  ->orWhere('email', 'ILIKE', "%{$search}%")
-                  ->orWhere('matricule', 'ILIKE', "%{$search}%");
+                ->orWhere('prenom', 'ILIKE', "%{$search}%")
+                ->orWhere('email', 'ILIKE', "%{$search}%")
+                ->orWhere('matricule', 'ILIKE', "%{$search}%");
         })->get();
     }
 

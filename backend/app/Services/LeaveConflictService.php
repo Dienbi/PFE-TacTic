@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
+use App\Enums\StatutConge;
 use App\Models\Conge;
 use App\Models\Utilisateur;
-use App\Enums\StatutConge;
-use App\Enums\Role;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -19,7 +19,7 @@ class LeaveConflictService
         $conflicts = [];
         $user = $conge->utilisateur;
 
-        if (!$user || !$user->equipe_id) {
+        if (! $user || ! $user->equipe_id) {
             return $conflicts;
         }
 
@@ -41,7 +41,7 @@ class LeaveConflictService
      * Check conflicts for many leaves at once (batch optimized).
      * Pre-fetches all needed data to avoid N+1 queries.
      *
-     * @param Collection $leaves Collection of Conge with utilisateur already eager-loaded
+     * @param  Collection  $leaves  Collection of Conge with utilisateur already eager-loaded
      * @return array Keyed by conge id => array of conflicts
      */
     public function checkConflictsForMany(Collection $leaves): array
@@ -59,6 +59,7 @@ class LeaveConflictService
             foreach ($leaves as $leave) {
                 $result[$leave->id] = [];
             }
+
             return $result;
         }
 
@@ -103,8 +104,9 @@ class LeaveConflictService
             $conflicts = [];
             $user = $leave->utilisateur;
 
-            if (!$user || !$user->equipe_id) {
+            if (! $user || ! $user->equipe_id) {
                 $result[$leave->id] = [];
+
                 continue;
             }
 
@@ -198,7 +200,7 @@ class LeaveConflictService
             $conflicts[] = [
                 'type' => 'TEAM_CAPACITY',
                 'message' => "Approving this would result in {$percentage}% of the team being absent (Limit: 30%). Currently {$membersOnLeave} members are approved for leave.",
-                'severity' => 'high'
+                'severity' => 'high',
             ];
         }
     }
@@ -207,7 +209,7 @@ class LeaveConflictService
     {
         $hasMemberOnLeave = Conge::whereHas('utilisateur', function ($q) use ($manager) {
             $q->where('equipe_id', $manager->equipe_id)
-              ->where('id', '!=', $manager->id);
+                ->where('id', '!=', $manager->id);
         })
             ->where('statut', StatutConge::APPROUVE)
             ->where(function ($query) use ($start, $end) {
@@ -223,8 +225,8 @@ class LeaveConflictService
         if ($hasMemberOnLeave) {
             $conflicts[] = [
                 'type' => 'MANAGER_MEMBER_OVERLAP',
-                'message' => "A team member is already on leave during this period.",
-                'severity' => 'warning'
+                'message' => 'A team member is already on leave during this period.',
+                'severity' => 'warning',
             ];
         }
     }
@@ -235,7 +237,7 @@ class LeaveConflictService
             ->where('role', Role::CHEF_EQUIPE)
             ->first();
 
-        if (!$manager) {
+        if (! $manager) {
             return;
         }
 
@@ -255,7 +257,7 @@ class LeaveConflictService
             $conflicts[] = [
                 'type' => 'EMPLOYEE_MANAGER_OVERLAP',
                 'message' => "The Team Manager ({$manager->nom} {$manager->prenom}) is on leave during this period.",
-                'severity' => 'warning'
+                'severity' => 'warning',
             ];
         }
     }

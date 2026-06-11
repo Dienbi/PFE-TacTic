@@ -2,12 +2,9 @@
 
 namespace Tests\Unit\Repositories;
 
-use App\Models\Paie;
-use App\Models\Utilisateur;
-use App\Repositories\PaieRepository;
 use App\Enums\StatutPaie;
-use App\Enums\EmployeStatus;
-use App\Enums\Role;
+use App\Models\Paie;
+use App\Repositories\PaieRepository;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

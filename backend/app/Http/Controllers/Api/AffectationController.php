@@ -13,8 +13,7 @@ class AffectationController extends Controller
 {
     public function __construct(
         protected AffectationService $affectationService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all assignments
@@ -33,7 +32,7 @@ class AffectationController extends Controller
     {
         $affectation = $this->affectationService->getById($id);
 
-        if (!$affectation) {
+        if (! $affectation) {
             return response()->json([
                 'message' => 'Affectation non trouvée.',
             ], 404);

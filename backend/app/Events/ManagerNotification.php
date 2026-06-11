@@ -21,12 +21,11 @@ class ManagerNotification implements ShouldBroadcastNow
         public string $title,
         public string $message,
         public array $data = []
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {
-        return new PrivateChannel('manager.' . $this->managerId);
+        return new PrivateChannel('manager.'.$this->managerId);
     }
 
     public function broadcastWith(): array

@@ -17,8 +17,7 @@ class CongeService
         protected CongeRepositoryInterface $congeRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository,
         protected LeaveConflictService $leaveConflictService
-    ) {
-    }
+    ) {}
 
     public function getAll(): Collection
     {
@@ -40,9 +39,9 @@ class CongeService
         if ($leave) {
             $leave->conflicts = $this->leaveConflictService->checkConflicts($leave);
         }
+
         return $leave;
     }
-
 
     public function getByUtilisateur(int $utilisateurId): Collection
     {
@@ -110,8 +109,8 @@ class CongeService
     public function approuver(int $congeId, int $approuveParId): bool
     {
         \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
-        \Illuminate\Support\Facades\Cache::forget("dashboard_all_6_v2");
-        \Illuminate\Support\Facades\Cache::forget("dashboard_rh_stats");
+        \Illuminate\Support\Facades\Cache::forget('dashboard_all_6_v2');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_rh_stats');
 
         $conge = $this->congeRepository->findOrFail($congeId);
 
@@ -137,19 +136,19 @@ class CongeService
 
         // Broadcast notification to user
         if ($result) {
-            \Log::info('Broadcasting LeaveStatusNotification to user: ' . $conge->utilisateur_id);
+            \Log::info('Broadcasting LeaveStatusNotification to user: '.$conge->utilisateur_id);
 
             try {
                 event(new LeaveStatusNotification(
                     $conge->utilisateur_id,
                     'success',
                     'Leave Approved',
-                    'Your leave request from ' . $conge->date_debut->format('d/m/Y') . ' to ' . $conge->date_fin->format('d/m/Y') . ' has been approved.',
+                    'Your leave request from '.$conge->date_debut->format('d/m/Y').' to '.$conge->date_fin->format('d/m/Y').' has been approved.',
                     ['conge_id' => $congeId]
                 ));
                 \Log::info('LeaveStatusNotification dispatched successfully');
             } catch (\Exception $e) {
-                \Log::error('Failed to broadcast: ' . $e->getMessage());
+                \Log::error('Failed to broadcast: '.$e->getMessage());
             }
         }
 
@@ -159,8 +158,8 @@ class CongeService
     public function refuser(int $congeId, int $approuveParId, ?string $motifRefus = null): bool
     {
         \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
-        \Illuminate\Support\Facades\Cache::forget("dashboard_all_6_v2");
-        \Illuminate\Support\Facades\Cache::forget("dashboard_rh_stats");
+        \Illuminate\Support\Facades\Cache::forget('dashboard_all_6_v2');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_rh_stats');
 
         $conge = $this->congeRepository->findOrFail($congeId);
 
@@ -179,14 +178,14 @@ class CongeService
                     $conge->utilisateur_id,
                     'warning',
                     'Leave Rejected',
-                    'Your leave request has been rejected.' . ($motifRefus ? " Reason: $motifRefus" : ''),
+                    'Your leave request has been rejected.'.($motifRefus ? " Reason: $motifRefus" : ''),
                     [
                         'conge_id' => $congeId,
-                        'reason' => $motifRefus
+                        'reason' => $motifRefus,
                     ]
                 ));
             } catch (\Exception $e) {
-                \Log::warning('Broadcast failed for LeaveStatusNotification: ' . $e->getMessage());
+                \Log::warning('Broadcast failed for LeaveStatusNotification: '.$e->getMessage());
             }
         }
 

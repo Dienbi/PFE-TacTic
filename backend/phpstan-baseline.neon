@@ -1,0 +1,931 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, int given\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AccountRequestController.php
+
+		-
+			message: "#^Relation 'approver' is not found in App\\\\Models\\\\AccountRequest model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AccountRequestController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\ActivityLog model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/ActivityLogController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Utilisateur\\:\\:\\$equipeGeree\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/CongeController.php
+
+		-
+			message: "#^Access to an undefined property PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\:\\:\\$actif\\.$#"
+			count: 1
+			path: app/Http/Middleware/JwtMiddleware.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Builder\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:actif\\(\\)\\.$#"
+			count: 2
+			path: app/Repositories/AffectationRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:actif\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/AffectationRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\CompetenceRepository\\:\\:getWithUtilisateurs\\(\\) should return App\\\\Models\\\\Competence\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/CompetenceRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Builder\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:approuve\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/CongeRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:byPeriod\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/CongeRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:byType\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/CongeRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:enAttente\\(\\)\\.$#"
+			count: 3
+			path: app/Repositories/CongeRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\EquipeRepository\\:\\:findByChef\\(\\) should return App\\\\Models\\\\Equipe\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/EquipeRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\EquipeRepository\\:\\:findWithMembers\\(\\) should return App\\\\Models\\\\Equipe\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/EquipeRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\EquipeRepository\\:\\:getWithMembresByChef\\(\\) should return App\\\\Models\\\\Equipe\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/EquipeRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:forJobPost\\(\\)\\.$#"
+			count: 3
+			path: app/Repositories/JobApplicationRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:forUser\\(\\)\\.$#"
+			count: 3
+			path: app/Repositories/JobApplicationRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:pending\\(\\)\\.$#"
+			count: 4
+			path: app/Repositories/JobApplicationRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\JobApplicationRepository\\:\\:findByUserAndPost\\(\\) should return App\\\\Models\\\\JobApplication\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/JobApplicationRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\JobApplicationRepository\\:\\:findWithRelations\\(\\) should return App\\\\Models\\\\JobApplication\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/JobApplicationRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:closed\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobPostRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:competences\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobPostRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:draft\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobPostRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:open\\(\\)\\.$#"
+			count: 3
+			path: app/Repositories/JobPostRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:published\\(\\)\\.$#"
+			count: 4
+			path: app/Repositories/JobPostRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\JobPostRepository\\:\\:findWithRelations\\(\\) should return App\\\\Models\\\\JobPost\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/JobPostRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:approved\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobRequestRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:forDemandeur\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobRequestRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:forEquipe\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobRequestRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:pending\\(\\)\\.$#"
+			count: 3
+			path: app/Repositories/JobRequestRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:rejected\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/JobRequestRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\JobRequestRepository\\:\\:findWithRelations\\(\\) should return App\\\\Models\\\\JobRequest\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/JobRequestRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$moyenne_net\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nombre_paies\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$total_brut\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$total_cnss\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$total_deductions\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$total_impot\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$total_net\\.$#"
+			count: 2
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:byPeriod\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:byStatut\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:nonPaye\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\PaieRepository\\:\\:getLastPaie\\(\\) should return App\\\\Models\\\\Paie\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/PaieRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Builder\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:byDate\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/PointageRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Builder\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:byPeriod\\(\\)\\.$#"
+			count: 4
+			path: app/Repositories/PointageRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:byDate\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/PointageRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\PointageRepository\\:\\:checkIn\\(\\) should return App\\\\Models\\\\Pointage but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Repositories/PointageRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\PointageRepository\\:\\:pointer\\(\\) should return App\\\\Models\\\\Pointage but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Repositories/PointageRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:actif\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/PosteRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\PosteRepository\\:\\:getWithAffectations\\(\\) should return App\\\\Models\\\\Poste\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/PosteRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$solde_conge\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:actif\\(\\)\\.$#"
+			count: 3
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:byRole\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:disponible\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:onlyTrashed\\(\\)\\.$#"
+			count: 2
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:withTrashed\\(\\)\\.$#"
+			count: 4
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\UtilisateurRepository\\:\\:findByEmail\\(\\) should return App\\\\Models\\\\Utilisateur\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\UtilisateurRepository\\:\\:findByMatricule\\(\\) should return App\\\\Models\\\\Utilisateur\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Method App\\\\Repositories\\\\UtilisateurRepository\\:\\:getWithRelations\\(\\) should return App\\\\Models\\\\Utilisateur\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: app/Repositories/UtilisateurRepository.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$utilisateur_id\\.$#"
+			count: 2
+			path: app/Services/AffectationService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isActif\\(\\)\\.$#"
+			count: 1
+			path: app/Services/AffectationService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\AffectationService\\:\\:create\\(\\) should return App\\\\Models\\\\Affectation\\|array but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Services/AffectationService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\AffectationService\\:\\:getById\\(\\) should return App\\\\Models\\\\Affectation\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: app/Services/AffectationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$password\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Access to an undefined property PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\:\\:\\$id\\.$#"
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Call to an undefined method PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\:\\:refresh\\(\\)\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\AuthService\\:\\:me\\(\\) should return App\\\\Models\\\\Utilisateur\\|null but returns PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Parameter \\#1 \\$forceForever of static method PHPOpenSourceSaver\\\\JWTAuth\\\\JWT\\:\\:invalidate\\(\\) expects bool, PHPOpenSourceSaver\\\\JWTAuth\\\\Token\\|null given\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Parameter \\#1 \\$forceForever of static method PHPOpenSourceSaver\\\\JWTAuth\\\\JWT\\:\\:refresh\\(\\) expects bool, PHPOpenSourceSaver\\\\JWTAuth\\\\Token\\|null given\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Parameter \\#1 \\$user of static method PHPOpenSourceSaver\\\\JWTAuth\\\\JWT\\:\\:fromUser\\(\\) expects PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject, Illuminate\\\\Database\\\\Eloquent\\\\Model given\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Parameter \\#2 \\$utilisateur of method App\\\\Services\\\\AuthService\\:\\:respondWithToken\\(\\) expects App\\\\Models\\\\Utilisateur, Illuminate\\\\Database\\\\Eloquent\\\\Model given\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Parameter \\#2 \\$utilisateur of method App\\\\Services\\\\AuthService\\:\\:respondWithToken\\(\\) expects App\\\\Models\\\\Utilisateur, PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject given\\.$#"
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$conflicts\\.$#"
+			count: 2
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 2
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\CongeRepositoryInterface\\:\\:all\\(\\)\\.$#"
+			count: 1
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\CongeRepositoryInterface\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\CongeRepositoryInterface\\:\\:delete\\(\\)\\.$#"
+			count: 1
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\CongeRepositoryInterface\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\CongeRepositoryInterface\\:\\:findOrFail\\(\\)\\.$#"
+			count: 3
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:findOrFail\\(\\)\\.$#"
+			count: 1
+			path: app/Services/CongeService.php
+
+		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Property App\\\\Services\\\\DashboardService\\:\\:\\$pointageRepository is never read, only written\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\ActivityLog model\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$conges\\.$#"
+			count: 2
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$email\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$equipe_id\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$matricule\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nom\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$prenom\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$role\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$status\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:assignChef\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:delete\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:getWithMembres\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:getWithMembresByChef\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:removeChef\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\EquipeRepositoryInterface\\:\\:update\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:update\\(\\)\\.$#"
+			count: 2
+			path: app/Services/EquipeService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\JobApplication\\:\\:\\$jobPost\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\JobApplication\\:\\:\\$utilisateur\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 2
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$jobPost\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$matricule\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nom\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$prenom\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$titre\\.$#"
+			count: 2
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$utilisateur_id\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:canWithdraw\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isClosed\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isEmploye\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isPublished\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:withdraw\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\JobApplicationService\\:\\:apply\\(\\) should return App\\\\Models\\\\JobApplication\\|array but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Services/JobApplicationService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$titre\\.$#"
+			count: 1
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:applications\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:close\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isClosed\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isPublished\\(\\)\\.$#"
+			count: 2
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\JobPostService\\:\\:create\\(\\) should return App\\\\Models\\\\JobPost\\|array but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Services/JobPostService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$description\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$equipe\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$equipe_id\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nom\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$prenom\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$titre\\.$#"
+			count: 3
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isChefEquipe\\(\\)\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isPending\\(\\)\\.$#"
+			count: 2
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\JobRequestService\\:\\:create\\(\\) should return App\\\\Models\\\\JobRequest\\|array but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
+			count: 1
+			path: app/Services/JobRequestService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Conge\\:\\:\\$utilisateur\\.$#"
+			count: 1
+			path: app/Services/LeaveConflictService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$date_debut\\.$#"
+			count: 1
+			path: app/Services/LeaveConflictService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$date_fin\\.$#"
+			count: 1
+			path: app/Services/LeaveConflictService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 3
+			path: app/Services/LeaveConflictService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$utilisateur\\.$#"
+			count: 1
+			path: app/Services/LeaveConflictService.php
+
+		-
+			message: "#^Relation 'utilisateur' is not found in App\\\\Models\\\\Conge model\\.$#"
+			count: 3
+			path: app/Services/LeaveConflictService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Paie\\:\\:\\$utilisateur\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$date_embauche\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$email\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 7
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$matricule\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nom\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nom_complet\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$prenom\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$role\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$salaire_base\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$type_contrat\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PaieRepositoryInterface\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PaieRepositoryInterface\\:\\:delete\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PaieRepositoryInterface\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PaieRepositoryInterface\\:\\:update\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:getStatsByPeriod\\(\\)\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:findOrFail\\(\\)\\.$#"
+			count: 4
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:update\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Instantiated class App\\\\Notifications\\\\SalaireNotification not found\\.$#"
+			count: 2
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Parameter \\#1 \\$num of function number_format expects float, string given\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Parameter \\#2 \\$salaireNet of event class App\\\\Events\\\\SalaryPaid constructor expects float in App\\\\Events\\\\SalaryPaid\\:\\:dispatch\\(\\), string given\\.$#"
+			count: 1
+			path: app/Services/PaieService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$email\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$heure_entree\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$heure_sortie\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 2
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$matricule\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$nom\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$poste\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$prenom\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$utilisateur\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:delete\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:getAbsences\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:getStatsByPeriod\\(\\)\\.$#"
+			count: 1
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:pointer\\(\\)\\.$#"
+			count: 2
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\PointageRepositoryInterface\\:\\:update\\(\\)\\.$#"
+			count: 2
+			path: app/Services/PointageService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:create\\(\\)\\.$#"
+			count: 1
+			path: app/Services/UtilisateurService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:delete\\(\\)\\.$#"
+			count: 1
+			path: app/Services/UtilisateurService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:findOrFail\\(\\)\\.$#"
+			count: 7
+			path: app/Services/UtilisateurService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:getAllWithRelations\\(\\)\\.$#"
+			count: 1
+			path: app/Services/UtilisateurService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:getWithRelations\\(\\)\\.$#"
+			count: 1
+			path: app/Services/UtilisateurService.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:update\\(\\)\\.$#"
+			count: 3
+			path: app/Services/UtilisateurService.php

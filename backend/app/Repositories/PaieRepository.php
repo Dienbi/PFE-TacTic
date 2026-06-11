@@ -50,7 +50,7 @@ class PaieRepository extends BaseRepository implements PaieRepositoryInterface
         return $this->model
             ->select([
                 'id', 'utilisateur_id', 'periode_debut', 'periode_fin', 'salaire_net', 'salaire_brut',
-                'statut', 'created_at', 'updated_at'
+                'statut', 'created_at', 'updated_at',
             ])
             ->with(['utilisateur:id,matricule,nom,prenom,role'])
             ->orderBy('created_at', 'desc')
@@ -221,14 +221,14 @@ class PaieRepository extends BaseRepository implements PaieRepositoryInterface
         $statusCounts = $this->model
             ->whereYear('periode_debut', $currentMonth->year)
             ->whereMonth('periode_debut', $currentMonth->month)
-            ->selectRaw("
+            ->selectRaw('
                 SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_en_attente,
                 SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_validees,
                 SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_payees
-            ", [
+            ', [
                 StatutPaie::GENERE->value,
                 StatutPaie::VALIDE->value,
-                StatutPaie::PAYE->value
+                StatutPaie::PAYE->value,
             ])
             ->first();
 

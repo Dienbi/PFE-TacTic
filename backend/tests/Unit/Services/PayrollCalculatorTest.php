@@ -12,7 +12,7 @@ class PayrollCalculatorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->calculator = new PayrollCalculator();
+        $this->calculator = new PayrollCalculator;
     }
 
     /** @test */

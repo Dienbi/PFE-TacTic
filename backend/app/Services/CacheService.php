@@ -12,28 +12,45 @@ class CacheService
 {
     // Cache key prefixes
     public const PREFIX_ACTIVE_USERS = 'active_users';
+
     public const PREFIX_USER_PERMISSIONS = 'user_permissions';
+
     public const PREFIX_USER = 'user';
+
     public const PREFIX_PAYROLL_STATS = 'payroll_stats';
+
     public const PREFIX_COMPETENCES = 'competences';
+
     public const PREFIX_TEAMS = 'teams';
+
     public const PREFIX_TEAM_MEMBERS = 'team_members';
 
     // Dashboard keys
     public const KEY_DASHBOARD_STATS = 'dashboard_rh_stats';
+
     public const KEY_DASHBOARD_TREND = 'dashboard_trend';
+
     public const KEY_ABSENCE_DIST = 'absence_distribution';
+
     public const KEY_RECENT_LEAVES = 'recent_leaves_list';
+
     public const KEY_PENDING_REQUESTS = 'account_requests_pending';
+
     public const KEY_RECENT_LOGS = 'recent_activity_logs';
+
     public const KEY_DASHBOARD_ALL = 'dashboard_all_unified';
+
     public const KEY_AI_DASHBOARD = 'ai_dashboard_data';
 
     // Cache TTLs in seconds
     public const TTL_ACTIVE_USERS = 300; // 5 minutes
+
     public const TTL_USER_PERMISSIONS = 3600; // 1 hour
+
     public const TTL_USER_DATA = 1800; // 30 minutes
+
     public const TTL_STATISTICS = 3600; // 1 hour
+
     public const TTL_REFERENCE_DATA = 86400; // 1 day
 
     /**
@@ -54,6 +71,7 @@ class CacheService
     public function getUserPermissions(int $userId, callable $callback): mixed
     {
         $key = $this->buildKey(self::PREFIX_USER_PERMISSIONS, $userId);
+
         return Cache::remember($key, self::TTL_USER_PERMISSIONS, $callback);
     }
 
@@ -63,6 +81,7 @@ class CacheService
     public function getUser(int $userId, callable $callback): mixed
     {
         $key = $this->buildKey(self::PREFIX_USER, $userId);
+
         return Cache::remember($key, self::TTL_USER_DATA, $callback);
     }
 
@@ -108,6 +127,7 @@ class CacheService
     public function getTeamMembers(int $teamId, callable $callback): mixed
     {
         $key = $this->buildKey(self::PREFIX_TEAM_MEMBERS, $teamId);
+
         return Cache::remember($key, self::TTL_REFERENCE_DATA, $callback);
     }
 
@@ -175,7 +195,7 @@ class CacheService
      */
     public static function getDashboardAllKey(int $months, int $att, int $perf, int $leaves, bool $withAi): string
     {
-        return self::KEY_DASHBOARD_ALL . "_{$months}_{$att}_{$perf}_{$leaves}_ai" . ($withAi ? '1' : '0');
+        return self::KEY_DASHBOARD_ALL."_{$months}_{$att}_{$perf}_{$leaves}_ai".($withAi ? '1' : '0');
     }
 
     /**

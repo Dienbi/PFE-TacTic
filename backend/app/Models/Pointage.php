@@ -64,6 +64,7 @@ class Pointage extends Model
             $this->duree_travail = $sortie->diffInHours($entree, true);
             $this->save();
         }
+
         return $this->duree_travail;
     }
 }

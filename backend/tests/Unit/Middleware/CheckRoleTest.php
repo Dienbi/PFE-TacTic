@@ -21,7 +21,7 @@ class CheckRoleTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->middleware = new CheckRole();
+        $this->middleware = new CheckRole;
     }
 
     /** @test */
@@ -53,6 +53,33 @@ class CheckRoleTest extends TestCase
         $this->assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
         $payload = json_decode($response->getContent(), true);
         $this->assertSame('Non authentifié.', $payload['message'] ?? null);
+    }
+
+    /** @test */
+    public function chef_equipe_can_access_manager_route(): void
+    {
+        $manager = $this->createTestManager();
+        $response = $this->runMiddleware($manager, 'rh', 'chef_equipe');
+
+        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+    }
+
+    /** @test */
+    public function role_matching_is_case_insensitive(): void
+    {
+        $rh = $this->createTestRh();
+        $response = $this->runMiddleware($rh, 'RH');
+
+        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+    }
+
+    /** @test */
+    public function employee_cannot_access_payroll_route(): void
+    {
+        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
+        $response = $this->runMiddleware($employee, 'rh');
+
+        $this->assertEquals(Response::HTTP_FORBIDDEN, $response->getStatusCode());
     }
 
     private function runMiddleware(Utilisateur $user, string ...$roles): Response

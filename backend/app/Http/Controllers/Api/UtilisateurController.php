@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\EmployeStatus;
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UtilisateurRequest;
 use App\Services\UtilisateurService;
-use App\Enums\Role;
-use App\Enums\EmployeStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,8 +15,7 @@ class UtilisateurController extends Controller
 {
     public function __construct(
         protected UtilisateurService $utilisateurService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all users
@@ -42,7 +41,7 @@ class UtilisateurController extends Controller
     {
         $user = $this->utilisateurService->getById($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'message' => 'Utilisateur non trouvé.',
             ], 404);
@@ -59,6 +58,7 @@ class UtilisateurController extends Controller
         $user = $this->utilisateurService->create($request->validated());
 
         Cache::forget('users_all');
+
         return response()->json($user, 201);
     }
 
@@ -69,13 +69,14 @@ class UtilisateurController extends Controller
     {
         $success = $this->utilisateurService->update($id, $request->validated());
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Erreur lors de la mise à jour.',
             ], 400);
         }
 
         Cache::forget('users_all');
+
         return response()->json([
             'message' => 'Utilisateur mis à jour avec succès.',
         ]);
@@ -89,6 +90,7 @@ class UtilisateurController extends Controller
         $this->utilisateurService->archive($id);
 
         Cache::forget('users_all');
+
         return response()->json([
             'message' => 'Utilisateur archivé avec succès.',
         ]);
@@ -100,6 +102,7 @@ class UtilisateurController extends Controller
     public function archived(): JsonResponse
     {
         $users = $this->utilisateurService->getArchived();
+
         return response()->json($users);
     }
 
@@ -110,13 +113,14 @@ class UtilisateurController extends Controller
     {
         $success = $this->utilisateurService->restore($id);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Utilisateur non trouvé ou non archivé.',
             ], 404);
         }
 
         Cache::forget('users_all');
+
         return response()->json([
             'message' => 'Utilisateur restauré avec succès.',
         ]);
@@ -129,7 +133,7 @@ class UtilisateurController extends Controller
     {
         $success = $this->utilisateurService->forceDelete($id);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'message' => 'Utilisateur non trouvé.',
             ], 404);

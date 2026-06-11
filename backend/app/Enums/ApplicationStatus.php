@@ -12,7 +12,7 @@ enum ApplicationStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'En attente',
             self::REVIEWED => 'Examinée',
             self::ACCEPTED => 'Acceptée',
@@ -23,7 +23,7 @@ enum ApplicationStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'warning',
             self::REVIEWED => 'info',
             self::ACCEPTED => 'success',

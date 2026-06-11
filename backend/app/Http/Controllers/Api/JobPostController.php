@@ -12,8 +12,7 @@ class JobPostController extends Controller
 {
     public function __construct(
         protected JobPostService $jobPostService
-    ) {
-    }
+    ) {}
 
     /**
      * Get job posts (role-based filtering)
@@ -43,7 +42,7 @@ class JobPostController extends Controller
     {
         $jobPost = $this->jobPostService->getById($id);
 
-        if (!$jobPost) {
+        if (! $jobPost) {
             return response()->json([
                 'message' => 'Poste non trouvé.',
             ], 404);

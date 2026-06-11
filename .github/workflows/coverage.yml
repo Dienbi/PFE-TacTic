@@ -45,6 +45,12 @@ jobs:
 
       - name: Prepare Laravel test environment
         run: |
+          if [ ! -f backend/.env.example ]; then
+            echo "backend/.env.example is missing from checkout."
+            ls -la backend || true
+            exit 1
+          fi
+
           cp backend/.env.example backend/.env
 
           cd backend
@@ -125,6 +131,7 @@ jobs:
 
       - name: Display coverage percentage
         working-directory: backend
+
         run: |
           php -r '
           $xml = simplexml_load_file("coverage.xml");
@@ -140,6 +147,11 @@ jobs:
               echo "OVERALL TEST COVERAGE: {$coverage}%" . PHP_EOL;
               echo "Covered statements: {$covered}/{$statements}" . PHP_EOL;
               echo "======================================" . PHP_EOL;
+
+              $minCoverage = 25;
+              if ($coverage < $minCoverage) {
+                  echo "::warning::Coverage {$coverage}% is below soft target {$minCoverage}%" . PHP_EOL;
+              }
           } else {
               echo "Could not determine coverage percentage." . PHP_EOL;
           }

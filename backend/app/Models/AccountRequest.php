@@ -31,7 +31,9 @@ class AccountRequest extends Model
 
     // Status constants
     public const STATUS_PENDING = 'PENDING';
+
     public const STATUS_APPROVED = 'APPROVED';
+
     public const STATUS_REJECTED = 'REJECTED';
 
     // Relationships
@@ -65,7 +67,7 @@ class AccountRequest extends Model
     public function isTokenValid(): bool
     {
         return $this->temp_token
-            && !$this->token_used
+            && ! $this->token_used
             && $this->token_expires_at
             && $this->token_expires_at->isFuture();
     }

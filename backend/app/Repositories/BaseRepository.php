@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 abstract class BaseRepository
@@ -43,12 +43,14 @@ abstract class BaseRepository
     public function update(int $id, array $data): bool
     {
         $record = $this->findOrFail($id);
+
         return $record->update($data);
     }
 
     public function delete(int $id): bool
     {
         $record = $this->findOrFail($id);
+
         return $record->delete();
     }
 

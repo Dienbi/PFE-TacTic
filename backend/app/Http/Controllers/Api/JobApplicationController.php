@@ -12,8 +12,7 @@ class JobApplicationController extends Controller
 {
     public function __construct(
         protected JobApplicationService $jobApplicationService
-    ) {
-    }
+    ) {}
 
     /**
      * Get applications (role-based)
@@ -44,7 +43,7 @@ class JobApplicationController extends Controller
     {
         $application = $this->jobApplicationService->getById($id);
 
-        if (!$application) {
+        if (! $application) {
             return response()->json([
                 'message' => 'Candidature non trouvée.',
             ], 404);
@@ -127,5 +126,4 @@ class JobApplicationController extends Controller
             'message' => 'Candidature traitée.',
         ]);
     }
-
 }

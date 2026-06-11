@@ -2,7 +2,6 @@
 
 namespace App\Listeners;
 
-use App\Events\NewActivityLog;
 use Illuminate\Support\Facades\Cache;
 
 class InvalidateDashboardCache

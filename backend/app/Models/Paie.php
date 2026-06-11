@@ -60,7 +60,9 @@ class Paie extends Model
     ];
 
     public const CNSS_RATE = 0.0918; // 9.18% (CNSS salariale tunisienne)
+
     public const STANDARD_MONTHLY_HOURS = 173; // 40h/week × 52/12
+
     public const OVERTIME_MULTIPLIER = 1.25;
 
     // ── Relationships ──────────────────────────────────────────────────

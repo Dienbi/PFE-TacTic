@@ -7,9 +7,7 @@ use App\Services\CacheService;
 
 class UtilisateurObserver
 {
-    public function __construct(protected CacheService $cacheService)
-    {
-    }
+    public function __construct(protected CacheService $cacheService) {}
 
     /**
      * Handle the Utilisateur "created" event.
@@ -53,7 +51,7 @@ class UtilisateurObserver
         $changes = $utilisateur->getChanges();
         $onlyLastConnection = count($changes) === 1 && isset($changes['date_derniere_connexion']);
 
-        if (!$onlyLastConnection) {
+        if (! $onlyLastConnection) {
             // Invalidate active users list
             $this->cacheService->invalidateActiveUsers();
         }

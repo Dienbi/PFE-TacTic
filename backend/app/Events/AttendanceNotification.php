@@ -16,9 +16,13 @@ class AttendanceNotification implements ShouldBroadcastNow
     use SerializesModels;
 
     public string $type;
+
     public string $title;
+
     public string $message;
+
     public string $timestamp;
+
     public ?array $data;
 
     /**

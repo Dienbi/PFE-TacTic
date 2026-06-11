@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PaieRequest;
 use App\Services\PaieService;
-use App\Enums\Role;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,8 +14,7 @@ class PaieController extends Controller
 {
     public function __construct(
         protected PaieService $paieService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all payrolls (RH) - paginated
@@ -35,7 +34,7 @@ class PaieController extends Controller
     {
         $paie = $this->paieService->getById($id);
 
-        if (!$paie) {
+        if (! $paie) {
             return response()->json(['message' => 'Paie non trouvée.'], 404);
         }
 
@@ -183,6 +182,7 @@ class PaieController extends Controller
     public function valider(int $id): JsonResponse
     {
         $this->paieService->valider($id);
+
         return response()->json(['message' => 'Paie validée.']);
     }
 
@@ -192,6 +192,7 @@ class PaieController extends Controller
     public function marquerPayee(int $id): JsonResponse
     {
         $this->paieService->marquerPayee($id);
+
         return response()->json(['message' => 'Paie marquée comme payée.']);
     }
 
@@ -213,6 +214,7 @@ class PaieController extends Controller
     public function stats(Request $request): JsonResponse
     {
         $utilisateurId = $request->get('utilisateur_id', $request->user()->id);
+
         return response()->json($this->paieService->getStats($utilisateurId));
     }
 
@@ -259,6 +261,7 @@ class PaieController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $this->paieService->update($id, $request->all());
+
         return response()->json(['message' => 'Paie mise à jour.']);
     }
 
@@ -268,6 +271,7 @@ class PaieController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $this->paieService->delete($id);
+
         return response()->json(['message' => 'Paie supprimée.']);
     }
 
@@ -282,13 +286,13 @@ class PaieController extends Controller
 
         $paie = $this->paieService->getById($id);
 
-        if (!$paie) {
+        if (! $paie) {
             abort(404, 'Paie non trouvée.');
         }
 
         // Ensure user can only download their own payslip or have RH permission
         $user = request()->user();
-        if ($user->id !== $paie->utilisateur_id && !$user->hasRole(Role::RH)) {
+        if ($user->id !== $paie->utilisateur_id && ! $user->hasRole(Role::RH)) {
             abort(403, 'Accès interdit.');
         }
 
@@ -311,7 +315,7 @@ class PaieController extends Controller
 
         return response()->json([
             'message' => "Salaires augmentés pour {$count} employés avec succès.",
-            'count' => $count
+            'count' => $count,
         ]);
     }
 }

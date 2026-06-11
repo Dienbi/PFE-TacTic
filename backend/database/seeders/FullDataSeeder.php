@@ -32,11 +32,11 @@ class FullDataSeeder extends Seeder
 {
     // Attendance profiles: probability of being present on a workday
     private const ATTENDANCE_PROFILES = [
-        'excellent'  => ['presence_rate' => 0.96, 'late_rate' => 0.05, 'weight' => 30],
-        'good'       => ['presence_rate' => 0.88, 'late_rate' => 0.15, 'weight' => 35],
-        'average'    => ['presence_rate' => 0.78, 'late_rate' => 0.25, 'weight' => 20],
-        'poor'       => ['presence_rate' => 0.62, 'late_rate' => 0.40, 'weight' => 10],
-        'irregular'  => ['presence_rate' => 0.50, 'late_rate' => 0.50, 'weight' => 5],
+        'excellent' => ['presence_rate' => 0.96, 'late_rate' => 0.05, 'weight' => 30],
+        'good' => ['presence_rate' => 0.88, 'late_rate' => 0.15, 'weight' => 35],
+        'average' => ['presence_rate' => 0.78, 'late_rate' => 0.25, 'weight' => 20],
+        'poor' => ['presence_rate' => 0.62, 'late_rate' => 0.40, 'weight' => 10],
+        'irregular' => ['presence_rate' => 0.50, 'late_rate' => 0.50, 'weight' => 5],
     ];
 
     private array $firstNames = [
@@ -69,6 +69,7 @@ class FullDataSeeder extends Seeder
 
         if ($competences->isEmpty() || $equipes->isEmpty()) {
             $this->command->error('Please run CompetenceSeeder and EquipeSeeder first!');
+
             return;
         }
 
@@ -85,7 +86,7 @@ class FullDataSeeder extends Seeder
         // Assign existing users to teams
         $existingUsers = Utilisateur::all();
         foreach ($existingUsers as $idx => $user) {
-            if (!$user->equipe_id) {
+            if (! $user->equipe_id) {
                 $equipe = $equipes[$idx % $equipes->count()];
                 $user->update(['equipe_id' => $equipe->id]);
             }
@@ -94,7 +95,7 @@ class FullDataSeeder extends Seeder
         // Assign chefs to equipes
         $chefs = Utilisateur::where('role', Role::CHEF_EQUIPE)->get();
         foreach ($equipes as $idx => $equipe) {
-            if (!$equipe->chef_equipe_id && isset($chefs[$idx])) {
+            if (! $equipe->chef_equipe_id && isset($chefs[$idx])) {
                 $equipe->update(['chef_equipe_id' => $chefs[$idx]->id]);
             }
         }
@@ -118,10 +119,10 @@ class FullDataSeeder extends Seeder
                 'matricule' => $matricule,
                 'nom' => $lastName,
                 'prenom' => $firstName,
-                'email' => strtolower($firstName) . '.' . strtolower(str_replace(' ', '', $lastName)) . '@tactic.com',
+                'email' => strtolower($firstName).'.'.strtolower(str_replace(' ', '', $lastName)).'@tactic.com',
                 'password' => Hash::make('password'),
-                'telephone' => '06' . str_pad(rand(0, 99999999), 8, '0', STR_PAD_LEFT),
-                'adresse' => rand(1, 200) . ' Rue ' . ['Tunis', 'Sfax', 'Sousse', 'Bizerte', 'Ariana'][rand(0, 4)],
+                'telephone' => '06'.str_pad(rand(0, 99999999), 8, '0', STR_PAD_LEFT),
+                'adresse' => rand(1, 200).' Rue '.['Tunis', 'Sfax', 'Sousse', 'Bizerte', 'Ariana'][rand(0, 4)],
                 'date_embauche' => $dateEmbauche,
                 'type_contrat' => $contractTypes[array_rand($contractTypes)],
                 'salaire_base' => $salary,
@@ -151,7 +152,9 @@ class FullDataSeeder extends Seeder
         // ────────────────────────────────────────────────────────────
         $this->command->info('🎯 Assigning skills...');
         foreach ($employees as $employee) {
-            if ($employee->competences()->count() > 0) continue;
+            if ($employee->competences()->count() > 0) {
+                continue;
+            }
 
             $skillCount = rand(3, 8);
             $selectedSkills = $competences->random($skillCount);
@@ -226,7 +229,9 @@ class FullDataSeeder extends Seeder
                     // Exit between 16:30 and 19:00
                     $exitHour = rand(16, 19);
                     $exitMin = $exitHour === 19 ? rand(0, 0) : rand(0, 59);
-                    if ($exitHour === 16) $exitMin = rand(30, 59);
+                    if ($exitHour === 16) {
+                        $exitMin = rand(30, 59);
+                    }
 
                     $entryTime = sprintf('%02d:%02d:00', $entryHour, $entryMin);
                     $exitTime = sprintf('%02d:%02d:00', $exitHour, $exitMin);
@@ -238,8 +243,8 @@ class FullDataSeeder extends Seeder
                     $pointageBatch[] = [
                         'utilisateur_id' => $employee->id,
                         'date' => $day,
-                        'heure_entree' => $day . ' ' . $entryTime,
-                        'heure_sortie' => $day . ' ' . $exitTime,
+                        'heure_entree' => $day.' '.$entryTime,
+                        'heure_sortie' => $day.' '.$exitTime,
                         'duree_travail' => $hoursWorked,
                         'absence_justifiee' => false,
                         'created_at' => now(),
@@ -268,7 +273,7 @@ class FullDataSeeder extends Seeder
         }
 
         // Flush remaining
-        if (!empty($pointageBatch)) {
+        if (! empty($pointageBatch)) {
             DB::table('pointages')->insert($pointageBatch);
         }
 
@@ -299,7 +304,9 @@ class FullDataSeeder extends Seeder
                 $leaveEnd = $leaveStart->copy()->addDays($leaveDays);
 
                 // Don't create leaves in the future
-                if ($leaveStart->isFuture()) continue;
+                if ($leaveStart->isFuture()) {
+                    continue;
+                }
 
                 $status = $leaveStatuses[array_rand($leaveStatuses)];
                 $type = $leaveTypes[array_rand($leaveTypes)];
@@ -350,7 +357,9 @@ class FullDataSeeder extends Seeder
             $numAffected = rand(2, 4);
             for ($a = 0; $a < $numAffected; $a++) {
                 $emp = $availableEmployees->pop();
-                if (!$emp) break;
+                if (! $emp) {
+                    break;
+                }
 
                 Affectation::create([
                     'utilisateur_id' => $emp->id,
@@ -407,7 +416,7 @@ class FullDataSeeder extends Seeder
                 }
             }
         }
-        if (!empty($paieBatch)) {
+        if (! empty($paieBatch)) {
             DB::table('paies')->insert($paieBatch);
         }
 
@@ -501,7 +510,7 @@ class FullDataSeeder extends Seeder
             }
         }
 
-        $this->command->info("  ✓ " . JobPost::count() . " job posts, " . JobApplication::count() . " applications created");
+        $this->command->info('  ✓ '.JobPost::count().' job posts, '.JobApplication::count().' applications created');
 
         // ────────────────────────────────────────────────────────────
         // Summary
@@ -514,8 +523,8 @@ class FullDataSeeder extends Seeder
         $this->command->info("   Attendance records: {$totalPointages}");
         $this->command->info("   Leave requests: {$totalConges}");
         $this->command->info("   Payroll records: {$totalPaies}");
-        $this->command->info("   Job posts: " . JobPost::count());
-        $this->command->info("   Applications: " . JobApplication::count());
+        $this->command->info('   Job posts: '.JobPost::count());
+        $this->command->info('   Applications: '.JobApplication::count());
     }
 
     /**

@@ -154,6 +154,36 @@ The Python service returns fields with these names — always match them exactly
 
 ---
 
+## Backend testing
+
+PHPUnit suites live under [`backend/tests/`](backend/tests/):
+
+| Suite | Path | Purpose |
+|-------|------|---------|
+| Unit | `tests/Unit/` | Services, repositories, middleware |
+| Feature | `tests/Feature/` | HTTP API, security, CRUD |
+| Integration | `tests/Integration/` | Event + multi-step flows |
+| Performance | `tests/Performance/` | Query-count budgets (N+1 guards) |
+
+**Conventions:**
+
+- Use `RefreshDatabase` — never depend on `FullDataSeeder` in tests.
+- Use [`TestHelpers`](backend/tests/TestHelpers.php) (`createTestUser`, `createTestRh`, `assertQueryCount`) and [`AuthenticatesApiUsers`](backend/tests/Feature/Concerns/AuthenticatesApiUsers.php).
+- Authorization is enforced via `CheckRole` middleware (no Laravel Policy classes).
+- Integration events: `LeaveStatusNotification`, `SalaryPaid`, `AttendanceNotification` — not RabbitMQ/Queue/Notification classes.
+
+```powershell
+cd backend
+php artisan test
+php artisan test --testsuite=Performance
+composer analyse
+composer pint:test
+```
+
+CI workflows: [`tests.yml`](.github/workflows/tests.yml), [`coverage.yml`](.github/workflows/coverage.yml), [`phpstan.yml`](.github/workflows/phpstan.yml), [`pint.yml`](.github/workflows/pint.yml).
+
+---
+
 ## Running the Full Stack
 
 ```powershell

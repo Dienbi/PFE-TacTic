@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\JobPostStatus;
 use App\Enums\JobRequestStatus;
-use App\Enums\Role;
 use App\Events\JobRequestReviewedEvent;
 use App\Events\NewJobRequestEvent;
 use App\Models\JobRequest;
@@ -19,8 +18,7 @@ class JobRequestService
         protected JobRequestRepository $jobRequestRepository,
         protected UtilisateurRepository $utilisateurRepository,
         protected JobPostRepository $jobPostRepository
-    ) {
-    }
+    ) {}
 
     public function getAll(): Collection
     {
@@ -52,7 +50,7 @@ class JobRequestService
         // Validate that demandeur is a manager
         $demandeur = $this->utilisateurRepository->findOrFail($demandeurId);
 
-        if (!$demandeur->isChefEquipe()) {
+        if (! $demandeur->isChefEquipe()) {
             return ['error' => 'Seuls les chefs d\'équipe peuvent créer des demandes de poste.'];
         }
 
@@ -82,11 +80,11 @@ class JobRequestService
             event(new NewJobRequestEvent(
                 jobRequestId: $jobRequest->id,
                 titre: $jobRequest->titre,
-                demandeurNom: $demandeur->nom . ' ' . $demandeur->prenom,
+                demandeurNom: $demandeur->nom.' '.$demandeur->prenom,
                 equipeNom: $jobRequest->equipe->nom
             ));
         } catch (\Exception $e) {
-            \Log::warning('Broadcast failed for NewJobRequestEvent: ' . $e->getMessage());
+            \Log::warning('Broadcast failed for NewJobRequestEvent: '.$e->getMessage());
         }
 
         return $jobRequest;
@@ -97,7 +95,7 @@ class JobRequestService
         $jobRequest = $this->jobRequestRepository->findOrFail($id);
 
         // Only pending requests can be updated
-        if (!$jobRequest->isPending()) {
+        if (! $jobRequest->isPending()) {
             return ['error' => 'Seules les demandes en attente peuvent être modifiées.'];
         }
 
@@ -111,18 +109,18 @@ class JobRequestService
     {
         $jobRequest = $this->jobRequestRepository->findWithRelations($id);
 
-        if (!$jobRequest) {
+        if (! $jobRequest) {
             return ['error' => 'Demande de poste introuvable.'];
         }
 
-        if (!$jobRequest->isPending()) {
+        if (! $jobRequest->isPending()) {
             return ['error' => 'Cette demande a déjà été traitée.'];
         }
 
         // Approve the request
         $success = $jobRequest->approve();
 
-        if (!$success) {
+        if (! $success) {
             return ['error' => 'Échec de l\'approbation de la demande.'];
         }
 
@@ -157,7 +155,7 @@ class JobRequestService
                 approved: true
             ));
         } catch (\Exception $e) {
-            \Log::warning('Broadcast failed for JobRequestReviewedEvent: ' . $e->getMessage());
+            \Log::warning('Broadcast failed for JobRequestReviewedEvent: '.$e->getMessage());
         }
 
         return ['success' => true, 'job_post' => $jobPost];
@@ -167,11 +165,11 @@ class JobRequestService
     {
         $jobRequest = $this->jobRequestRepository->findWithRelations($id);
 
-        if (!$jobRequest) {
+        if (! $jobRequest) {
             return ['error' => 'Demande de poste introuvable.'];
         }
 
-        if (!$jobRequest->isPending()) {
+        if (! $jobRequest->isPending()) {
             return ['error' => 'Cette demande a déjà été traitée.'];
         }
 
@@ -196,7 +194,7 @@ class JobRequestService
                     raison: $raison
                 ));
             } catch (\Exception $e) {
-                \Log::warning('Broadcast failed for JobRequestReviewedEvent: ' . $e->getMessage());
+                \Log::warning('Broadcast failed for JobRequestReviewedEvent: '.$e->getMessage());
             }
         }
 
@@ -208,7 +206,7 @@ class JobRequestService
         $jobRequest = $this->jobRequestRepository->findOrFail($id);
 
         // Only pending requests can be deleted
-        if (!$jobRequest->isPending()) {
+        if (! $jobRequest->isPending()) {
             return ['error' => 'Seules les demandes en attente peuvent être supprimées.'];
         }
 

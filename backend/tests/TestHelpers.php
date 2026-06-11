@@ -4,8 +4,8 @@ namespace Tests;
 
 use App\Enums\EmployeStatus;
 use App\Enums\Role;
-use App\Enums\StatutPaie;
 use App\Enums\StatutConge;
+use App\Enums\StatutPaie;
 use App\Enums\TypeConge;
 use App\Models\Competence;
 use App\Models\Conge;
@@ -27,7 +27,7 @@ trait TestHelpers
             'nom' => 'TestNom',
             'prenom' => 'TestPrenom',
             'email' => fake()->unique()->safeEmail(),
-            'matricule' => 'TEST' . fake()->unique()->numberBetween(100, 999),
+            'matricule' => 'TEST'.fake()->unique()->numberBetween(100, 999),
             'role' => Role::EMPLOYE,
             'status' => EmployeStatus::DISPONIBLE,
             'salaire_base' => 1000.00,
@@ -115,7 +115,7 @@ trait TestHelpers
     protected function createTestCompetence(array $attributes = []): Competence
     {
         return Competence::factory()->create(array_merge([
-            'nom' => 'Test Skill ' . fake()->unique()->numberBetween(1, 9999),
+            'nom' => 'Test Skill '.fake()->unique()->numberBetween(1, 9999),
         ], $attributes));
     }
 

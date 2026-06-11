@@ -12,7 +12,7 @@ class EquipeFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom' => fake()->unique()->words(2, true) . ' Team',
+            'nom' => fake()->unique()->words(2, true).' Team',
             'chef_equipe_id' => null,
         ];
     }

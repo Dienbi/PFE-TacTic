@@ -47,7 +47,7 @@ class Utilisateur extends Authenticatable implements JWTSubject
      */
     public function receivesBroadcastNotificationsOn(): string
     {
-        return 'user.' . $this->id;
+        return 'user.'.$this->id;
     }
 
     protected $casts = [
@@ -120,7 +120,7 @@ class Utilisateur extends Authenticatable implements JWTSubject
     // Accessors
     public function getNomCompletAttribute()
     {
-        return $this->prenom . ' ' . $this->nom;
+        return $this->prenom.' '.$this->nom;
     }
 
     // Scopes

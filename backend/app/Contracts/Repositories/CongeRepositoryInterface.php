@@ -3,7 +3,6 @@
 namespace App\Contracts\Repositories;
 
 use App\Enums\TypeConge;
-use App\Models\Conge;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 

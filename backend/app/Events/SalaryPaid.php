@@ -2,11 +2,8 @@
 
 namespace App\Events;
 
-use App\Models\Paie;
 use App\Models\Utilisateur;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -19,8 +16,11 @@ class SalaryPaid implements ShouldBroadcast
     use SerializesModels;
 
     public $message;
+
     public $salaireNet;
+
     public $userId;
+
     public $type;
 
     /**
@@ -30,7 +30,7 @@ class SalaryPaid implements ShouldBroadcast
     {
         $this->userId = $user->id;
         $this->salaireNet = $salaireNet;
-        $this->message = "Votre salaire de " . number_format($salaireNet, 3) . " TND a été versé.";
+        $this->message = 'Votre salaire de '.number_format($salaireNet, 3).' TND a été versé.';
         $this->type = 'success';
     }
 
@@ -42,7 +42,7 @@ class SalaryPaid implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('user.' . $this->userId),
+            new PrivateChannel('user.'.$this->userId),
         ];
     }
 

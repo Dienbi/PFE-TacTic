@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Services\AIService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AIController extends Controller
 {
@@ -27,6 +26,7 @@ class AIController extends Controller
         $data = \Illuminate\Support\Facades\Cache::remember('ai_attendance_all', 600, function () {
             return $this->aiService->getAttendancePredictionsAll();
         });
+
         return response()->json($data);
     }
 
@@ -39,6 +39,7 @@ class AIController extends Controller
         $data = \Illuminate\Support\Facades\Cache::remember("ai_attendance_{$userId}", 600, function () use ($userId) {
             return $this->aiService->getAttendancePrediction($userId);
         });
+
         return response()->json($data);
     }
 
@@ -53,6 +54,7 @@ class AIController extends Controller
         $data = \Illuminate\Support\Facades\Cache::remember('ai_performance_all', 600, function () {
             return $this->aiService->getPerformanceScoresAll();
         });
+
         return response()->json($data);
     }
 
@@ -65,6 +67,7 @@ class AIController extends Controller
         $data = \Illuminate\Support\Facades\Cache::remember("ai_performance_{$userId}", 600, function () use ($userId) {
             return $this->aiService->getPerformanceScore($userId);
         });
+
         return response()->json($data);
     }
 
@@ -79,6 +82,7 @@ class AIController extends Controller
         $data = \Illuminate\Support\Facades\Cache::remember('ai_dashboard_kpis', 600, function () {
             return $this->aiService->getDashboardKPIs();
         });
+
         return response()->json($data);
     }
 
@@ -102,9 +106,9 @@ class AIController extends Controller
     public function train(string $model): JsonResponse
     {
         $allowed = ['attendance', 'performance', 'matching', 'all'];
-        if (!in_array($model, $allowed)) {
+        if (! in_array($model, $allowed)) {
             return response()->json([
-                'error' => 'Invalid model. Choose from: ' . implode(', ', $allowed),
+                'error' => 'Invalid model. Choose from: '.implode(', ', $allowed),
             ], 400);
         }
 

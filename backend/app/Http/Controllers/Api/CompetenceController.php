@@ -11,8 +11,7 @@ class CompetenceController extends Controller
 {
     public function __construct(
         protected CompetenceRepository $competenceRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Get all competences
@@ -31,7 +30,7 @@ class CompetenceController extends Controller
     {
         $competence = $this->competenceRepository->getWithUtilisateurs($id);
 
-        if (!$competence) {
+        if (! $competence) {
             return response()->json([
                 'message' => 'Compétence non trouvée.',
             ], 404);

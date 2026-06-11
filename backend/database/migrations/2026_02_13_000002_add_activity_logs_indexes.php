@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->index('created_at', 'idx_activity_logs_created_at');
-            $table->index('user_id',    'idx_activity_logs_user_id');
+            $table->index('user_id', 'idx_activity_logs_user_id');
         });
     }
 

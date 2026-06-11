@@ -16,7 +16,7 @@ class ActivityLogController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->integer('per_page', 20);
-        $page    = $request->integer('page', 1);
+        $page = $request->integer('page', 1);
 
         $result = Cache::remember("activity_logs_p{$page}_pp{$perPage}", 300, function () use ($perPage, $page) {
             $total = ActivityLog::count();
@@ -26,11 +26,11 @@ class ActivityLogController extends Controller
                 ->get();
 
             return [
-                'data'         => $items,
+                'data' => $items,
                 'current_page' => $page,
-                'per_page'     => $perPage,
-                'total'        => $total,
-                'last_page'    => (int) ceil($total / $perPage),
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => (int) ceil($total / $perPage),
             ];
         });
 

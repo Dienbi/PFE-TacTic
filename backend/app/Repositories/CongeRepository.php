@@ -89,7 +89,7 @@ class CongeRepository extends BaseRepository implements CongeRepositoryInterface
                     ->orWhereBetween('date_fin', [$dateDebut, $dateFin])
                     ->orWhere(function ($q2) use ($dateDebut, $dateFin) {
                         $q2->where('date_debut', '<=', $dateDebut)
-                           ->where('date_fin', '>=', $dateFin);
+                            ->where('date_fin', '>=', $dateFin);
                     });
             });
 

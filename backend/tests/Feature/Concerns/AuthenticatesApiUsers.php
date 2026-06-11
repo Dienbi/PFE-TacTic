@@ -9,7 +9,7 @@ trait AuthenticatesApiUsers
 {
     protected function bearerTokenFor(Utilisateur $user): string
     {
-        return 'Bearer ' . JWTAuth::fromUser($user);
+        return 'Bearer '.JWTAuth::fromUser($user);
     }
 
     protected function actingAsApiUser(Utilisateur $user): self

@@ -19,8 +19,7 @@ class NewJobRequestEvent implements ShouldBroadcastNow
         public string $titre,
         public string $demandeurNom,
         public string $equipeNom
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {

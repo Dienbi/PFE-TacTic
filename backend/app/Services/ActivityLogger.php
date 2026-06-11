@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Request;
 
 class ActivityLogger
 {
-    public static function log(string $action, string $description = null, ?int $userId = null, bool $broadcast = true)
+    public static function log(string $action, ?string $description = null, ?int $userId = null, bool $broadcast = true)
     {
         $log = ActivityLog::create([
             'user_id' => $userId ?? auth()->id(),
@@ -16,7 +16,7 @@ class ActivityLogger
             'ip_address' => Request::ip(),
         ]);
 
-        if (!$broadcast) {
+        if (! $broadcast) {
             return;
         }
 
@@ -25,7 +25,7 @@ class ActivityLogger
             $log->load(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')]);
             event(new \App\Events\NewActivityLog($log));
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("Failed to broadcast activity log: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('Failed to broadcast activity log: '.$e->getMessage());
         }
     }
 }

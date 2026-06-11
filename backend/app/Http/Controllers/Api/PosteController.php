@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Poste;
 use App\Repositories\PosteRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,8 +11,7 @@ class PosteController extends Controller
 {
     public function __construct(
         protected PosteRepository $posteRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Get all positions
@@ -32,7 +30,7 @@ class PosteController extends Controller
     {
         $poste = $this->posteRepository->getWithAffectations($id);
 
-        if (!$poste) {
+        if (! $poste) {
             return response()->json([
                 'message' => 'Poste non trouvé.',
             ], 404);

@@ -10,7 +10,7 @@ enum JobRequestStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'En attente',
             self::APPROVED => 'Approuvée',
             self::REJECTED => 'Rejetée',
@@ -19,7 +19,7 @@ enum JobRequestStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'warning',
             self::APPROVED => 'success',
             self::REJECTED => 'danger',

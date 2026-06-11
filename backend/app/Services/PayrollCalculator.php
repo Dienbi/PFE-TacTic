@@ -16,6 +16,7 @@ class PayrollCalculator
     public function calculateHourlyRate(float $salaireBase): float
     {
         $monthlyHours = config('payroll.standard_monthly_hours', 173);
+
         return round($salaireBase / $monthlyHours, 2);
     }
 
@@ -25,6 +26,7 @@ class PayrollCalculator
     public function calculateCNSS(float $salaireBrut): float
     {
         $cnssRate = config('payroll.cnss_rate', 0.0918);
+
         return round($salaireBrut * $cnssRate, 2);
     }
 
@@ -32,7 +34,7 @@ class PayrollCalculator
      * Calculate annual income tax using progressive brackets.
      * Uses Tunisian IRPP progressive tax system.
      *
-     * @param float $revenuAnnuelImposable Annual taxable income (after CNSS)
+     * @param  float  $revenuAnnuelImposable  Annual taxable income (after CNSS)
      * @return float Total annual tax amount
      */
     public function calculateAnnualIncomeTax(float $revenuAnnuelImposable): float

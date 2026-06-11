@@ -15,8 +15,7 @@ class DashboardController extends Controller
     public function __construct(
         private DashboardService $dashboardService,
         private \App\Services\AIService $aiService
-    ) {
-    }
+    ) {}
 
     private function shouldLogPerf(): bool
     {
@@ -55,6 +54,7 @@ class DashboardController extends Controller
                         'compute_ms' => round((microtime(true) - $computeStart) * 1000, 2),
                     ]);
                 }
+
                 return $res;
             });
 
@@ -71,37 +71,37 @@ class DashboardController extends Controller
 
         $data = Cache::remember($cacheKey, 300, function () use ($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit, $withAi, $fetch) {
             $startDate = Carbon::now()->startOfMonth();
-            $endDate   = Carbon::now()->endOfMonth();
+            $endDate = Carbon::now()->endOfMonth();
 
             $aiData = $withAi ? $fetch(
                 'ai_dashboard',
-                \App\Services\CacheService::KEY_AI_DASHBOARD . "_{$attendanceLimit}_{$performanceLimit}",
+                \App\Services\CacheService::KEY_AI_DASHBOARD."_{$attendanceLimit}_{$performanceLimit}",
                 600,
                 fn () => $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit)
             ) : ['ai_attendance' => [], 'ai_performance' => [], 'ai_kpis' => []];
 
             return [
-                'stats'   => $fetch(
+                'stats' => $fetch(
                     'dashboard_rh_stats',
                     \App\Services\CacheService::KEY_DASHBOARD_STATS,
                     300,
                     fn () => $this->dashboardService->getRhDashboardStats()
                 ),
-                'trend'   => $fetch(
+                'trend' => $fetch(
                     'dashboard_trend',
-                    \App\Services\CacheService::KEY_DASHBOARD_TREND . "_{$months}",
+                    \App\Services\CacheService::KEY_DASHBOARD_TREND."_{$months}",
                     300,
                     fn () => $this->dashboardService->getAttendanceTrend($months)
                 ),
                 'absence' => $fetch(
                     'absence_distribution',
-                    \App\Services\CacheService::KEY_ABSENCE_DIST . '_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d'),
+                    \App\Services\CacheService::KEY_ABSENCE_DIST.'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d'),
                     300,
                     fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
                 ),
                 'recent_leaves' => $fetch(
                     'recent_leaves',
-                    \App\Services\CacheService::KEY_RECENT_LEAVES . "_{$recentLeavesLimit}",
+                    \App\Services\CacheService::KEY_RECENT_LEAVES."_{$recentLeavesLimit}",
                     300,
                     fn () => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
                 ),
@@ -147,9 +147,9 @@ class DashboardController extends Controller
         $stats = Cache::remember(
             \App\Services\CacheService::KEY_DASHBOARD_STATS,
             300,
-            fn () =>
-            $this->dashboardService->getRhDashboardStats()
+            fn () => $this->dashboardService->getRhDashboardStats()
         );
+
         return response()->json($stats);
     }
 
@@ -160,11 +160,11 @@ class DashboardController extends Controller
     {
         $months = $request->input('months', 6);
         $trend = Cache::remember(
-            \App\Services\CacheService::KEY_DASHBOARD_TREND . "_{$months}",
+            \App\Services\CacheService::KEY_DASHBOARD_TREND."_{$months}",
             300,
-            fn () =>
-            $this->dashboardService->getAttendanceTrend($months)
+            fn () => $this->dashboardService->getAttendanceTrend($months)
         );
+
         return response()->json($trend);
     }
 
@@ -181,13 +181,13 @@ class DashboardController extends Controller
             ? Carbon::parse($request->input('end_date'))
             : Carbon::now()->endOfMonth();
 
-        $key = 'absence_dist_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d');
+        $key = 'absence_dist_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
         $distribution = Cache::remember(
             $key,
             300,
-            fn () =>
-            $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
+            fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
         );
+
         return response()->json($distribution);
     }
 }

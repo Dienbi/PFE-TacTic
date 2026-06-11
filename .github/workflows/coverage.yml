@@ -24,10 +24,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    defaults:
-      run:
-        working-directory: backend
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,7 +45,15 @@ jobs:
 
       - name: Prepare Laravel test environment
         run: |
-          cp .env.example .env
+          if [ ! -f backend/.env.example ]; then
+            echo "backend/.env.example is missing from the checkout."
+            ls -la backend || true
+            exit 1
+          fi
+
+          cp backend/.env.example backend/.env
+
+          cd backend
           php artisan key:generate
           cp .env .env.testing
 
@@ -66,6 +70,7 @@ jobs:
           sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing || echo "DB_PASSWORD=admin" >> .env.testing
 
       - name: Install dependencies
+        working-directory: backend
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Wait for PostgreSQL
@@ -78,6 +83,7 @@ jobs:
           exit 1
 
       - name: Run migrations
+        working-directory: backend
         run: php artisan migrate --env=testing --force
         env:
           APP_ENV: testing
@@ -90,6 +96,7 @@ jobs:
           DB_PASSWORD: admin
 
       - name: Run tests with coverage
+        working-directory: backend
         run: |
           php artisan test --env=testing \
             --coverage-clover=coverage.xml \

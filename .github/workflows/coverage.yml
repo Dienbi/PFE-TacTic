@@ -10,18 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:15
         env:
-          MYSQL_DATABASE: tactic_test
-          MYSQL_ROOT_PASSWORD: root
+          POSTGRES_DB: tactic_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - name: Checkout repository
@@ -32,52 +37,81 @@ jobs:
         with:
           php-version: 8.2
           coverage: xdebug
-          extensions: mbstring, pdo, pdo_mysql, bcmath
+          extensions: mbstring, pdo, pgsql, bcmath
 
-      - name: Copy environment file
-        run: cp .env.example .env
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Prepare Laravel test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          cp .env .env.testing
+
+          sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env.testing || echo "APP_ENV=testing" >> .env.testing
+          sed -i 's/^CACHE_DRIVER=.*/CACHE_DRIVER=array/' .env.testing || echo "CACHE_DRIVER=array" >> .env.testing
+          sed -i 's/^QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env.testing || echo "QUEUE_CONNECTION=sync" >> .env.testing
+          sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env.testing || echo "SESSION_DRIVER=array" >> .env.testing
+          sed -i 's/^MAIL_MAILER=.*/MAIL_MAILER=array/' .env.testing || echo "MAIL_MAILER=array" >> .env.testing
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing || echo "DB_CONNECTION=pgsql" >> .env.testing
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing || echo "DB_HOST=127.0.0.1" >> .env.testing
+          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env.testing || echo "DB_PORT=5432" >> .env.testing
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=tactic_db/' .env.testing || echo "DB_DATABASE=tactic_db" >> .env.testing
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env.testing || echo "DB_USERNAME=postgres" >> .env.testing
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=admin/' .env.testing || echo "DB_PASSWORD=admin" >> .env.testing
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --no-interaction
 
-      - name: Generate application key
-        run: php artisan key:generate
-
-      - name: Configure database
+      - name: Wait for PostgreSQL
         run: |
-          php artisan config:clear
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres && exit 0
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          exit 1
 
       - name: Run migrations
+        run: php artisan migrate --env=testing --force
         env:
-          DB_CONNECTION: mysql
+          APP_ENV: testing
+          CACHE_DRIVER: array
+          DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: tactic_test
-          DB_USERNAME: root
-          DB_PASSWORD: root
-        run: php artisan migrate --force
+          DB_PORT: 5432
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin
 
       - name: Run tests with coverage
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: tactic_test
-          DB_USERNAME: root
-          DB_PASSWORD: root
         run: |
-          php artisan test \
+          php artisan test --env=testing \
             --coverage-clover=coverage.xml \
             --coverage-html=coverage-report
+        env:
+          APP_ENV: testing
+          CACHE_DRIVER: array
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: tactic_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: admin
 
       - name: Upload Clover report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
-          path: coverage.xml
+          path: backend/coverage.xml
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-html
-          path: coverage-report
+          path: backend/coverage-report

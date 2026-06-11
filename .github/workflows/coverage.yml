@@ -3,7 +3,7 @@ name: Coverage
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *' # every day at midnight UTC
+    - cron: "0 0 * * *"
 
 jobs:
   coverage:
@@ -45,16 +45,12 @@ jobs:
 
       - name: Prepare Laravel test environment
         run: |
-          if [ ! -f backend/.env.example ]; then
-            echo "backend/.env.example is missing from the checkout."
-            ls -la backend || true
-            exit 1
-          fi
-
           cp backend/.env.example backend/.env
 
           cd backend
+
           php artisan key:generate
+
           cp .env .env.testing
 
           sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env.testing || echo "APP_ENV=testing" >> .env.testing
@@ -62,6 +58,7 @@ jobs:
           sed -i 's/^QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env.testing || echo "QUEUE_CONNECTION=sync" >> .env.testing
           sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env.testing || echo "SESSION_DRIVER=array" >> .env.testing
           sed -i 's/^MAIL_MAILER=.*/MAIL_MAILER=array/' .env.testing || echo "MAIL_MAILER=array" >> .env.testing
+
           sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env.testing || echo "DB_CONNECTION=pgsql" >> .env.testing
           sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env.testing || echo "DB_HOST=127.0.0.1" >> .env.testing
           sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env.testing || echo "DB_PORT=5432" >> .env.testing
@@ -84,7 +81,6 @@ jobs:
 
       - name: Run migrations
         working-directory: backend
-        run: php artisan migrate --env=testing --force
         env:
           APP_ENV: testing
           CACHE_DRIVER: array
@@ -94,13 +90,10 @@ jobs:
           DB_DATABASE: tactic_db
           DB_USERNAME: postgres
           DB_PASSWORD: admin
+        run: php artisan migrate --env=testing --force
 
       - name: Run tests with coverage
         working-directory: backend
-        run: |
-          php artisan test --env=testing \
-            --coverage-clover=coverage.xml \
-            --coverage-html=coverage-report
         env:
           APP_ENV: testing
           CACHE_DRIVER: array
@@ -110,15 +103,44 @@ jobs:
           DB_DATABASE: tactic_db
           DB_USERNAME: postgres
           DB_PASSWORD: admin
+        run: |
+          php -d memory_limit=1G artisan test \
+            --env=testing \
+            --coverage-clover=coverage.xml \
+            --coverage-html=coverage-report
 
       - name: Upload Clover report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
           path: backend/coverage.xml
+          retention-days: 7
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-html
           path: backend/coverage-report
+          retention-days: 7
+
+      - name: Display coverage percentage
+        working-directory: backend
+        run: |
+          php -r '
+          $xml = simplexml_load_file("coverage.xml");
+          $metrics = $xml->project->metrics;
+
+          $covered = (int)$metrics["coveredstatements"];
+          $statements = (int)$metrics["statements"];
+
+          if ($statements > 0) {
+              $coverage = round(($covered / $statements) * 100, 2);
+              echo PHP_EOL;
+              echo "======================================" . PHP_EOL;
+              echo "OVERALL TEST COVERAGE: {$coverage}%" . PHP_EOL;
+              echo "Covered statements: {$covered}/{$statements}" . PHP_EOL;
+              echo "======================================" . PHP_EOL;
+          } else {
+              echo "Could not determine coverage percentage." . PHP_EOL;
+          }
+          '

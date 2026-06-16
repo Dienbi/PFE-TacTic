@@ -3,9 +3,13 @@
 namespace App\Repositories;
 
 use App\Contracts\Repositories\PointageRepositoryInterface;
+use App\Enums\Role;
 use App\Models\Pointage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 
 class PointageRepository extends BaseRepository implements PointageRepositoryInterface
 {
@@ -145,5 +149,42 @@ class PointageRepository extends BaseRepository implements PointageRepositoryInt
             ->where('duree_travail', '>', 8)
             ->selectRaw('COALESCE(SUM(duree_travail - 8), 0) as heures_supp')
             ->value('heures_supp');
+    }
+
+    /**
+     * Aggregate absence and late counts per employee/team leader for anomaly detection.
+     */
+    public function getAnomalyAggregates(Carbon $startDate, Carbon $endDate, string $lateThreshold = '09:15:00'): SupportCollection
+    {
+        $aggSub = DB::table('pointages')
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->groupBy('utilisateur_id')
+            ->selectRaw("
+                utilisateur_id,
+                SUM(CASE WHEN heure_entree IS NULL THEN 1 ELSE 0 END) as absence_count,
+                SUM(CASE WHEN heure_entree IS NULL AND COALESCE(absence_justifiee, false) = false THEN 1 ELSE 0 END) as unjustified_absence_count,
+                SUM(CASE WHEN heure_entree IS NOT NULL AND heure_entree > '{$lateThreshold}' THEN 1 ELSE 0 END) as late_count,
+                SUM(CASE WHEN heure_entree IS NOT NULL THEN 1 ELSE 0 END) as present_count
+            ");
+
+        return DB::table('utilisateurs as u')
+            ->leftJoinSub($aggSub, 'agg', function (JoinClause $join) {
+                $join->on('u.id', '=', 'agg.utilisateur_id');
+            })
+            ->whereNull('u.deleted_at')
+            ->where('u.actif', true)
+            ->whereIn('u.role', [Role::EMPLOYE->value, Role::CHEF_EQUIPE->value])
+            ->select([
+                'u.id',
+                'u.nom',
+                'u.prenom',
+                'u.matricule',
+                'u.role',
+                DB::raw('COALESCE(agg.absence_count, 0) as absence_count'),
+                DB::raw('COALESCE(agg.unjustified_absence_count, 0) as unjustified_absence_count'),
+                DB::raw('COALESCE(agg.late_count, 0) as late_count'),
+                DB::raw('COALESCE(agg.present_count, 0) as present_count'),
+            ])
+            ->get();
     }
 }

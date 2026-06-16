@@ -158,6 +158,7 @@ Route::middleware('jwt.auth')->group(function () {
         // RH & Chef Equipe routes
         Route::middleware('role:rh,chef_equipe')->group(function () {
             Route::get('/summary', [PointageController::class, 'summary']);
+            Route::get('/anomalies', [PointageController::class, 'anomalies']);
             Route::get('/date', [PointageController::class, 'byDate']);
             Route::get('/utilisateur/{utilisateurId}', [PointageController::class, 'byUtilisateur']);
             Route::post('/absence', [PointageController::class, 'marquerAbsence']);

@@ -12,6 +12,16 @@ use Illuminate\Validation\ValidationException;
 
 class PointageService
 {
+    private const LATE_THRESHOLD = '09:15:00';
+
+    private const MIN_LATE_COUNT = 3;
+
+    private const MIN_ABSENCE_COUNT = 4;
+
+    private const MIN_UNJUSTIFIED_ABSENCE_COUNT = 2;
+
+    private const LOW_ATTENDANCE_RATIO = 0.6;
+
     public function __construct(
         protected PointageRepositoryInterface $pointageRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
@@ -94,6 +104,108 @@ class PointageService
                 'currently_in' => $currentlyIn,
             ],
         ];
+    }
+
+    /**
+     * Detect employees and team leaders with recurring absences or late check-ins.
+     */
+    public function getAnomalies(Carbon $endDate, int $days = 30): array
+    {
+        $days = max(min($days, 90), 7);
+        $startDate = $endDate->copy()->subDays($days - 1)->startOfDay();
+        $workingDays = $this->countWorkingDays($startDate, $endDate);
+
+        $rows = $this->pointageRepository->getAnomalyAggregates(
+            $startDate,
+            $endDate,
+            self::LATE_THRESHOLD
+        );
+
+        $anomalies = [];
+
+        foreach ($rows as $row) {
+            $flags = [];
+            $absenceCount = (int) $row->absence_count;
+            $unjustifiedCount = (int) $row->unjustified_absence_count;
+            $lateCount = (int) $row->late_count;
+            $presentCount = (int) $row->present_count;
+
+            if ($lateCount >= self::MIN_LATE_COUNT) {
+                $flags[] = 'frequent_late';
+            }
+
+            $lowAttendance = $workingDays >= 5
+                && $presentCount > 0
+                && ($presentCount / $workingDays) < self::LOW_ATTENDANCE_RATIO;
+
+            if ($unjustifiedCount >= self::MIN_UNJUSTIFIED_ABSENCE_COUNT
+                || $absenceCount >= self::MIN_ABSENCE_COUNT
+                || $lowAttendance) {
+                $flags[] = 'heavy_absence';
+            }
+
+            if ($flags === []) {
+                continue;
+            }
+
+            $severity = ($lateCount >= 5 || $absenceCount >= 5 || count($flags) > 1) ? 'high' : 'medium';
+
+            $anomalies[] = [
+                'id' => (int) $row->id,
+                'nom' => $row->nom,
+                'prenom' => $row->prenom,
+                'matricule' => $row->matricule,
+                'role' => $row->role,
+                'role_label' => $row->role === 'CHEF_EQUIPE' ? 'Chef d\'équipe' : 'Employé',
+                'absence_count' => $absenceCount,
+                'unjustified_absence_count' => $unjustifiedCount,
+                'late_count' => $lateCount,
+                'present_count' => $presentCount,
+                'flags' => $flags,
+                'severity' => $severity,
+            ];
+        }
+
+        usort($anomalies, function (array $a, array $b) {
+            $severityOrder = ['high' => 0, 'medium' => 1];
+            $severityDiff = ($severityOrder[$a['severity']] ?? 2) <=> ($severityOrder[$b['severity']] ?? 2);
+            if ($severityDiff !== 0) {
+                return $severityDiff;
+            }
+
+            return ($b['absence_count'] + $b['late_count']) <=> ($a['absence_count'] + $a['late_count']);
+        });
+
+        return [
+            'period' => [
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+                'working_days' => $workingDays,
+                'days' => $days,
+            ],
+            'thresholds' => [
+                'late_checkins' => self::MIN_LATE_COUNT,
+                'absences' => self::MIN_ABSENCE_COUNT,
+                'unjustified_absences' => self::MIN_UNJUSTIFIED_ABSENCE_COUNT,
+            ],
+            'total' => count($anomalies),
+            'anomalies' => $anomalies,
+        ];
+    }
+
+    private function countWorkingDays(Carbon $startDate, Carbon $endDate): int
+    {
+        $count = 0;
+        $current = $startDate->copy();
+
+        while ($current->lte($endDate)) {
+            if (! $current->isWeekend()) {
+                $count++;
+            }
+            $current->addDay();
+        }
+
+        return $count;
     }
 
     public function getByUtilisateur(int $utilisateurId): Collection

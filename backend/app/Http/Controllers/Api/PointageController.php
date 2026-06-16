@@ -73,6 +73,19 @@ class PointageController extends Controller
     }
 
     /**
+     * Get attendance anomalies (recurring absences / late check-ins).
+     */
+    public function anomalies(Request $request): JsonResponse
+    {
+        $endDate = $request->has('end_date') ? Carbon::parse($request->end_date) : Carbon::today();
+        $days = (int) $request->input('days', 30);
+
+        return response()->json(
+            $this->pointageService->getAnomalies($endDate, $days)
+        );
+    }
+
+    /**
      * Clock in
      */
     public function pointerEntree(Request $request): JsonResponse

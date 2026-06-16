@@ -154,4 +154,44 @@ class PointageApiTest extends TestCase
             ->getJson('/api/pointages/summary')
             ->assertForbidden();
     }
+
+    /** @test */
+    public function rh_can_view_attendance_anomalies(): void
+    {
+        $rh = $this->createTestRh();
+        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
+
+        for ($i = 0; $i < 3; $i++) {
+            Pointage::create([
+                'utilisateur_id' => $employee->id,
+                'date' => Carbon::today()->subDays($i),
+                'heure_entree' => Carbon::today()->setTime(10, 30),
+                'duree_travail' => 0,
+            ]);
+        }
+
+        $this
+            ->actingAsApiUser($rh)
+            ->getJson('/api/pointages/anomalies?days=30')
+            ->assertOk()
+            ->assertJsonStructure([
+                'period' => ['start_date', 'end_date', 'working_days', 'days'],
+                'total',
+                'anomalies',
+            ])
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('anomalies.0.id', $employee->id)
+            ->assertJsonPath('anomalies.0.flags.0', 'frequent_late');
+    }
+
+    /** @test */
+    public function employee_cannot_view_attendance_anomalies(): void
+    {
+        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
+
+        $this
+            ->actingAsApiUser($employee)
+            ->getJson('/api/pointages/anomalies')
+            ->assertForbidden();
+    }
 }

@@ -26,6 +26,12 @@ class UtilisateurController extends Controller
         $perPage = $perPage > 0 ? min($perPage, 100) : 25;
 
         if ($request->boolean('all')) {
+            if (! $request->user()->isRh()) {
+                return response()->json([
+                    'message' => 'Accès non autorisé.',
+                ], 403);
+            }
+
             $users = Cache::remember('users_all', 120, fn () => $this->utilisateurService->getAll());
         } else {
             $users = $this->utilisateurService->getPaginated($perPage);

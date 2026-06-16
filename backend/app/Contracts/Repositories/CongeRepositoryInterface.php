@@ -5,10 +5,13 @@ namespace App\Contracts\Repositories;
 use App\Enums\TypeConge;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface CongeRepositoryInterface
 {
     public function getByUtilisateur(int $utilisateurId): Collection;
+
+    public function paginateWithUtilisateur(int $perPage, int $page): LengthAwarePaginator;
 
     public function getEnAttente(): Collection;
 

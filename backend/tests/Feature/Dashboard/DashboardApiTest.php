@@ -33,15 +33,23 @@ class DashboardApiTest extends TestCase
     {
         $rh = $this->createTestRh();
 
-        $this
+        $response = $this
             ->actingAsApiUser($rh)
-            ->getJson('/api/dashboard/all?with_ai=0&noCache=1')
+            ->getJson('/api/dashboard/all?noCache=1')
             ->assertOk()
             ->assertJsonStructure([
                 'stats',
                 'trend',
                 'absence',
+                'recent_leaves',
+                'pending_requests',
+                'recent_logs',
             ]);
+
+        $payload = $response->json();
+        $this->assertArrayNotHasKey('ai_attendance', $payload);
+        $this->assertArrayNotHasKey('ai_performance', $payload);
+        $this->assertArrayNotHasKey('ai_kpis', $payload);
     }
 
     /** @test */

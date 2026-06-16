@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CongeRequest;
+use App\Services\CacheService;
 use App\Services\CongeService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -21,21 +22,12 @@ class CongeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->integer('per_page', 20);
-        $conges = $this->congeService->getAll();
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
+        $page = max($request->integer('page', 1), 1);
 
-        // Manual pagination since service returns enriched collection
-        $page = $request->integer('page', 1);
-        $total = $conges->count();
-        $items = $conges->slice(($page - 1) * $perPage, $perPage)->values();
+        $paginator = $this->congeService->getPaginated($perPage, $page);
 
-        return response()->json([
-            'data' => $items,
-            'current_page' => $page,
-            'per_page' => $perPage,
-            'total' => $total,
-            'last_page' => (int) ceil($total / $perPage),
-        ]);
+        return response()->json($paginator);
     }
 
     /**
@@ -70,7 +62,7 @@ class CongeController extends Controller
     public function enAttente(): JsonResponse
     {
         $conges = Cache::remember(
-            'conges_en_attente',
+            CacheService::KEY_CONGES_EN_ATTENTE,
             300,
             fn () => $this->congeService->getEnAttente()
         );

@@ -24,4 +24,5 @@ export const queryKeys = {
         applications: (postId: number) => ['job-matching', 'applications', postId] as const,
         aiRecommendations: (postId: number) => ['job-matching', 'ai', postId] as const,
     },
+    aiReports: (params?: unknown) => ['reports', 'ai', params] as const,
 };

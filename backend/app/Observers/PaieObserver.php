@@ -39,5 +39,6 @@ class PaieObserver
     private function invalidateCaches(Paie $paie): void
     {
         $this->cacheService->invalidatePayrollStats();
+        $this->cacheService->invalidatePayrollEmployeesConfig();
     }
 }

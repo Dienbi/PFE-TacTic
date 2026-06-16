@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Users,
   Clock,
   TrendingUp,
   DollarSign,
-  Brain,
-  ShieldAlert,
 } from "lucide-react";
-import { aiApi, DashboardKPIs } from "../../../api/aiApi";
 
 interface DashboardStats {
   total_employees: number;
@@ -20,41 +17,10 @@ interface DashboardStats {
 
 interface KPISectionProps {
   stats: DashboardStats | null;
-  aiKpis: DashboardKPIs | null;
   loading: boolean;
 }
 
-const KPISection: React.FC<KPISectionProps> = ({
-  stats,
-  aiKpis: initialAiKpis,
-  loading,
-}) => {
-  const [aiKpis, setAiKpis] = useState<DashboardKPIs | null>(initialAiKpis);
-  const hasAiPayload = (data: DashboardKPIs | null) =>
-    !!data &&
-    typeof data === "object" &&
-    (!!data.attendance_predictions || !!data.performance_scores);
-
-  useEffect(() => {
-    // If we already have AI data from the unified response, use it
-    if (hasAiPayload(initialAiKpis)) {
-      setAiKpis(initialAiKpis);
-      return;
-    }
-
-    // Only fetch if we're not loading and we don't have the data yet
-    if (!loading && !aiKpis) {
-      aiApi
-        .getDashboardKPIs()
-        .then((data) => {
-          if (hasAiPayload(data)) {
-            setAiKpis(data);
-          }
-        })
-        .catch((err) => console.error("AI KPIs error:", err));
-    }
-  }, [initialAiKpis, loading, aiKpis]);
-
+const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
   const formatCurrency = (value: number): string =>
     new Intl.NumberFormat("fr-TN", {
       style: "decimal",
@@ -81,14 +47,7 @@ const KPISection: React.FC<KPISectionProps> = ({
     );
   }
 
-  const kpis: Array<{
-    title: string;
-    value: string | number;
-    change: string;
-    icon: any;
-    color: string;
-    pillClass?: string;
-  }> = [
+  const kpis = [
     {
       title: "Employés",
       value: stats.total_employees.toString(),
@@ -139,43 +98,13 @@ const KPISection: React.FC<KPISectionProps> = ({
     },
   ];
 
-  const attendancePred = aiKpis?.attendance_predictions;
-  const perfScores = aiKpis?.performance_scores;
-
-  const aiCards: typeof kpis = [
-    {
-      title: "Score Performance IA",
-      value: perfScores ? perfScores.avg_performance.toFixed(1) : "—",
-      change: perfScores ? "Moyenne globale /100" : "Indisponible",
-      icon: Brain,
-      color: perfScores ? "text-purple-500" : "text-gray-500",
-      pillClass: "pill-purple",
-    },
-    {
-      title: "Risque Absence IA",
-      value: attendancePred
-        ? attendancePred.high_risk_employees +
-          attendancePred.medium_risk_employees
-        : "—",
-      change: attendancePred
-        ? `${attendancePred.predicted_absence_rate.toFixed(1)}% taux prédit`
-        : "Indisponible",
-      icon: ShieldAlert,
-      color: attendancePred ? "text-orange-500" : "text-gray-500",
-      pillClass: "pill-amber",
-    },
-  ];
-
   return (
     <section className="kpi-panel">
       <div className="kpi-grid">
-        {[...kpis, ...aiCards].map((kpi) => (
-          <div
-            key={kpi.title}
-            className={`kpi-card ${kpi.pillClass ? "kpi-card-ai" : ""}`}
-          >
+        {kpis.map((kpi) => (
+          <div key={kpi.title} className="kpi-card">
             <div className="kpi-header">
-              <div className={`kpi-icon-pill ${kpi.pillClass ?? ""}`}>
+              <div className="kpi-icon-pill">
                 <kpi.icon size={18} />
               </div>
               <span className="kpi-title">{kpi.title}</span>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\CacheService;
 use App\Services\DashboardService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -13,8 +14,7 @@ use Illuminate\Support\Facades\Log;
 class DashboardController extends Controller
 {
     public function __construct(
-        private DashboardService $dashboardService,
-        private \App\Services\AIService $aiService
+        private DashboardService $dashboardService
     ) {}
 
     private function shouldLogPerf(): bool
@@ -23,7 +23,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get all RH dashboard data in one request (stats + trend + absence distribution + AI data)
+     * Get all RH dashboard data in one request (stats + trend + absence distribution).
      */
     public function rhDashboardAll(Request $request): JsonResponse
     {
@@ -32,10 +32,9 @@ class DashboardController extends Controller
         $attendanceLimit = (int) $request->input('attendance_limit', 10);
         $performanceLimit = (int) $request->input('performance_limit', 10);
         $recentLeavesLimit = (int) $request->input('recent_leaves_limit', 5);
-        $withAi = $request->boolean('with_ai', true);
         $noCache = $request->boolean('noCache');
 
-        $cacheKey = \App\Services\CacheService::getDashboardAllKey($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit, $withAi);
+        $cacheKey = CacheService::getDashboardAllKey($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit);
 
         if ($noCache) {
             Cache::forget($cacheKey);
@@ -69,59 +68,47 @@ class DashboardController extends Controller
             return $result;
         };
 
-        $data = Cache::remember($cacheKey, 300, function () use ($months, $attendanceLimit, $performanceLimit, $recentLeavesLimit, $withAi, $fetch) {
+        $data = Cache::remember($cacheKey, 300, function () use ($months, $recentLeavesLimit, $fetch) {
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
-
-            $aiData = $withAi ? $fetch(
-                'ai_dashboard',
-                \App\Services\CacheService::KEY_AI_DASHBOARD."_{$attendanceLimit}_{$performanceLimit}",
-                600,
-                fn () => $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit)
-            ) : ['ai_attendance' => [], 'ai_performance' => [], 'ai_kpis' => []];
 
             return [
                 'stats' => $fetch(
                     'dashboard_rh_stats',
-                    \App\Services\CacheService::KEY_DASHBOARD_STATS,
+                    CacheService::KEY_DASHBOARD_STATS,
                     300,
                     fn () => $this->dashboardService->getRhDashboardStats()
                 ),
                 'trend' => $fetch(
                     'dashboard_trend',
-                    \App\Services\CacheService::KEY_DASHBOARD_TREND."_{$months}",
+                    CacheService::KEY_DASHBOARD_TREND."_{$months}",
                     300,
                     fn () => $this->dashboardService->getAttendanceTrend($months)
                 ),
                 'absence' => $fetch(
                     'absence_distribution',
-                    \App\Services\CacheService::KEY_ABSENCE_DIST.'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d'),
+                    CacheService::KEY_ABSENCE_DIST.'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d'),
                     300,
                     fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
                 ),
                 'recent_leaves' => $fetch(
                     'recent_leaves',
-                    \App\Services\CacheService::KEY_RECENT_LEAVES."_{$recentLeavesLimit}",
+                    CacheService::KEY_RECENT_LEAVES."_{$recentLeavesLimit}",
                     300,
                     fn () => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
                 ),
                 'pending_requests' => $fetch(
                     'pending_account_requests',
-                    \App\Services\CacheService::KEY_PENDING_REQUESTS,
+                    CacheService::KEY_PENDING_REQUESTS,
                     300,
                     fn () => $this->dashboardService->getPendingAccountRequests()
                 ),
                 'recent_logs' => $fetch(
                     'recent_activity_logs',
-                    \App\Services\CacheService::KEY_RECENT_LOGS,
+                    CacheService::KEY_RECENT_LOGS,
                     300,
                     fn () => $this->dashboardService->getRecentActivityLogs()
                 ),
-
-                // AI Data integrated into the single call (parallelized in AIService)
-                'ai_attendance' => $aiData['ai_attendance'] ?? [],
-                'ai_performance' => $aiData['ai_performance'] ?? [],
-                'ai_kpis' => $aiData['ai_kpis'] ?? [],
             ];
         });
 
@@ -129,8 +116,6 @@ class DashboardController extends Controller
             Log::info('dashboard.all.complete', [
                 'path' => 'api/dashboard/all',
                 'months' => $months,
-                'attendance_limit' => $attendanceLimit,
-                'performance_limit' => $performanceLimit,
                 'recent_leaves_limit' => $recentLeavesLimit,
                 'total_ms' => round((microtime(true) - $totalStart) * 1000, 2),
             ]);
@@ -145,7 +130,7 @@ class DashboardController extends Controller
     public function rhStats(Request $request): JsonResponse
     {
         $stats = Cache::remember(
-            \App\Services\CacheService::KEY_DASHBOARD_STATS,
+            CacheService::KEY_DASHBOARD_STATS,
             300,
             fn () => $this->dashboardService->getRhDashboardStats()
         );
@@ -160,7 +145,7 @@ class DashboardController extends Controller
     {
         $months = $request->input('months', 6);
         $trend = Cache::remember(
-            \App\Services\CacheService::KEY_DASHBOARD_TREND."_{$months}",
+            CacheService::KEY_DASHBOARD_TREND."_{$months}",
             300,
             fn () => $this->dashboardService->getAttendanceTrend($months)
         );
@@ -181,7 +166,7 @@ class DashboardController extends Controller
             ? Carbon::parse($request->input('end_date'))
             : Carbon::now()->endOfMonth();
 
-        $key = 'absence_dist_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
+        $key = CacheService::KEY_ABSENCE_DIST.'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
         $distribution = Cache::remember(
             $key,
             300,

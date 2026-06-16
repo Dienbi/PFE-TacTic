@@ -42,6 +42,12 @@ class CacheService
 
     public const KEY_AI_DASHBOARD = 'ai_dashboard_data';
 
+    public const KEY_REPORTS_AI = 'reports_ai_summary';
+
+    public const KEY_PAYROLL_EMPLOYEES_CONFIG = 'payroll_employees_config';
+
+    public const KEY_CONGES_EN_ATTENTE = 'conges_en_attente';
+
     // Cache TTLs in seconds
     public const TTL_ACTIVE_USERS = 300; // 5 minutes
 
@@ -193,9 +199,45 @@ class CacheService
     /**
      * Build a cache key for the unified dashboard
      */
-    public static function getDashboardAllKey(int $months, int $att, int $perf, int $leaves, bool $withAi): string
+    public static function getDashboardAllKey(int $months, int $att, int $perf, int $leaves): string
     {
-        return self::KEY_DASHBOARD_ALL."_{$months}_{$att}_{$perf}_{$leaves}_ai".($withAi ? '1' : '0');
+        return self::KEY_DASHBOARD_ALL."_{$months}_{$att}_{$perf}_{$leaves}";
+    }
+
+    /**
+     * Invalidate dashboard segment caches and common unified dashboard keys.
+     */
+    public function invalidateDashboard(): void
+    {
+        Cache::forget(self::KEY_DASHBOARD_STATS);
+        Cache::forget(self::KEY_PENDING_REQUESTS);
+        Cache::forget(self::KEY_RECENT_LOGS);
+        Cache::forget(self::KEY_CONGES_EN_ATTENTE);
+
+        // Legacy keys (pre-unified dashboard)
+        Cache::forget('dashboard_all_6_v2');
+
+        // Default RH dashboard params (matches frontend useRhDashboard defaults)
+        foreach ([6] as $months) {
+            foreach ([5, 10] as $limit) {
+                Cache::forget(self::getDashboardAllKey($months, $limit, $limit, 5));
+                Cache::forget(self::getDashboardAllKey($months, 10, 10, 5));
+            }
+        }
+
+        // Trend variants commonly requested
+        foreach ([6, 12] as $months) {
+            Cache::forget(self::KEY_DASHBOARD_TREND."_{$months}");
+        }
+
+        $startDate = now()->startOfMonth()->format('Y-m-d');
+        $endDate = now()->endOfMonth()->format('Y-m-d');
+        Cache::forget(self::KEY_ABSENCE_DIST.'_'.$startDate.'_'.$endDate);
+    }
+
+    public function invalidatePayrollEmployeesConfig(): void
+    {
+        Cache::forget(self::KEY_PAYROLL_EMPLOYEES_CONFIG);
     }
 
     /**

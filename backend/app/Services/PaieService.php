@@ -67,6 +67,8 @@ class PaieService
 
         $utilisateur->refresh();
 
+        $this->cacheService->invalidatePayrollEmployeesConfig();
+
         // Notify
         $this->notifySalaryConfigured($utilisateurId, $salaireBase);
 
@@ -262,35 +264,40 @@ class PaieService
      */
     public function getEmployeesWithSalaryConfig(): array
     {
-        $employees = $this->utilisateurRepository->getActifs();
+        return $this->cacheService->remember(
+            CacheService::KEY_PAYROLL_EMPLOYEES_CONFIG,
+            120,
+            function () {
+                $employees = $this->utilisateurRepository->getActifs();
 
-        // Get all last paies at once to avoid N+1 queries
-        $employeeIds = $employees->pluck('id')->toArray();
-        $lastPaies = $this->paieRepository->getLastPaiesForUsers($employeeIds);
+                $employeeIds = $employees->pluck('id')->toArray();
+                $lastPaies = $this->paieRepository->getLastPaiesForUsers($employeeIds);
 
-        return $employees->map(function ($emp) use ($lastPaies) {
-            $lastPaie = $lastPaies[$emp->id] ?? null;
-            $preview = $emp->salaire_base > 0
-                ? $this->payrollCalculator->calculatePayroll($emp->salaire_base, 0)
-                : null;
+                return $employees->map(function ($emp) use ($lastPaies) {
+                    $lastPaie = $lastPaies[$emp->id] ?? null;
+                    $preview = $emp->salaire_base > 0
+                        ? $this->payrollCalculator->calculatePayroll($emp->salaire_base, 0)
+                        : null;
 
-            return [
-                'id' => $emp->id,
-                'matricule' => $emp->matricule,
-                'nom' => $emp->nom,
-                'prenom' => $emp->prenom,
-                'email' => $emp->email,
-                'role' => $emp->role,
-                'type_contrat' => $emp->type_contrat,
-                'date_embauche' => $emp->date_embauche,
-                'salaire_base' => $emp->salaire_base,
-                'taux_horaire' => $preview ? $preview['taux_horaire'] : 0,
-                'cnss_mensuel' => $preview ? $preview['cnss_employe'] : 0,
-                'impot_mensuel' => $preview ? $preview['impot_mensuel'] : 0,
-                'salaire_net_estime' => $preview ? $preview['salaire_net'] : 0,
-                'derniere_paie' => $lastPaie,
-            ];
-        })->toArray();
+                    return [
+                        'id' => $emp->id,
+                        'matricule' => $emp->matricule,
+                        'nom' => $emp->nom,
+                        'prenom' => $emp->prenom,
+                        'email' => $emp->email,
+                        'role' => $emp->role,
+                        'type_contrat' => $emp->type_contrat,
+                        'date_embauche' => $emp->date_embauche,
+                        'salaire_base' => $emp->salaire_base,
+                        'taux_horaire' => $preview ? $preview['taux_horaire'] : 0,
+                        'cnss_mensuel' => $preview ? $preview['cnss_employe'] : 0,
+                        'impot_mensuel' => $preview ? $preview['impot_mensuel'] : 0,
+                        'salaire_net_estime' => $preview ? $preview['salaire_net'] : 0,
+                        'derniere_paie' => $lastPaie,
+                    ];
+                })->toArray();
+            }
+        );
     }
 
     /**

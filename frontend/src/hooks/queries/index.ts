@@ -1,4 +1,4 @@
-export { useRhDashboard } from './useRhDashboard';
+export { useRhDashboard, useAiReports } from './useRhDashboard';
 export { useEmployees, useEmployeesPage, useArchivedEmployees, useTeams } from './useEmployees';
 export {
     useMesConges,

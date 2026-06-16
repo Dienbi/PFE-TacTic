@@ -8,6 +8,7 @@ use App\Enums\TypeConge;
 use App\Models\Conge;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CongeRepository extends BaseRepository implements CongeRepositoryInterface
 {
@@ -22,6 +23,13 @@ class CongeRepository extends BaseRepository implements CongeRepositoryInterface
             ->with('utilisateur')
             ->orderBy('date_debut', 'desc')
             ->get();
+    }
+
+    public function paginateWithUtilisateur(int $perPage, int $page): LengthAwarePaginator
+    {
+        return $this->model->with('utilisateur')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function getEnAttente(): Collection

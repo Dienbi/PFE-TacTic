@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\EquipeController;
 use App\Http\Controllers\Api\PaieController;
 use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
+use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\UtilisateurController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,11 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/rh-stats', [DashboardController::class, 'rhStats']);
         Route::get('/attendance-trend', [DashboardController::class, 'attendanceTrend']);
         Route::get('/absence-distribution', [DashboardController::class, 'absenceDistribution']);
+    });
+
+    // Reports routes (RH only)
+    Route::prefix('reports')->middleware('role:rh')->group(function () {
+        Route::get('/ai', [ReportsController::class, 'aiReports']);
     });
 
     // User routes (accessible by all authenticated users)

@@ -51,9 +51,10 @@ class DashboardService
         $prevMonthStart = Carbon::now()->subMonth()->startOfMonth();
         $prevMonthEnd = Carbon::now()->subMonth()->endOfMonth();
 
-        // Optimized: single query to get current and previous attendance counts + total hours
+        // Bounded date range — avoids full-table scan on pointages
         $pointageStats = DB::table('pointages')
             ->whereNotNull('heure_entree')
+            ->whereBetween('date', [$prevMonthStart->toDateString(), $today->toDateString()])
             ->selectRaw('
                 COUNT(*) FILTER (WHERE date BETWEEN ? AND ?) as current_month_count,
                 COUNT(*) FILTER (WHERE date BETWEEN ? AND ?) as prev_month_count,

@@ -41,6 +41,18 @@ class QueryPerformanceTest extends TestCase
     }
 
     /** @test */
+    public function conges_pagination_scales_with_page_size_not_total_rows(): void
+    {
+        for ($i = 0; $i < 15; $i++) {
+            $this->createTestConge($this->createTestUser(['email' => "perf.conge.page{$i}@tactic.test"]));
+        }
+
+        $service = app(CongeService::class);
+
+        $this->assertQueryCount(fn () => $service->getPaginated(10, 1), 12);
+    }
+
+    /** @test */
     public function utilisateur_index_stays_within_query_budget(): void
     {
         $rh = $this->createTestRh();

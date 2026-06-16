@@ -8,6 +8,7 @@ use App\Mail\WelcomeNewUser;
 use App\Models\AccountRequest;
 use App\Models\Utilisateur;
 use App\Services\ActivityLogger;
+use App\Services\CacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,6 +20,8 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AccountRequestController extends Controller
 {
+    public function __construct(private CacheService $cacheService) {}
+
     /**
      * Submit a new account request (public route)
      */
@@ -71,7 +74,7 @@ class AccountRequestController extends Controller
     public function pending(): JsonResponse
     {
         $requests = Cache::remember(
-            'account_requests_pending',
+            CacheService::KEY_PENDING_REQUESTS,
             300,
             fn () => AccountRequest::pending()
                 ->orderBy('created_at', 'desc')
@@ -166,8 +169,8 @@ class AccountRequestController extends Controller
             "Compte créé pour {$utilisateur->prenom} {$utilisateur->nom} ({$generatedEmail}) avec le rôle {$request->role}"
         );
 
-        Cache::forget('account_requests_pending');
-        Cache::forget('dashboard_all_6_v2');
+        Cache::forget(CacheService::KEY_PENDING_REQUESTS);
+        $this->cacheService->invalidateDashboard();
 
         return response()->json([
             'message' => 'La demande a été approuvée. Un email a été envoyé à l\'utilisateur.',
@@ -205,8 +208,8 @@ class AccountRequestController extends Controller
             "Demande de compte refusée pour {$accountRequest->prenom} {$accountRequest->nom}"
         );
 
-        Cache::forget('account_requests_pending');
-        Cache::forget('dashboard_all_6_v2');
+        Cache::forget(CacheService::KEY_PENDING_REQUESTS);
+        $this->cacheService->invalidateDashboard();
 
         return response()->json([
             'message' => 'La demande a été refusée.',

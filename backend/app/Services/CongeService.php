@@ -10,13 +10,15 @@ use App\Events\LeaveStatusNotification;
 use App\Models\Conge;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CongeService
 {
     public function __construct(
         protected CongeRepositoryInterface $congeRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository,
-        protected LeaveConflictService $leaveConflictService
+        protected LeaveConflictService $leaveConflictService,
+        protected CacheService $cacheService
     ) {}
 
     public function getAll(): Collection
@@ -31,6 +33,19 @@ class CongeService
         }
 
         return $leaves;
+    }
+
+    public function getPaginated(int $perPage, int $page): LengthAwarePaginator
+    {
+        $paginator = $this->congeRepository->paginateWithUtilisateur($perPage, $page);
+        $items = $paginator->getCollection();
+        $conflictsMap = $this->leaveConflictService->checkConflictsForMany($items);
+
+        foreach ($items as $leave) {
+            $leave->conflicts = $conflictsMap[$leave->id] ?? [];
+        }
+
+        return $paginator;
     }
 
     public function getById(int $id): ?Conge
@@ -108,9 +123,7 @@ class CongeService
 
     public function approuver(int $congeId, int $approuveParId): bool
     {
-        \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
-        \Illuminate\Support\Facades\Cache::forget('dashboard_all_6_v2');
-        \Illuminate\Support\Facades\Cache::forget('dashboard_rh_stats');
+        $this->cacheService->invalidateDashboard();
 
         $conge = $this->congeRepository->findOrFail($congeId);
 
@@ -157,9 +170,7 @@ class CongeService
 
     public function refuser(int $congeId, int $approuveParId, ?string $motifRefus = null): bool
     {
-        \Illuminate\Support\Facades\Cache::forget('conges_en_attente');
-        \Illuminate\Support\Facades\Cache::forget('dashboard_all_6_v2');
-        \Illuminate\Support\Facades\Cache::forget('dashboard_rh_stats');
+        $this->cacheService->invalidateDashboard();
 
         $conge = $this->congeRepository->findOrFail($congeId);
 

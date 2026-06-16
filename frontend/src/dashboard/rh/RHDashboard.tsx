@@ -42,21 +42,6 @@ const RHDashboard: React.FC = () => {
           <section className="kpi-panel">
             <KPISection
               stats={dashboardData?.stats ?? null}
-              aiKpis={dashboardData?.ai_kpis ? {
-                ...dashboardData.ai_kpis,
-                attendance_predictions: dashboardData.ai_kpis.attendance_predictions
-                  ? {
-                      ...dashboardData.ai_kpis.attendance_predictions,
-                      top_at_risk: dashboardData.ai_attendance ?? [],
-                    }
-                  : null,
-                performance_scores: dashboardData.ai_kpis.performance_scores
-                  ? {
-                      ...dashboardData.ai_kpis.performance_scores,
-                      top_performers: dashboardData.ai_performance ?? [],
-                    }
-                  : null,
-              } : null}
               loading={dashboardLoading}
             />
           </section>

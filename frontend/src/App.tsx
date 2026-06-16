@@ -28,6 +28,7 @@ const Profile = lazy(() => import("./shared/pages/Profile"));
 const EditProfile = lazy(() => import("./shared/pages/EditProfile"));
 const AttendanceHistory = lazy(() => import("./attendance/pages/AttendanceHistory"));
 const PayrollDashboard = lazy(() => import("./payroll/PayrollDashboard"));
+const ReportsPage = lazy(() => import("./reports/ReportsPage"));
 const EmployeeSalary = lazy(() => import("./payroll/EmployeeSalary"));
 const ManagerPayroll = lazy(() => import("./payroll/ManagerPayroll"));
 const RequestJob = lazy(() => import("./jobmatching/pages/manager/RequestJob"));
@@ -117,6 +118,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["rh"]}>
                   <PayrollDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <ReportsPage />
                 </ProtectedRoute>
               }
             />

@@ -1,3 +1,16 @@
+function Invoke-DockerQuiet {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+    try {
+        & docker @Arguments *> $null
+        return $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousPreference
+    }
+}
+
 function Clear-RunnerRegistrationVolumes {
     param(
         [Parameter(Mandatory = $true)]
@@ -9,8 +22,8 @@ function Clear-RunnerRegistrationVolumes {
     )
 
     Write-Host 'Stopping runners and clearing stale registration data...' -ForegroundColor Yellow
-    & docker @($ComposeBase + @('stop') + $runnerServices) 2>$null | Out-Null
-    & docker @($ComposeBase + @('rm', '-f') + $runnerServices) 2>$null | Out-Null
+    Invoke-DockerQuiet -Arguments ($ComposeBase + @('stop') + $runnerServices) | Out-Null
+    Invoke-DockerQuiet -Arguments ($ComposeBase + @('rm', '-f') + $runnerServices) | Out-Null
 
     $volumeNames = @(
         'tactic-platform_github_runner_1_data',
@@ -20,9 +33,15 @@ function Clear-RunnerRegistrationVolumes {
     )
 
     foreach ($volumeName in $volumeNames) {
-        $existing = & docker volume ls -q -f "name=^${volumeName}$"
+        $previousPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        try {
+            $existing = & docker volume ls -q -f "name=^${volumeName}$" 2>$null
+        } finally {
+            $ErrorActionPreference = $previousPreference
+        }
         if ($existing) {
-            & docker volume rm $volumeName | Out-Null
+            Invoke-DockerQuiet -Arguments @('volume', 'rm', $volumeName) | Out-Null
             Write-Host "Removed volume $volumeName" -ForegroundColor DarkYellow
         }
     }

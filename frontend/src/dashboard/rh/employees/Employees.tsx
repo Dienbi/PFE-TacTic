@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Plus,
   Search,
@@ -14,8 +14,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import {
+  useEmployeesPage,
+  useArchivedEmployees,
+  useTeams,
+} from "../../../hooks/queries";
+import { useEmployeeMutations } from "../../../hooks/mutations";
+import { useAuth } from "../../../hooks/useAuth";
 import client from "../../../api/client";
-import Loader from "../../../shared/components/Loader";
 import "./Employees.css";
 
 interface User {
@@ -42,23 +48,43 @@ interface Team {
 
 const Employees: React.FC = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<User[]>([]);
-  const [archivedUsers, setArchivedUsers] = useState<User[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user: rhUser, displayName } = useAuth();
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
+  const {
+    data: employeesPage,
+    isLoading,
+    refetch: refetchEmployees,
+  } = useEmployeesPage(page, perPage);
+  const { data: teamsData = [] } = useTeams();
+  const teams = teamsData as Team[];
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
+  const { data: archivedUsers = [] } = useArchivedEmployees(viewMode === "archived");
+  const { saveEmployee, archiveEmployee, restoreEmployee, forceDeleteEmployee } =
+    useEmployeeMutations();
+
+  const users: User[] = employeesPage?.data ?? (Array.isArray(employeesPage) ? employeesPage : []);
+  const pagination = employeesPage?.meta;
+  const meta = pagination?.current_page
+    ? {
+        current_page: pagination.current_page,
+        last_page: pagination.last_page,
+        total: pagination.total,
+      }
+    : {
+        current_page: page,
+        last_page: 1,
+        total: users.length,
+      };
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<User[] | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [rhUser, setRhUser] = useState<any>(null);
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(25);
-  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [searchTimer, setSearchTimer] = useState<ReturnType<
     typeof setTimeout
   > | null>(null);
@@ -80,113 +106,13 @@ const Employees: React.FC = () => {
     equipe_id: "",
   });
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setRhUser(JSON.parse(storedUser));
-    }
-    // Only fetch active users and teams initially for faster load
-    fetchInitialData();
-  }, []);
-
-  // Fetch archived users only when switching to archive view
-  useEffect(() => {
-    if (viewMode === "archived" && archivedUsers.length === 0) {
-      fetchArchivedUsers();
-    }
-  }, [viewMode]);
-
-  const fetchInitialData = async () => {
-    setIsLoading(true);
-    try {
-      const [usersRes, teamsRes] = await Promise.all([
-        client.get(`/utilisateurs?per_page=${perPage}`),
-        client.get("/equipes"),
-      ]);
-      setUsers(usersRes.data.data ?? usersRes.data);
-      const pagination = usersRes.data.meta ?? usersRes.data;
-      if (pagination?.current_page) {
-        setMeta({
-          current_page: pagination.current_page,
-          last_page: pagination.last_page,
-          total: pagination.total,
-        });
-      }
-      setTeams(teamsRes.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchAllData = async () => {
-    setIsLoading(true);
-    try {
-      const [usersRes, archivedRes, teamsRes] = await Promise.all([
-        client.get("/utilisateurs"),
-        client.get("/utilisateurs/archived"),
-        client.get("/equipes"),
-      ]);
-      setUsers(usersRes.data);
-      setArchivedUsers(archivedRes.data);
-      setTeams(teamsRes.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchTeams = async () => {
-    try {
-      const response = await client.get("/equipes");
-      setTeams(response.data);
-    } catch (error) {
-      console.error("Error fetching teams:", error);
-    }
-  };
-
-  const fetchUsersPage = async (pageNumber = 1, perPageValue = perPage) => {
-    setIsLoading(true);
-    try {
-      const response = await client.get(
-        `/utilisateurs?per_page=${perPageValue}&page=${pageNumber}`,
-      );
-      setUsers(response.data.data ?? response.data);
-      const pagination = response.data.meta ?? response.data;
-      if (pagination?.current_page) {
-        setMeta({
-          current_page: pagination.current_page,
-          last_page: pagination.last_page,
-          total: pagination.total,
-        });
-      }
-      setPage(pageNumber);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchArchivedUsers = async () => {
-    try {
-      const response = await client.get("/utilisateurs/archived");
-      setArchivedUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching archived users:", error);
-    }
-  };
-
   const performSearch = async (term: string) => {
     setIsSearching(true);
     try {
       const response = await client.get(
         `/utilisateurs/search?q=${encodeURIComponent(term)}`,
       );
-      setUsers(response.data);
-      setMeta({ current_page: 1, last_page: 1, total: response.data.length });
+      setSearchResults(response.data);
     } catch (error) {
       console.error("Error searching users:", error);
     } finally {
@@ -206,7 +132,8 @@ const Employees: React.FC = () => {
       const timer = setTimeout(() => performSearch(term), 300);
       setSearchTimer(timer);
     } else if (term.length === 0) {
-      fetchUsersPage(1);
+      setSearchResults(null);
+      setPage(1);
     }
   };
 
@@ -214,9 +141,19 @@ const Employees: React.FC = () => {
     if (searchTerm.length > 2) {
       performSearch(searchTerm);
     } else {
-      fetchUsersPage(page);
+      refetchEmployees();
     }
   };
+
+  const fetchUsersPage = (pageNumber = 1, perPageValue = perPage) => {
+    setSearchResults(null);
+    setPage(pageNumber);
+    if (perPageValue !== perPage) {
+      setPerPage(perPageValue);
+    }
+  };
+
+  const displayUsers = searchResults ?? users;
 
   const handleOpenModal = (user?: User) => {
     if (user) {
@@ -288,12 +225,13 @@ const Employees: React.FC = () => {
       dataToSend.salaire_base = parseFloat(String(dataToSend.salaire_base));
 
       if (isEditing && currentUser) {
-        // Remove password if empty to avoid updating it
-        await client.put(`/utilisateurs/${currentUser.id}`, dataToSend);
+        await saveEmployee.mutateAsync({ id: currentUser.id, data: dataToSend });
       } else {
-        await client.post("/utilisateurs", dataToSend);
+        await saveEmployee.mutateAsync({ data: dataToSend });
       }
-      fetchUsersPage(1);
+      setPage(1);
+      setSearchResults(null);
+      await refetchEmployees();
       handleCloseModal();
     } catch (error) {
       console.error("Error saving user:", error);
@@ -304,9 +242,8 @@ const Employees: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm("Are you sure you want to archive this user?")) {
       try {
-        await client.delete(`/utilisateurs/${id}`);
+        await archiveEmployee.mutateAsync(id);
         refreshUsers();
-        fetchArchivedUsers();
       } catch (error) {
         console.error("Error archiving user:", error);
       }
@@ -315,9 +252,8 @@ const Employees: React.FC = () => {
 
   const handleRestore = async (id: number) => {
     try {
-      await client.post(`/utilisateurs/${id}/restore`);
+      await restoreEmployee.mutateAsync(id);
       refreshUsers();
-      fetchArchivedUsers();
     } catch (error) {
       console.error("Error restoring user:", error);
     }
@@ -326,8 +262,7 @@ const Employees: React.FC = () => {
   const handleForceDelete = async () => {
     if (!userToDelete) return;
     try {
-      await client.delete(`/utilisateurs/${userToDelete.id}/force`);
-      fetchArchivedUsers();
+      await forceDeleteEmployee.mutateAsync(userToDelete.id);
       setShowDeleteModal(false);
       setUserToDelete(null);
     } catch (error) {
@@ -353,8 +288,8 @@ const Employees: React.FC = () => {
     }
   };
 
-  const filteredUsers = (viewMode === "active" ? users : archivedUsers).filter(
-    (user) => {
+  const filteredUsers = (viewMode === "active" ? displayUsers : archivedUsers as User[]).filter(
+    (user: User) => {
       const matchesSearch =
         user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -382,7 +317,7 @@ const Employees: React.FC = () => {
       <Sidebar role="rh" />
       <div className="main-content">
         <Navbar
-          userName={rhUser ? `${rhUser.prenom} ${rhUser.nom}` : "RH Manager"}
+          userName={rhUser ? displayName : "RH Manager"}
           userRole={rhUser ? rhUser.role : "RH"}
         />
 

@@ -89,3 +89,7 @@ volumes:
   nexus_data:
   prometheus_data:
   grafana_data:
+  github_runner_1_data:
+  github_runner_2_data:
+  github_runner_3_data:
+  github_runner_4_data:

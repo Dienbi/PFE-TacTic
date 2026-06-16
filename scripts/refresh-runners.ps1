@@ -6,11 +6,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+. (Join-Path $PSScriptRoot 'Write-RunnerEnv.ps1')
+
 if (-not $RepoUrl) {
     throw 'Set GITHUB_RUNNER_REPO_URL to your GitHub repository URL.'
 }
 
 if (-not $RunnerToken) {
+    Write-Host 'Get a fresh token: https://github.com/Dienbi/PFE-TacTic/settings/actions/runners/new' -ForegroundColor Yellow
     $RunnerToken = Read-Host 'Paste a fresh GitHub runner registration token'
 }
 
@@ -22,18 +25,18 @@ if ($RunnerToken -eq 'PASTE_A_FRESH_RUNNER_REGISTRATION_TOKEN_HERE') {
     throw 'Replace the placeholder token with a fresh GitHub runner registration token.'
 }
 
-$envFile = Join-Path (Split-Path -Parent $PSScriptRoot) 'docker\.env.runners'
-@"
-GITHUB_RUNNER_REPO_URL=$RepoUrl
-GITHUB_RUNNER_TOKEN=$RunnerToken
-"@ | Set-Content -Path $envFile -Encoding utf8 -NoNewline
-Add-Content -Path $envFile -Value ""
+$RootDir = Split-Path -Parent $PSScriptRoot
+$envFile = Join-Path $RootDir 'docker\.env.runners'
+$ComposeFile = Join-Path $RootDir 'docker\docker-compose.platform.yml'
+Write-RunnerEnvFile -Path $envFile -RepoUrl $RepoUrl -RunnerToken $RunnerToken
 
 $composeBase = @(
     'compose',
     '--env-file', $envFile,
-    '-f', 'docker/docker-compose.platform.yml'
+    '-f', $ComposeFile
 )
+
+Clear-RunnerRegistrationVolumes -ComposeBase $composeBase
 
 Write-Host 'Refreshing runners only (platform unchanged)...' -ForegroundColor Cyan
 docker @($composeBase + @('up', '-d', '--build', '--force-recreate', '--no-deps',

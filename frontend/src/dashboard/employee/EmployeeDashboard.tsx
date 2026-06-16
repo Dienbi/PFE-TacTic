@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import KPISection from "./components/KPISection";
@@ -8,20 +8,14 @@ import PerformanceSection from "./components/PerformanceSection";
 import SalarySection from "./components/SalarySection";
 import BottomActions from "./components/BottomActions";
 import NotificationsSection from "../manager/components/NotificationsSection";
+import { useAuth } from "../../hooks/useAuth";
 import "./EmployeeDashboard.css";
 
 const EmployeeDashboard: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, displayName } = useAuth();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const userName = user ? `${user.prenom} ${user.nom}` : "Employé";
-  const userRole = user ? user.role : "Employé";
+  const userName = user ? displayName : "Employé";
+  const userRole = user?.role ?? "Employé";
 
   return (
     <div className="dashboard-container">

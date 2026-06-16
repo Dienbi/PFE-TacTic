@@ -4,6 +4,7 @@ import { jobMatchingApi, JobApplication } from "../../api/jobMatchingApi";
 import { aiApi, CandidateRecommendation } from "../../../api/aiApi";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import { useAuth } from "../../../hooks/useAuth";
 import "./ApplicationsView.css";
 
 const ApplicationsView: React.FC = () => {
@@ -22,17 +23,23 @@ const ApplicationsView: React.FC = () => {
     CandidateRecommendation[]
   >([]);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiLoaded, setAiLoaded] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userName = user ? `${user.prenom} ${user.nom}` : "HR Manager";
-  const userRole = user ? user.role : "rh";
+  const { user, displayName } = useAuth();
+  const userName = user ? displayName : "HR Manager";
+  const userRole = user?.role ?? "rh";
 
   useEffect(() => {
     if (postId) {
       loadApplications();
-      loadAiRecommendations();
     }
   }, [postId]);
+
+  useEffect(() => {
+    if (postId && activeTab === "ai" && !aiLoaded) {
+      loadAiRecommendations();
+    }
+  }, [postId, activeTab, aiLoaded]);
 
   const loadApplications = async () => {
     try {
@@ -53,6 +60,7 @@ const ApplicationsView: React.FC = () => {
       setAiLoading(true);
       const data = await aiApi.getMatchRecommendations(parseInt(postId!));
       setAiRecommendations(data);
+      setAiLoaded(true);
     } catch (err: any) {
       console.error("AI recommendations error:", err);
     } finally {

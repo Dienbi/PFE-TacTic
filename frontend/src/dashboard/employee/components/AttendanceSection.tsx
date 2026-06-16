@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Clock, AlertTriangle, X } from "lucide-react";
 import {
-  getTodayPointage,
   checkIn,
   checkOut,
-  getStats,
-  Pointage,
-  PointageStats,
 } from "../../../attendance/api/attendanceApi";
+import { useTodayPointage, usePointageStats } from "../../../hooks/queries";
+import { queryClient } from "../../../api/queryClient";
+import { queryKeys } from "../../../api/queryKeys";
 import "./AttendanceSection.css";
 
 const AUTO_CHECKOUT_HOUR = 17; // 5 PM
 const ALERT_MINUTES_BEFORE = 5; // Show alert 5 minutes before auto-checkout
 
 const AttendanceSection: React.FC = () => {
-  const [todayPointage, setTodayPointage] = useState<Pointage | null>(null);
-  const [stats, setStats] = useState<PointageStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: todayPointage = null, isLoading, refetch: refetchPointage } =
+    useTodayPointage();
+  const { data: stats = null, refetch: refetchStats } = usePointageStats();
   const [elapsedTime, setElapsedTime] = useState<string>("0h 0m 0s");
   const [showAutoCheckoutAlert, setShowAutoCheckoutAlert] = useState(false);
   const [autoCheckoutCancelled, setAutoCheckoutCancelled] = useState(false);
@@ -89,25 +88,9 @@ const AttendanceSection: React.FC = () => {
     return `${hours}h ${minutes}m ${seconds}s`;
   }, [todayPointage]);
 
-  // Fetch today's pointage and stats
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [pointage, statsData] = await Promise.all([
-        getTodayPointage(),
-        getStats(),
-      ]);
-      setTodayPointage(pointage);
-      setStats(statsData);
-    } catch (error) {
-      console.error("Error fetching attendance data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
+  const invalidateAttendance = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.attendance.today() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.attendance.stats() });
   }, []);
 
   // Timer effect - update elapsed time every second when checked in
@@ -162,10 +145,11 @@ const AttendanceSection: React.FC = () => {
   const handleCheckIn = async () => {
     setActionLoading(true);
     try {
-      const response = await checkIn();
-      setTodayPointage(response.pointage);
+      await checkIn();
       setAutoCheckoutCancelled(false);
       setShowAutoCheckoutAlert(false);
+      invalidateAttendance();
+      await refetchPointage();
     } catch (error) {
       console.error("Error checking in:", error);
       alert("Erreur lors du pointage d'entrée");
@@ -177,12 +161,10 @@ const AttendanceSection: React.FC = () => {
   const handleCheckOut = async () => {
     setActionLoading(true);
     try {
-      const response = await checkOut(false);
-      setTodayPointage(response.pointage);
+      await checkOut(false);
       setShowAutoCheckoutAlert(false);
-      // Refresh stats after checkout
-      const statsData = await getStats();
-      setStats(statsData);
+      invalidateAttendance();
+      await Promise.all([refetchPointage(), refetchStats()]);
     } catch (error) {
       console.error("Error checking out:", error);
       alert("Erreur lors du pointage de sortie");
@@ -194,11 +176,10 @@ const AttendanceSection: React.FC = () => {
   const handleAutoCheckout = async () => {
     setActionLoading(true);
     try {
-      const response = await checkOut(true);
-      setTodayPointage(response.pointage);
+      await checkOut(true);
       setShowAutoCheckoutAlert(false);
-      const statsData = await getStats();
-      setStats(statsData);
+      invalidateAttendance();
+      await Promise.all([refetchPointage(), refetchStats()]);
     } catch (error) {
       console.error("Error auto checking out:", error);
     } finally {

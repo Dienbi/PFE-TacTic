@@ -2,10 +2,6 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
 
-// Simple in-memory cache for GET requests
-const cache = new Map();
-const CACHE_TTL = 60 * 1000; // 1 minute
-
 const client = axios.create({
     baseURL: API_URL,
     headers: {
@@ -14,29 +10,6 @@ const client = axios.create({
     },
 });
 
-// Add cache interceptor
-client.interceptors.request.use((config) => {
-    if (config.method === 'get' && !config.params?.noCache) {
-        const cacheKey = config.url + JSON.stringify(config.params || {});
-        const cachedResponse = cache.get(cacheKey);
-
-        if (cachedResponse && (Date.now() - cachedResponse.timestamp < CACHE_TTL)) {
-            // Return a resolved promise with the cached data
-            // We need to return an object that looks like an axios response
-            config.adapter = () => Promise.resolve({
-                data: cachedResponse.data,
-                status: 200,
-                statusText: 'OK',
-                headers: {},
-                config,
-                request: {}
-            });
-        }
-    }
-    return config;
-});
-
-// Add interceptor to add token to requests
 client.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -45,33 +18,23 @@ client.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error),
 );
 
-// Add response interceptor to handle 401 errors and populate cache
 client.interceptors.response.use(
-    (response) => {
-        if (response.config.method === 'get') {
-            const cacheKey = response.config.url + JSON.stringify(response.config.params || {});
-            cache.set(cacheKey, {
-                data: response.data,
-                timestamp: Date.now()
-            });
-        }
-        return response;
-    },
+    (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            // Clear invalid token
+        const requestUrl = error.config?.url ?? '';
+        const isAuthRequest = requestUrl.includes('/auth/login')
+            || requestUrl.includes('/auth/register');
+
+        if (error.response?.status === 401 && !isAuthRequest) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            // Redirect to login
             globalThis.location.href = '/login';
         }
         return Promise.reject(error);
-    }
+    },
 );
 
 export default client;

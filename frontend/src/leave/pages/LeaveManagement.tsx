@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -6,7 +6,6 @@ import {
   XCircle,
   Search,
   Filter,
-  User,
   FileText,
   Download,
   AlertTriangle,
@@ -16,6 +15,9 @@ import {
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import client from "../../api/client";
+import { useLeaveManagement } from "../../hooks/queries";
+import { useLeaveMutations } from "../../hooks/mutations";
+import { useAuth } from "../../hooks/useAuth";
 import "./LeaveManagement.css";
 
 interface Conflict {
@@ -46,9 +48,11 @@ interface LeaveRequestData {
 }
 
 const LeaveManagement: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [leaves, setLeaves] = useState<LeaveRequestData[]>([]);
-  const [pendingLeaves, setPendingLeaves] = useState<LeaveRequestData[]>([]);
+  const { user, displayName } = useAuth();
+  const { allLeaves, pendingLeaves, refetch } = useLeaveManagement();
+  const leaves = allLeaves as LeaveRequestData[];
+  const pending = pendingLeaves as LeaveRequestData[];
+  const { approveLeave, rejectLeave } = useLeaveMutations();
   const [activeTab, setActiveTab] = useState<"pending" | "all">("pending");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,34 +64,13 @@ const LeaveManagement: React.FC = () => {
   } | null>(null);
   const [selectedLeave, setSelectedLeave] = useState<LeaveRequestData | null>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const [allResponse, pendingResponse] = await Promise.all([
-        client.get("/conges"),
-        client.get("/conges/en-attente"),
-      ]);
-      setLeaves(allResponse.data.data ?? allResponse.data);
-      setPendingLeaves(pendingResponse.data.data ?? pendingResponse.data);
-    } catch (error) {
-      console.error("Error fetching leaves:", error);
-    }
-  };
-
   const handleApprove = async (id: number) => {
     setProcessing(id);
     setMessage(null);
     try {
-      await client.post(`/conges/${id}/approuver`);
+      await approveLeave.mutateAsync(id);
       setMessage({ type: "success", text: "Demande approuvée avec succès!" });
-      fetchData();
+      await refetch();
     } catch (error: any) {
       setMessage({
         type: "error",
@@ -105,9 +88,9 @@ const LeaveManagement: React.FC = () => {
     setProcessing(id);
     setMessage(null);
     try {
-      await client.post(`/conges/${id}/refuser`, { motif: reason });
+      await rejectLeave.mutateAsync({ id, motif: reason });
       setMessage({ type: "success", text: "Demande refusée." });
-      fetchData();
+      await refetch();
     } catch (error: any) {
       setMessage({
         type: "error",
@@ -173,8 +156,8 @@ const LeaveManagement: React.FC = () => {
     });
   };
 
-  const filteredLeaves = (activeTab === "pending" ? pendingLeaves : leaves)
-    .filter((leave) => {
+  const filteredLeaves = (activeTab === "pending" ? pending : leaves)
+    .filter((leave: LeaveRequestData) => {
       const matchesSearch =
         leave.utilisateur.nom
           .toLowerCase()
@@ -191,7 +174,7 @@ const LeaveManagement: React.FC = () => {
 
       return matchesSearch && (activeTab === "pending" || matchesStatus);
     })
-    .sort((a, b) => {
+    .sort((a: LeaveRequestData, b: LeaveRequestData) => {
       // Sort by conflict
       if (activeTab === "pending") {
         const getSeverityScore = (l: LeaveRequestData) => {
@@ -217,7 +200,7 @@ const LeaveManagement: React.FC = () => {
         <Sidebar role={user?.role} />
         <div className="main-content">
           <Navbar
-            userName={user ? `${user.prenom} ${user.nom}` : "RH"}
+            userName={user ? displayName : "RH"}
             userRole={user?.role || "RH"}
           />
 
@@ -237,7 +220,7 @@ const LeaveManagement: React.FC = () => {
               <div className="stat-content">
                 <Clock size={20} />
                 <div>
-                  <span className="stat-value">{pendingLeaves.length}</span>
+                  <span className="stat-value">{pending.length}</span>
                   <span className="stat-label">En attente</span>
                 </div>
               </div>
@@ -294,7 +277,7 @@ const LeaveManagement: React.FC = () => {
                 className={`tab ${activeTab === "pending" ? "active" : ""}`}
                 onClick={() => setActiveTab("pending")}
               >
-                En attente ({pendingLeaves.length})
+                En attente ({pending.length})
               </button>
               <button
                 className={`tab ${activeTab === "all" ? "active" : ""}`}

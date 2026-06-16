@@ -1,25 +1,12 @@
-import React, { useEffect, useState } from "react";
-import client from "../../../api/client";
+import React from "react";
 import { Link } from "react-router-dom";
+import client from "../../../api/client";
+import { useMesPaies } from "../../../hooks/queries";
 import "./SalarySection.css";
 
 const SalarySection: React.FC = () => {
-  const [latestPay, setLatestPay] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    client
-      .get("/paies/mes-paies")
-      .then((res) => {
-        // Assuming the API returns list sorted by date descending, or we sort it.
-        // Usually controller logs 'mesPaies' likely by latest.
-        if (res.data && res.data.length > 0) {
-          setLatestPay(res.data[0]);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: payslips = [], isLoading: loading } = useMesPaies();
+  const latestPay = payslips.length > 0 ? payslips[0] : null;
 
   const formatCurrency = (val: string | number) => {
     return (
@@ -33,7 +20,6 @@ const SalarySection: React.FC = () => {
   const handleDownload = async () => {
     if (!latestPay) return;
 
-    // Open window immediately
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write("Chargement...");

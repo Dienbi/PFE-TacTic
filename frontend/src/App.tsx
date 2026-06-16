@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,60 +6,64 @@ import {
   Navigate,
 } from "react-router-dom";
 import "./App.css";
-import Login from "./auth/Login";
-import Register from "./auth/Register";
-import SetPassword from "./auth/SetPassword";
-import RHDashboard from "./dashboard/rh/RHDashboard";
-import ManagerDashboard from "./dashboard/manager/ManagerDashboard";
-import MyTeam from "./dashboard/manager/my-team/MyTeam";
-import EmployeeDashboard from "./dashboard/employee/EmployeeDashboard";
-import Employees from "./dashboard/rh/employees/Employees";
-import UserProfile from "./dashboard/rh/employees/UserProfile";
-import Teams from "./dashboard/rh/teams/Teams";
-import AttendanceDashboard from "./dashboard/rh/attendance/AttendanceDashboard";
-import LeaveRequest from "./leave/pages/LeaveRequest";
-import LeaveManagement from "./leave/pages/LeaveManagement";
-import Profile from "./shared/pages/Profile";
-import EditProfile from "./shared/pages/EditProfile";
-import AttendanceHistory from "./attendance/pages/AttendanceHistory";
-import PayrollDashboard from "./payroll/PayrollDashboard";
-import EmployeeSalary from "./payroll/EmployeeSalary";
-import ManagerPayroll from "./payroll/ManagerPayroll";
-import ProtectedRoute, {
-  getDefaultDashboard,
-} from "./shared/components/ProtectedRoute";
-import { ToastProvider } from "./shared/components/Toast";
+import ProtectedRoute from "./shared/components/ProtectedRoute";
+import Loader from "./shared/components/Loader";
+import { useAuth } from "./hooks/useAuth";
+import { getDefaultDashboard } from "./store/authSlice";
 
-// Job Matching imports
-import RequestJob from "./jobmatching/pages/manager/RequestJob";
-import MyJobRequests from "./jobmatching/pages/manager/MyJobRequests";
-import JobRequestsReview from "./jobmatching/pages/hr/JobRequestsReview";
-import JobPosts from "./jobmatching/pages/hr/JobPosts";
-import ApplicationsView from "./jobmatching/pages/hr/ApplicationsView";
-import JobBoard from "./jobmatching/pages/employee/JobBoard";
-import MyApplications from "./jobmatching/pages/employee/MyApplications";
+const Login = lazy(() => import("./auth/Login"));
+const Register = lazy(() => import("./auth/Register"));
+const SetPassword = lazy(() => import("./auth/SetPassword"));
+const RHDashboard = lazy(() => import("./dashboard/rh/RHDashboard"));
+const ManagerDashboard = lazy(() => import("./dashboard/manager/ManagerDashboard"));
+const MyTeam = lazy(() => import("./dashboard/manager/my-team/MyTeam"));
+const EmployeeDashboard = lazy(() => import("./dashboard/employee/EmployeeDashboard"));
+const Employees = lazy(() => import("./dashboard/rh/employees/Employees"));
+const UserProfile = lazy(() => import("./dashboard/rh/employees/UserProfile"));
+const Teams = lazy(() => import("./dashboard/rh/teams/Teams"));
+const AttendanceDashboard = lazy(() => import("./dashboard/rh/attendance/AttendanceDashboard"));
+const LeaveRequest = lazy(() => import("./leave/pages/LeaveRequest"));
+const LeaveManagement = lazy(() => import("./leave/pages/LeaveManagement"));
+const Profile = lazy(() => import("./shared/pages/Profile"));
+const EditProfile = lazy(() => import("./shared/pages/EditProfile"));
+const AttendanceHistory = lazy(() => import("./attendance/pages/AttendanceHistory"));
+const PayrollDashboard = lazy(() => import("./payroll/PayrollDashboard"));
+const EmployeeSalary = lazy(() => import("./payroll/EmployeeSalary"));
+const ManagerPayroll = lazy(() => import("./payroll/ManagerPayroll"));
+const RequestJob = lazy(() => import("./jobmatching/pages/manager/RequestJob"));
+const MyJobRequests = lazy(() => import("./jobmatching/pages/manager/MyJobRequests"));
+const JobRequestsReview = lazy(() => import("./jobmatching/pages/hr/JobRequestsReview"));
+const JobPosts = lazy(() => import("./jobmatching/pages/hr/JobPosts"));
+const ApplicationsView = lazy(() => import("./jobmatching/pages/hr/ApplicationsView"));
+const JobBoard = lazy(() => import("./jobmatching/pages/employee/JobBoard"));
+const MyApplications = lazy(() => import("./jobmatching/pages/employee/MyApplications"));
 
-// Component to handle dashboard redirect based on user role
+const PageLoader = () => <Loader fullScreen />;
+
 const DashboardRedirect: React.FC = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  if (!user || !user.role) {
+  const { user, hydrated } = useAuth();
+
+  if (!hydrated) {
+    return <PageLoader />;
+  }
+
+  if (!user?.role) {
     return <Navigate to="/login" replace />;
   }
+
   return <Navigate to={getDefaultDashboard(user.role)} replace />;
 };
 
 function App() {
   return (
-    <ToastProvider>
-      <Router>
-        <div className="App">
+    <Router>
+      <div className="App">
+        <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/set-password" element={<SetPassword />} />
 
-            {/* RH Only Routes */}
             <Route
               path="/dashboard/rh"
               element={
@@ -141,7 +145,6 @@ function App() {
               }
             />
 
-            {/* Manager Only Routes */}
             <Route
               path="/dashboard/manager"
               element={
@@ -199,7 +202,6 @@ function App() {
               }
             />
 
-            {/* Employee Only Routes */}
             <Route
               path="/dashboard/employee"
               element={
@@ -241,7 +243,6 @@ function App() {
               }
             />
 
-            {/* Shared Routes (all authenticated users) */}
             <Route
               path="/profile"
               element={
@@ -267,13 +268,12 @@ function App() {
               }
             />
 
-            {/* Default redirects */}
             <Route path="/dashboard" element={<DashboardRedirect />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
-        </div>
-      </Router>
-    </ToastProvider>
+        </Suspense>
+      </div>
+    </Router>
   );
 }
 

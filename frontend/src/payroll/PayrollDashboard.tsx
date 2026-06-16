@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   DollarSign,
   Users,
@@ -24,6 +24,9 @@ import {
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
 import client from "../api/client";
+import { usePayrollDashboard } from "../hooks/queries";
+import { usePayrollMutations } from "../hooks/mutations";
+import { useAuth } from "../hooks/useAuth";
 import "./PayrollDashboard.css";
 
 // ── Interfaces ────────────────────────────────────────────────────
@@ -101,13 +104,25 @@ interface SimulationResult {
 type ActiveTab = "dashboard" | "config" | "payslips" | "generate";
 
 const PayrollDashboard: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, displayName } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
 
-  // Data
-  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
-  const [employees, setEmployees] = useState<EmployeeConfig[]>([]);
-  const [payrolls, setPayrolls] = useState<PayrollRecord[]>([]);
+  const {
+    globalStats,
+    employeesConfig: employees,
+    payrollRecords: payrolls,
+    refetch: fetchData,
+  } = usePayrollDashboard();
+  const employeeList = (employees ?? []) as EmployeeConfig[];
+  const payrollList = (payrolls ?? []) as PayrollRecord[];
+  const {
+    configureSalary,
+    increaseSalaries,
+    generatePayroll,
+    generateAllPayrolls,
+    validatePayroll,
+    payPayroll,
+  } = usePayrollMutations();
 
   // Config form
   const [editingEmployee, setEditingEmployee] = useState<number | null>(null);
@@ -142,34 +157,10 @@ const PayrollDashboard: React.FC = () => {
   // Detail
   const [expandedPayroll, setExpandedPayroll] = useState<number | null>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
-
-  const fetchData = useCallback(async () => {
-    try {
-      const [statsRes, empRes, payRes] = await Promise.all([
-        client.get("/paies/global-stats"),
-        client.get("/paies/employees-config"),
-        client.get("/paies"),
-      ]);
-      setGlobalStats(statsRes.data);
-      setEmployees(empRes.data);
-      setPayrolls(payRes.data.data ?? payRes.data);
-    } catch (error) {
-      console.error("Error fetching payroll data:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   // ── Salary Configuration ────────────────────────────────────────
   const handleSaveConfig = async (employeeId: number) => {
     try {
-      await client.post("/paies/configurer-salaire", {
+      await configureSalary.mutateAsync({
         utilisateur_id: employeeId,
         salaire_base: parseFloat(salaryInput),
       });
@@ -191,9 +182,7 @@ const PayrollDashboard: React.FC = () => {
 
   const handleIncreaseSalaries = async () => {
     try {
-      const res = await client.post("/paies/increase-salaries", {
-        percentage: parseFloat(increasePercent),
-      });
+      const res = await increaseSalaries.mutateAsync(parseFloat(increasePercent));
       setConfigMessage({
         type: "success",
         text: res.data.message,
@@ -248,7 +237,7 @@ const PayrollDashboard: React.FC = () => {
     setGenMessage(null);
     try {
       if (forAll) {
-        const res = await client.post("/paies/generer-tous", {
+        const res = await generateAllPayrolls.mutateAsync({
           periode_debut: genPeriodeDebut,
           periode_fin: genPeriodeFin,
         });
@@ -258,7 +247,7 @@ const PayrollDashboard: React.FC = () => {
           text: `${data.success?.length || 0} fiches générées, ${data.errors?.length || 0} erreurs.`,
         });
       } else {
-        await client.post("/paies/generer", {
+        await generatePayroll.mutateAsync({
           utilisateur_id: parseInt(genUserId),
           periode_debut: genPeriodeDebut,
           periode_fin: genPeriodeFin,
@@ -279,7 +268,7 @@ const PayrollDashboard: React.FC = () => {
   // ── Validation & Payment ────────────────────────────────────────
   const handleValidate = async (id: number) => {
     try {
-      await client.post(`/paies/${id}/valider`);
+      await validatePayroll.mutateAsync(id);
       fetchData();
     } catch (error) {
       console.error(error);
@@ -288,7 +277,7 @@ const PayrollDashboard: React.FC = () => {
 
   const handlePay = async (id: number) => {
     try {
-      await client.post(`/paies/${id}/payer`);
+      await payPayroll.mutateAsync(id);
       fetchData();
     } catch (error) {
       console.error(error);
@@ -349,14 +338,14 @@ const PayrollDashboard: React.FC = () => {
     }
   };
 
-  const filteredPayrolls = payrolls.filter((p) => {
+  const filteredPayrolls = payrollList.filter((p: PayrollRecord) => {
     const name = `${p.utilisateur?.prenom} ${p.utilisateur?.nom}`.toLowerCase();
     const matchesSearch = name.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || p.statut === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const filteredEmployees = employees.filter((e) => {
+  const filteredEmployees = employeeList.filter((e: EmployeeConfig) => {
     const name = `${e.prenom} ${e.nom} ${e.matricule}`.toLowerCase();
     return name.includes(searchTerm.toLowerCase());
   });
@@ -366,7 +355,7 @@ const PayrollDashboard: React.FC = () => {
       <Sidebar role="rh" />
       <div className="main-content">
         <Navbar
-          userName={user ? `${user.prenom} ${user.nom}` : "RH"}
+          userName={user ? displayName : "RH"}
           userRole={user?.role || "RH"}
         />
         <div className="dashboard-content payroll-page">
@@ -1148,7 +1137,7 @@ const PayrollDashboard: React.FC = () => {
                       className="gen-select"
                     >
                       <option value="">-- Sélectionner un employé --</option>
-                      {employees.map((e) => (
+                      {employeeList.map((e) => (
                         <option key={e.id} value={e.id}>
                           {e.prenom} {e.nom} ({e.matricule})
                         </option>

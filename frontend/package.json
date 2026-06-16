@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@reduxjs/toolkit": "^2.12.0",
+    "@tanstack/react-query": "^5.101.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -17,6 +19,7 @@
     "pusher-js": "^8.4.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-redux": "^9.3.0",
     "react-router-dom": "^7.13.0",
     "react-scripts": "5.0.1",
     "recharts": "^3.7.0",

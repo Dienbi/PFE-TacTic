@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import client from "../api/client";
 import Loader from "../shared/components/Loader";
+import { getDefaultDashboard } from "../store/authSlice";
+import { useAppDispatch } from "../store";
+import { login } from "../store/authSlice";
 import "./Login.css";
 
 const Login: React.FC = () => {
@@ -10,6 +13,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,25 +24,18 @@ const Login: React.FC = () => {
       const response = await client.post("/auth/login", { email, password });
       const { access_token, user } = response.data;
 
-      localStorage.setItem("token", access_token);
-      localStorage.setItem("user", JSON.stringify(user));
+      dispatch(login({ token: access_token, user }));
 
-      // Redirect based on role
-      switch (user.role) {
-        case "RH":
-          navigate("/dashboard/rh");
-          break;
-        case "CHEF_EQUIPE":
-          navigate("/dashboard/manager");
-          break;
-        case "EMPLOYE":
-        default:
-          navigate("/dashboard/employee");
-          break;
-      }
-    } catch (err) {
+      navigate(getDefaultDashboard(user.role));
+    } catch (err: unknown) {
       console.error("Login error:", err);
-      setError("Login failed. Please check your credentials.");
+      const apiMessage =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message;
+      setError(
+        apiMessage || "Login failed. Please check your credentials.",
+      );
+    } finally {
       setIsLoading(false);
     }
   };
@@ -46,7 +43,6 @@ const Login: React.FC = () => {
   return (
     <div className="login-page">
       {isLoading && <Loader fullScreen={true} />}
-      {/* Geometric Shapes */}
       <div className="shape-left-curve"></div>
       <div className="shape-top-right-stripes"></div>
       <div className="shape-bottom-right-triangles">
@@ -92,19 +88,14 @@ const Login: React.FC = () => {
             />
           </div>
 
-          <button type="submit" className="btn-login">
-            login
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? "Connexion..." : "Se connecter"}
           </button>
-
-          <div className="form-footer">
-            <div className="forgot-password">
-              Forgot Password? <a href="#">Change Password</a>
-            </div>
-            <div className="signup-link">
-              Don't have an account? <Link to="/signup">Signup</Link>
-            </div>
-          </div>
         </form>
+
+        <p className="signup-link">
+          Pas encore de compte ? <Link to="/signup">S'inscrire</Link>
+        </p>
       </div>
     </div>
   );

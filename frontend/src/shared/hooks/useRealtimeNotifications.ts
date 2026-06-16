@@ -11,12 +11,12 @@ interface UseRealtimeNotificationsOptions {
 export const useRealtimeNotifications = (options: UseRealtimeNotificationsOptions = {}) => {
   const { showToast } = useToast();
   const isSubscribed = useRef(false);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   useEffect(() => {
-    // Prevent duplicate subscriptions
     if (isSubscribed.current) return;
 
-    // Get user info
     const userStr = localStorage.getItem("user");
     if (!userStr) return;
 
@@ -25,6 +25,7 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
     if (!token) return;
 
     const echoInstance = echoService.connect();
+    const callbacks = optionsRef.current;
 
     isSubscribed.current = true;
 
@@ -34,7 +35,7 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
       .listen(".LeaveStatusNotification", (data: any) => {
         console.log("Leave status notification received:", data);
         showToast(data.type || "info", data.title, data.message);
-        options.onLeaveStatusUpdate?.(data);
+        callbacks.onLeaveStatusUpdate?.(data);
       })
       .listen(".SalaryPaid", (data: any) => {
         console.log("Salary Paid event received:", data);
@@ -67,7 +68,7 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         .listen(".ManagerNotification", (data: any) => {
           console.log("Manager notification received:", data);
           showToast(data.type || "info", data.title, data.message);
-          options.onManagerNotification?.(data);
+          callbacks.onManagerNotification?.(data);
         });
     }
 
@@ -78,7 +79,7 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         .listen(".AttendanceNotification", (data: any) => {
           console.log("Attendance notification received:", data);
           showToast(data.type || "info", data.title, data.message);
-          options.onAttendanceNotification?.(data);
+          callbacks.onAttendanceNotification?.(data);
         });
     }
 
@@ -99,7 +100,7 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         }
       }
     };
-  }, [showToast, options]);
+  }, [showToast]);
 
   return { echoInstance: echoService.getEcho() };
 };

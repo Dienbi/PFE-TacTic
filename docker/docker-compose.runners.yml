@@ -9,20 +9,27 @@ x-runner-image: &runner-image
     - path: .env.runners
       required: true
 
+x-runner-env: &runner-env
+  REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL in docker/.env.runners}
+  RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN in docker/.env.runners}
+  RUNNER_SCOPE: repo
+  EPHEMERAL: "false"
+  DISABLE_AUTOMATIC_DEREGISTRATION: "true"
+  CONFIGURED_ACTIONS_RUNNER_FILES_DIR: /runner-data
+  LABELS: self-hosted,linux,x64,docker,ci
+
 services:
   github-runner-1:
     <<: *runner-image
     container_name: tactic-github-runner-1
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL in docker/.env.runners}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN in docker/.env.runners}
+      <<: *runner-env
       RUNNER_NAME_PREFIX: tactic-runner-1
       RANDOM_RUNNER_SUFFIX: "true"
-      RUNNER_SCOPE: repo
-      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - github_runner_1_data:/runner-data
     networks:
       - platform
 
@@ -31,14 +38,12 @@ services:
     container_name: tactic-github-runner-2
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL in docker/.env.runners}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN in docker/.env.runners}
+      <<: *runner-env
       RUNNER_NAME_PREFIX: tactic-runner-2
       RANDOM_RUNNER_SUFFIX: "true"
-      RUNNER_SCOPE: repo
-      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - github_runner_2_data:/runner-data
     networks:
       - platform
 
@@ -47,14 +52,12 @@ services:
     container_name: tactic-github-runner-3
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL in docker/.env.runners}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN in docker/.env.runners}
+      <<: *runner-env
       RUNNER_NAME_PREFIX: tactic-runner-3
       RANDOM_RUNNER_SUFFIX: "true"
-      RUNNER_SCOPE: repo
-      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - github_runner_3_data:/runner-data
     networks:
       - platform
 
@@ -63,13 +66,11 @@ services:
     container_name: tactic-github-runner-4
     restart: unless-stopped
     environment:
-      REPO_URL: ${GITHUB_RUNNER_REPO_URL:?Set GITHUB_RUNNER_REPO_URL in docker/.env.runners}
-      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:?Set a fresh GITHUB_RUNNER_TOKEN in docker/.env.runners}
+      <<: *runner-env
       RUNNER_NAME_PREFIX: tactic-runner-4
       RANDOM_RUNNER_SUFFIX: "true"
-      RUNNER_SCOPE: repo
-      LABELS: self-hosted,linux,x64,docker,ci
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - github_runner_4_data:/runner-data
     networks:
       - platform

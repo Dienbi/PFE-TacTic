@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   LayoutDashboard,
   Users,
@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import client from "../../api/client";
+import { queryClient } from "../../api/queryClient";
+import { useAuth } from "../../hooks/useAuth";
+import { useAppDispatch } from "../../store";
+import { logout } from "../../store/authSlice";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -26,28 +30,10 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { mappedRole } = useAuth();
 
-  // Get user from local storage for role fallback
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  // Determine effective role: prop > user.role > default "rh"
-  const rawRole = (role || user.role || "rh").toUpperCase();
-
-  // Map database roles to application roles
-  const mapRole = (dbRole: string): string => {
-    switch (dbRole) {
-      case "CHEF_EQUIPE":
-      case "MANAGER":
-        return "manager";
-      case "EMPLOYE":
-      case "EMPLOYEE":
-        return "employee";
-      case "RH":
-      default:
-        return "rh";
-    }
-  };
-
-  const effectiveRole = mapRole(rawRole);
+  const effectiveRole = role || mappedRole || "rh";
 
   const handleLogout = async () => {
     try {
@@ -55,9 +41,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     } catch (error) {
       console.error("Logout failed", error);
     } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      // Small delay to show loader animation
+      dispatch(logout());
+      queryClient.clear();
       setTimeout(() => {
         navigate("/login");
       }, 800);

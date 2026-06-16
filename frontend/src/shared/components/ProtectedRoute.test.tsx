@@ -1,30 +1,38 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Provider } from "react-redux";
+import { store } from "../../store";
+import { hydrateFromStorage } from "../../store/authSlice";
 import ProtectedRoute, { getDefaultDashboard } from "./ProtectedRoute";
 
 const renderProtectedRoute = (initialPath = "/protected") => {
+  store.dispatch(hydrateFromStorage());
+
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/login" element={<div>Login Page</div>} />
-        <Route path="/dashboard/rh" element={<div>RH Dashboard</div>} />
-        <Route path="/dashboard/employee" element={<div>Employee Dashboard</div>} />
-        <Route
-          path="/protected"
-          element={
-            <ProtectedRoute allowedRoles={["rh"]}>
-              <div>Protected Content</div>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </MemoryRouter>
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Routes>
+          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/dashboard/rh" element={<div>RH Dashboard</div>} />
+          <Route path="/dashboard/employee" element={<div>Employee Dashboard</div>} />
+          <Route
+            path="/protected"
+            element={
+              <ProtectedRoute allowedRoles={["rh"]}>
+                <div>Protected Content</div>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
   );
 };
 
 describe("ProtectedRoute", () => {
   beforeEach(() => {
     localStorage.clear();
+    store.dispatch({ type: "auth/logout" });
   });
 
   test("redirects unauthenticated users to login", () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import KPISection from "./components/KPISection";
@@ -7,20 +7,14 @@ import NotificationsSection from "./components/NotificationsSection";
 import QuickActions from "./components/QuickActions";
 import BottomActions from "./components/BottomActions";
 import AttendanceSection from "../employee/components/AttendanceSection";
+import { useAuth } from "../../hooks/useAuth";
 import "./ManagerDashboard.css";
 
 const ManagerDashboard: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, displayName } = useAuth();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const userName = user ? `${user.prenom} ${user.nom}` : "Team Lead";
-  const userRole = user ? user.role : "Team Lead";
+  const userName = user ? displayName : "Team Lead";
+  const userRole = user?.role ?? "Team Lead";
 
   return (
     <div className="dashboard-container">
@@ -39,7 +33,6 @@ const ManagerDashboard: React.FC = () => {
           </div>
 
           <QuickActions />
-
           <BottomActions />
         </div>
       </div>

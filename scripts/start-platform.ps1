@@ -7,25 +7,25 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+. (Join-Path $PSScriptRoot 'Write-RunnerEnv.ps1')
+
 $RootDir = Split-Path -Parent $PSScriptRoot
 $EnvRunnersPath = Join-Path $RootDir 'docker\.env.runners'
 $ComposeFile = Join-Path $RootDir 'docker\docker-compose.platform.yml'
 
 if (-not $RunnerToken) {
-    $RunnerToken = Read-Host 'Paste a fresh GitHub runner registration token (Settings > Actions > Runners > New)'
+    Write-Host 'Get a fresh token: https://github.com/Dienbi/PFE-TacTic/settings/actions/runners/new' -ForegroundColor Yellow
+    Write-Host 'Use the Linux repository runner page (not organization runners). Tokens expire in ~1 hour.' -ForegroundColor Yellow
+    $RunnerToken = Read-Host 'Paste a fresh GitHub runner registration token'
 }
 
 if (-not $RunnerToken -or $RunnerToken -eq 'PASTE_A_FRESH_RUNNER_REGISTRATION_TOKEN_HERE') {
     throw 'A fresh GitHub runner registration token is required.'
 }
 
-@"
-GITHUB_RUNNER_REPO_URL=$RepoUrl
-GITHUB_RUNNER_TOKEN=$RunnerToken
-"@ | Set-Content -Path $EnvRunnersPath -Encoding utf8 -NoNewline
-Add-Content -Path $EnvRunnersPath -Value ""
+Write-RunnerEnvFile -Path $EnvRunnersPath -RepoUrl $RepoUrl -RunnerToken $RunnerToken
 
-Write-Host "Wrote runner token to docker/.env.runners" -ForegroundColor Cyan
+Write-Host "Wrote runner token to docker/.env.runners (UTF-8, no BOM)" -ForegroundColor Cyan
 
 $composeBase = @(
     'compose',
@@ -42,6 +42,8 @@ Write-Host "Starting platform + runners..." -ForegroundColor Cyan
 & docker @upArgs
 
 if (-not $SkipRunnerRecreate) {
+    Clear-RunnerRegistrationVolumes -ComposeBase $composeBase
+
     Write-Host "Recreating runners with fresh registration token..." -ForegroundColor Cyan
     $recreateArgs = $composeBase + @(
         'up', '-d', '--force-recreate', '--no-deps',

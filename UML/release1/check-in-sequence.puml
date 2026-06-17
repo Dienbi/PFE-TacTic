@@ -1,0 +1,49 @@
+@startuml check_in_sequence
+title Detailed Sequence Diagram — Check In
+
+actor Employee
+participant "Attendance Page\n(React)" as UI
+participant "PointageController" as Controller
+participant "PointageService" as Service
+participant "PointageRepository" as Repo
+participant "AttendanceNotification\n(Event)" as Event
+database "PostgreSQL" as DB
+
+Employee -> UI : Open attendance page
+UI -> Controller : GET /api/pointages/today
+Controller -> Service : getTodayPointage(userId)
+Service -> Repo : getTodayPointage(userId)
+Repo -> DB : SELECT pointage for today
+DB --> Repo : record or null
+Repo --> Service : pointage
+Service --> Controller : today status
+Controller --> UI : JSON response
+UI --> Employee : Display history and check-in button
+
+Employee -> UI : Click Check In
+UI -> Controller : POST /api/pointages/entree
+Controller -> Service : pointerEntree(userId)
+
+Service -> Repo : getTodayPointage(userId)
+
+alt Already checked in today
+  Repo --> Service : existing heure_entree
+  Service --> Controller : ValidationException
+  Controller --> UI : 422 error
+  UI --> Employee : Display error message
+else First check-in of the day
+  Service -> Repo : pointer(userId, 'entree')
+  Repo -> DB : INSERT/UPDATE pointage\n(heure_entree, date)
+  DB --> Repo : saved record
+  Repo --> Service : Pointage
+
+  Service -> Service : Detect late check-in\n(after 09:15)
+  Service -> Event : dispatch(AttendanceNotification)
+  Event --> Service : notification sent
+
+  Service --> Controller : Pointage
+  Controller --> UI : 200 OK + pointage
+  UI --> Employee : Update UI (checked in)
+end
+
+@enduml

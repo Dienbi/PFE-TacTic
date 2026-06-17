@@ -1,0 +1,40 @@
+@startuml check_attendance_sequence
+title Detailed Sequence Diagram — Check Attendance
+
+actor "HR Administrator" as HR
+participant "Attendance Dashboard\n(React)" as UI
+participant "PointageController" as Controller
+participant "PointageService" as Service
+participant "PointageRepository" as Repo
+database "PostgreSQL" as DB
+
+HR -> UI : Open HR attendance page
+UI -> Controller : GET /api/pointages/summary?date=today
+Controller -> Service : getSummary(date)
+Service -> Repo : getByDate / aggregate stats
+Repo -> DB : SELECT pointages WITH utilisateur
+DB --> Repo : attendance records
+Repo --> Service : summary data
+Service --> Controller : summary
+Controller --> UI : JSON response
+
+UI -> Controller : GET /api/pointages/anomalies?days=30
+Controller -> Service : getAnomalies(endDate, days)
+Service -> Repo : query late/absence patterns
+Repo -> DB : SELECT anomalies
+DB --> Repo : anomaly list
+Repo --> Service : anomalies
+Service --> Controller : anomalies
+Controller --> UI : JSON response
+
+UI --> HR : Display attendance history,\nsummary KPIs, and anomalies
+
+alt Anomaly detected
+  HR -> UI : Review anomaly details
+  UI --> HR : Highlight late check-ins\nor missing presence
+  HR -> UI : Take corrective action\n(justify absence, contact employee)
+else No anomaly
+  HR -> UI : Confirm normal attendance
+end
+
+@enduml

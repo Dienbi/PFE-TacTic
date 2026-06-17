@@ -1,0 +1,77 @@
+@startuml leave_request_sequence
+title Detailed Sequence Diagram — Request Leave
+
+actor Employee
+participant "LeaveRequest Page\n(React)" as UI
+participant "CongeController" as Controller
+participant "CongeService" as Service
+participant "CongeRepository" as CongeRepo
+participant "UtilisateurRepository" as UserRepo
+database "PostgreSQL" as DB
+
+== Load page ==
+
+Employee -> UI : Open leave request page
+UI -> Controller : GET /api/auth/me
+Controller -> UserRepo : find(userId)
+UserRepo -> DB : SELECT utilisateur
+DB --> UserRepo : user (solde_conge)
+UserRepo --> Controller : user
+Controller --> UI : user profile + balance
+UI -> Controller : GET /api/conges/mes-conges
+Controller -> Service : getByUtilisateur(userId)
+Service -> CongeRepo : getByUtilisateur(userId)
+CongeRepo -> DB : SELECT conges
+DB --> CongeRepo : leave history
+CongeRepo --> Service : collection
+Service --> Controller : leaves
+Controller --> UI : leave history
+UI --> Employee : Display form, balance,\nand history
+
+== Submit request ==
+
+Employee -> UI : Fill type, dates, motif\n(+ medical file if MALADIE)
+UI -> Controller : POST /api/conges\n(multipart if sick leave)
+Controller -> Controller : Validate CongeRequest
+
+alt Validation fails
+  Controller --> UI : 422 validation errors
+  UI --> Employee : Display error message
+else Validation succeeds
+  Controller -> Service : demander(userId, data)
+
+  Service -> CongeRepo : hasConflict(userId, dates)
+  CongeRepo -> DB : SELECT overlapping conges
+  DB --> CongeRepo : exists?
+
+  alt Overlapping period detected
+    CongeRepo --> Service : true
+    Service --> Controller : { error: overlap message }
+    Controller --> UI : 400 Bad Request
+    UI --> Employee : Display error
+  else No overlap
+    CongeRepo --> Service : false
+    Service -> UserRepo : findOrFail(userId)
+
+    alt Insufficient leave balance\n(and type != SANS_SOLDE)
+      UserRepo --> Service : user (low solde_conge)
+      Service --> Controller : { error: insufficient balance }
+      Controller --> UI : 400 Bad Request
+      UI --> Employee : Display error
+    else Sick leave without certificate
+      Service --> Controller : { error: medical file required }
+      Controller --> UI : 400 Bad Request
+      UI --> Employee : Display error
+    else Request is valid
+      Service -> CongeRepo : create(EN_ATTENTE)
+      CongeRepo -> DB : INSERT conge
+      DB --> CongeRepo : created record
+      CongeRepo --> Service : Conge
+      Service --> Controller : Conge
+      Controller --> UI : 201 Created
+      UI --> Employee : Success confirmation
+    end
+  end
+end
+
+@enduml

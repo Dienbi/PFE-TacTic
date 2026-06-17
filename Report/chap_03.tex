@@ -1,0 +1,436 @@
+\chapter{Sprint 1 \& 2: Authentication, User Management and Attendance}
+
+\section*{Introduction}
+After defining the functional and non-functional requirements of our future system and establishing the product backlog, we move on to the sprint phase. This chapter covers \textbf{Release 1}, which groups Sprint 1 and Sprint 2. Sprint 1 delivers the authentication and user management module, providing the secure foundation of the platform. Sprint 2 extends the application with the attendance module, enabling daily check-in/check-out tracking and HR supervision of presence anomalies.
+
+% ==================================================
+\section{Sprint Backlogs}
+
+\subsection{Backlog of the First Sprint}
+Table \ref{tab:sprint1-backlog} presents the backlog of the first sprint. For each user story, we identify the four stages of the Scrum cycle: functional specification, design, development, and testing.
+
+\begin{table}[H]
+\centering
+\caption{Backlog of the first sprint.}
+\label{tab:sprint1-backlog}
+\begin{tabular}{|p{.08\textwidth}|p{.30\textwidth}|p{.34\textwidth}|p{.10\textwidth}|}
+    \hline
+    ID & User Story & Tasks & Points \\
+    \hline
+    US-01 & As a user, I must authenticate to access the application
+    & -Backend setup for authentication\newline
+    -Design of use case and sequence diagrams\newline
+    -Development of US-01
+    & 2 \\
+    \hline
+    US-02 & As a user, I can create an account
+    & -Functional requirements specification\newline
+    -Design of use case and sequence diagrams\newline
+    -Development of US-02\newline
+    -Mailing setup
+    & 2 \\
+    \hline
+    US-03 & As HR, I can modify employee data
+    & -Design of sequence diagram\newline
+    -Development of US-03
+    & 2 \\
+    \hline
+    US-04 & As HR, I can view and verify employee data
+    & -Design of sequence diagram\newline
+    -Development of US-04
+    & 2 \\
+    \hline
+    US-05 & As HR, I can assign roles to users
+    & -Design of sequence diagram\newline
+    -Development of US-05
+    & 2 \\
+    \hline
+    US-06 & As HR, I can manage user status
+    & -Design of sequence diagram\newline
+    -Development of US-06
+    & 2 \\
+    \hline
+    US-07 & As a user, I can access my profile page and edit my information
+    & -Design of sequence diagram\newline
+    -Development of US-07
+    & 2 \\
+    \hline
+    US-08 & As HR, I can validate user signups
+    & -Design of sequence diagram\newline
+    -Development of US-08
+    & 2 \\
+    \hline
+\end{tabular}
+\end{table}
+
+\subsection{Backlog of the Second Sprint}
+Table \ref{tab:sprint2-backlog} presents the backlog of the second sprint.
+
+\begin{longtable}[c]{
+    |p{.10\textwidth}
+    |p{.20\textwidth}|
+    p{.30\textwidth}|
+    p{.10\textwidth}| 
+}
+    \caption{Backlog of the second sprint.}
+    \label{tab:sprint2-backlog}\\
+    \hline
+    ID & User Story & Tasks & Points \\
+    \hline
+    US-09 & As an employee, I can check in on arrival
+    & -Design of sequence diagram\newline
+-Development of US-09 & 3 \\
+    \hline
+    US-10 & As an employee, I can check out on departure
+    & -Design of sequence diagram\newline
+-Development of US-10 & 3 \\
+    \hline
+    US-11 & As an employee, I can view my attendance history
+    & -Design of sequence diagram\newline
+-Development of US-11 & 3 \\
+    \hline
+    US-12 & As an employee, I want automatic check-out
+    & -Design of sequence diagram\newline
+-Development of US-12 & 3 \\
+    \hline
+    US-13 & As HR, I can check attendance anomalies
+    & -Design of sequence diagram\newline
+-Development of US-13 & 3 \\
+    \hline
+\end{longtable}
+
+% ==================================================
+\section{Functional Specification of Release 1}
+The objective of the functional specification is to accurately describe all the application functions delivered in Release 1 and thus define its functional scope. A single use case diagram covers both Sprint 1 (authentication and user management) and Sprint 2 (attendance), while the textual descriptions below detail the main use cases selected for each sprint.
+
+\subsection{Use Case Diagram of Release 1}
+Figure \ref{fig:release1-usecase} represents the use case diagram of Release 1, grouping the functionalities of Sprint 1 and Sprint 2 within the system boundary.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/release1 use case.jpg}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/release1 use case.jpg}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Diagram path: images/release1 use case.jpg}}%
+}
+\caption{Use case diagram of Release 1 (Sprint 1 and Sprint 2).}
+\label{fig:release1-usecase}
+\end{figure}
+
+\clearpage
+\subsection{Textual Description of Use Cases — Sprint 1}
+
+\paragraph{Textual Description of the ``Authenticate'' Use Case}
+Table \ref{tab:a} presents the textual description of the ``Authenticate'' use case.
+
+\begin{longtable}[c]{
+    |p{.20\textwidth}
+    |p{.60\textwidth}|
+}
+    \caption{Textual description of the ``Authenticate'' use case}
+    \label{tab:a}\\
+    \hline
+   \textbf{Use Case} & Authenticate \\
+    \hline
+    \textbf{Actor(s)} & -Users \\
+    \hline
+    \textbf{Objective} & -The user authenticates \\
+    \hline
+    \textbf{Precondition} & -The user must already have an existing account \\
+    \hline
+    \textbf{Postcondition} & -User authenticated \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The user enters their login and password\newline
+2-The system verifies the entered information\newline
+3-The system saves the information\newline
+4-The system displays the interface specific to the user \\ \hline
+    \textbf{Alternative Scenario}
+    & -The system detects an incorrect password.\newline
+-The nominal scenario stops at step 2 \newline
+1-The system displays an error message \newline
+2-The system allows the user to change the password \newline
+3-The user changes the password \newline
+-The nominal scenario resumes at step 2. \\ \hline
+\end{longtable}
+\newpage
+
+\paragraph{Textual Description of the ``Create Account'' Use Case}
+Table \ref{tab:e} presents the textual description of the ``Create Account'' use case.
+
+\begin{longtable}[c]{
+    |p{.20\textwidth}
+    |p{.60\textwidth}|
+}
+    \caption{Textual description of the ``Create Account'' use case}
+    \label{tab:e}\\
+    \hline
+   \textbf{Use Case} & -Create account \\
+    \hline
+    \textbf{Actor(s)} & -Users \\
+    \hline
+    \textbf{Objective} & -The user creates an account \\
+    \hline
+    \textbf{Precondition} & -The user does not have an account \\
+    \hline
+    \textbf{Postcondition} & -Account created\\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The user clicks the create account button \newline
+2-The system displays the creation form \newline
+3-The user enters the required information \newline
+4-The system verifies the entered information \\ \hline
+    \textbf{Alternative Scenario}
+    & -The system detects incorrect or empty input fields.\newline
+-The nominal scenario stops at step 5\newline
+1-The system displays an error message \newline
+2-The system allows the user to correct invalid fields and fill in empty fields\newline
+3-The user fills in the required fields \newline
+-The nominal scenario resumes at step 4 \\ \hline
+\end{longtable}
+
+\paragraph{Textual Description of the ``Modify Account'' Use Case}
+Table \ref{tab:mle} presents the textual description of the ``Modify Account'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Modify Account'' use case}
+\label{tab:mle}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Modify account \\
+    \hline
+    \textbf{Actor(s)} & -Users \\
+    \hline
+    \textbf{Objective} & -The user modifies the account \\
+    \hline
+    \textbf{Precondition} & -Authenticated user\newline -Existing user account \\
+    \hline
+    \textbf{Postcondition} & -User account modified\\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The user clicks the modify button \newline
+2-The system allows the user to edit the fields \newline
+3-The user enters the information to be modified \newline
+4-The system verifies the entered information \newline
+5-The system displays an update confirmation \\ \hline
+    \textbf{Alternative Scenario}
+    & -The system detects incorrect or empty input fields.\newline
+-The nominal scenario stops at step 5\newline
+1-The system displays an error message \newline
+2-The system allows the user to correct invalid fields and fill in empty fields\newline
+-The user cancels the modification \newline
+-The nominal scenario stops at step 2\\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Textual Description of Use Cases — Sprint 2}
+
+\paragraph{Textual Description of the ``Check In'' Use Case}
+Table \ref{tab:z} presents the textual description of the ``Check In'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Check In'' use case}
+\label{tab:z}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Check In \\
+    \hline
+    \textbf{Actor(s)} & -Team Lead \newline -Employee \\
+    \hline
+    \textbf{Objective} & -Check In \\
+    \hline
+    \textbf{Precondition} & -Authenticated user \\
+    \hline
+    \textbf{Postcondition} & -Checked In \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The user goes to the check-in page\newline
+2-The system displays the check-in page with history\newline
+3-The user clicks on the check-in button\newline
+4-The system changes the state of the user to checked in and saves the date and time\newline
+5-The system notifies the HR that the user has checked in \\ \hline
+    \textbf{Alternative Scenario}
+    & -The system detects that the user has checked in late \newline
+-The nominal scenario stops at step 4 \newline
+1-The system notifies the HR that the user has checked in late\\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``Check Attendance'' Use Case}
+Table \ref{tab:s} presents the textual description of the ``Check Attendance'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Check Attendance'' use case}
+\label{tab:s}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Check attendance history \\
+    \hline
+    \textbf{Actor(s)} & -HR \\
+    \hline
+    \textbf{Objective} & -Check attendance history \\
+    \hline
+    \textbf{Precondition} & -Authenticated HR \\
+    \hline
+    \textbf{Postcondition} & -Attendance history checked \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The HR goes to the Attendance page \newline
+2-The system displays the attendance page with user attendance history.\newline
+3-The HR checks the user attendance and identifies an anomaly if present \\ \hline
+    \textbf{Alternative Scenario}
+    & -The system detects an anomaly.\newline
+1-The system displays the anomaly\newline
+2-The HR can take action \\ \hline
+\end{tabular}
+\end{table}
+
+% ==================================================
+\section{Sprint 1: Authentication and User Management}
+
+\subsection{Detailed Sequence Diagrams}
+Design is the second phase of our sprint. It is represented by detailed sequence diagrams, which allow us to describe the most important functionalities of Sprint 1 in detail.
+\newpage
+
+\subsubsection{Detailed Sequence Diagram of the ``Authenticate'' Use Case}
+Figure \ref{fig:dsauth} represents the detailed sequence diagram of the ``Authenticate'' use case.
+\begin{figure}[htpb]
+\centering
+\IfFileExists{images/authentication sequence.jpg}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/authentication sequence.jpg}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/authentication sequence.jpg}}%
+}
+\caption{Detailed sequence diagram of the ``Authenticate'' use case}
+\label{fig:dsauth}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``Modify Account'' Use Case}
+Figure \ref{fig:dsmcmte} represents the detailed sequence diagram of the ``Modify Account'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/modify profile.jpg}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/modify profile.jpg}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/modify profile.jpg}}%
+}
+\caption{Detailed sequence diagram of the ``Modify Account'' use case}
+\label{fig:dsmcmte}
+\end{figure}
+
+\clearpage
+\subsection{Implementation}
+After completing the analysis and design of the first sprint, this section presents the main interfaces implemented in the application. These screenshots illustrate the authentication process, signup verification, profile management, and the dashboards available for the different user roles.
+
+\subsubsection{Login Page}
+Figure \ref{fig:impl-login} shows the login page, which allows users to access the platform using their credentials.
+\begin{figure}[H]
+\centering
+\frame{\includegraphics[width=0.85\columnwidth]{images/login.png}}
+\caption{Login page}
+\label{fig:impl-login}
+\end{figure}
+
+\subsubsection{Signup Verification}
+Figure \ref{fig:impl-verify-signup} shows the signup verification interface used by the administrator to validate newly registered users.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/verify signup.jpg}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/verify signup.jpg}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/verify signup.jpg}}%
+}
+\caption{Signup verification interface}
+\label{fig:impl-verify-signup}
+\end{figure}
+
+\subsubsection{Profile Page}
+Figure \ref{fig:impl-profile} shows the profile page, where users can view and update their personal information.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/profile page.jpg}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/profile page.jpg}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/profile page.jpg}}%
+}
+\caption{Profile page}
+\label{fig:impl-profile}
+\end{figure}
+
+\subsubsection{Dashboards}
+The application provides dashboards adapted to each role. Figures \ref{fig:impl-rh-dashboard}, \ref{fig:impl-team-lead-dashboard}, and \ref{fig:impl-employee-dashboard} present the HR administrator, team lead, and employee dashboards.
+\begin{figure}[H]
+\centering
+\frame{\includegraphics[width=0.85\columnwidth]{images/dashboard RH.png}}
+\caption{HR administrator dashboard}
+\label{fig:impl-rh-dashboard}
+\end{figure}
+\begin{figure}[H]
+\centering
+\frame{\includegraphics[width=0.85\columnwidth]{images/dashboard Team Lead.png}}
+\caption{Team lead dashboard}
+\label{fig:impl-team-lead-dashboard}
+\end{figure}
+\begin{figure}[H]
+\centering
+\frame{\includegraphics[width=0.85\columnwidth]{images/dashboard employe.png}}
+\caption{Employee dashboard}
+\label{fig:impl-employee-dashboard}
+\end{figure}
+
+% ==================================================
+\section{Sprint 2: Attendance Management}
+
+\subsection{Detailed Sequence Diagrams}
+
+\subsubsection{Detailed Sequence Diagram of the ``Check In'' Use Case}
+Figure \ref{fig:dsae} represents the detailed sequence diagram of the ``Check In'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/check in sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/check in sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/check in sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Check In'' use case}
+\label{fig:dsae}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``Check Attendance'' Use Case}
+Figure \ref{fig:dsme} represents the detailed sequence diagram of the ``Check Attendance'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/check-attendance.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/check-attendance.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/check-attendance.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Check Attendance'' use case}
+\label{fig:dsme}
+\end{figure}
+
+\subsection{Implementation}
+After completing the analysis and design of the second sprint, this section presents the main interfaces implemented in the application. These screenshots illustrate the employee attendance page and the HR attendance supervision interface.
+
+\subsubsection{Employee Attendance Page}
+Figure \ref{fig:impl-attendance-employee} shows the attendance page used by employees to check in, check out, and view their presence history.
+\begin{figure}[H]
+\centering
+\frame{\includegraphics[width=0.85\columnwidth]{images/employe attendance.png}}
+\caption{Employee attendance page}
+\label{fig:impl-attendance-employee}
+\end{figure}
+
+\subsubsection{HR Attendance Page}
+Figure \ref{fig:impl-HR-attendance} shows the HR attendance interface used by the administrator to monitor attendance history and anomalies across all employees.
+\begin{figure}[H]
+\centering
+\frame{\includegraphics[width=0.85\columnwidth]{images/attendance-HR.png}}
+\caption{HR attendance page}
+\label{fig:impl-HR-attendance}
+\end{figure}
+
+\section*{Conclusion}
+In this chapter, we completed Release 1 by delivering Sprint 1 (authentication and user management) and Sprint 2 (attendance management). The platform now provides secure access, role-based dashboards, and daily presence tracking. In the following chapter, we will present Release 2, which covers leave management and payroll.

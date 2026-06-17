@@ -35,6 +35,7 @@ export const useRhDashboard = (params: RhDashboardParams = DEFAULT_PARAMS) =>
 export interface AiReportsParams {
     attendance_limit?: number;
     performance_limit?: number;
+    noCache?: boolean;
 }
 
 export interface AiReportsData {
@@ -55,10 +56,13 @@ export const useAiReports = (params: AiReportsParams = DEFAULT_AI_PARAMS) =>
         queryFn: async () => {
             const search = new URLSearchParams();
             Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined) {
+                if (value !== undefined && key !== 'noCache') {
                     search.set(key, String(value));
                 }
             });
+            if (params.noCache) {
+                search.set('noCache', '1');
+            }
             const response = await client.get(`/reports/ai?${search.toString()}`);
             return response.data as AiReportsData;
         },

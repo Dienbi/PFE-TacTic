@@ -34,7 +34,7 @@ return [
     'ai' => [
         'url' => env('AI_SERVICE_URL', 'http://127.0.0.1:8001'),
         // Dashboard AI fetch timeout in seconds (fail fast to avoid blocking UI)
-        'dashboard_timeout' => env('AI_DASHBOARD_TIMEOUT', 5),
+        'dashboard_timeout' => env('AI_DASHBOARD_TIMEOUT', 15),
     ],
 
 ];

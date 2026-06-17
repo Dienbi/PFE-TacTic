@@ -1,0 +1,53 @@
+@startuml view_payslip_sequence
+title Detailed Sequence Diagram — View and Download Payslip
+
+actor Employee
+participant "EmployeeSalary Page\n(React)" as UI
+participant "PaieController" as Controller
+participant "PaieService" as Service
+participant "PaieRepository" as Repo
+database "PostgreSQL" as DB
+
+== View payslip list ==
+
+Employee -> UI : Open salary page
+UI -> Controller : GET /api/paies/mes-paies
+Controller -> Service : getByUtilisateur(userId)
+Service -> Repo : getByUtilisateur(userId)
+Repo -> DB : SELECT paies for user
+DB --> Repo : payslip list
+Repo --> Service : collection
+Service --> Controller : payslips
+Controller --> UI : JSON response
+
+UI -> Controller : GET /api/paies/stats
+Controller -> Service : getStats(userId)
+Service --> Controller : salary statistics
+Controller --> UI : stats
+UI --> Employee : Display payslip history\nand summary cards
+
+== Download payslip ==
+
+Employee -> UI : Click Download on payslip
+UI -> UI : Open print window
+UI -> Controller : GET /api/paies/{id}/download
+Controller -> Service : getById(id)
+Service -> Repo : find(id)
+Repo -> DB : SELECT paie WITH utilisateur
+DB --> Repo : payslip record
+Repo --> Service : Paie
+Service --> Controller : Paie
+
+alt Payslip not found
+  Controller --> UI : 404 Not Found
+  UI --> Employee : Display error
+else Unauthorized access
+  Controller -> Controller : Check user owns payslip\nor has RH role
+  Controller --> UI : 403 Forbidden
+else Authorized
+  Controller -> Controller : Render paie.bulletin view\n(HTML payslip)
+  Controller --> UI : HTML document
+  UI --> Employee : Display printable payslip\n(browser print to PDF)
+end
+
+@enduml

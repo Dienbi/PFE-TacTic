@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
     {
         // Pre-warm the dashboard cache every 15 minutes
         $schedule->command('app:prewarm-dashboard-cache')->everyFifteenMinutes();
+
+        $schedule->command('ai:check-absence-risks')->dailyAt('07:30');
     }
 
     /**

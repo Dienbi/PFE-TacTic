@@ -224,8 +224,8 @@ class DataPipeline:
         attendance['entry_dt'] = pd.to_datetime(attendance['heure_entree'], errors='coerce')
         attendance['exit_dt'] = pd.to_datetime(attendance['heure_sortie'], errors='coerce')
 
-        attendance['is_late'] = (attendance['entry_dt'].dt.hour > 8) | \
-                                ((attendance['entry_dt'].dt.hour == 8) & (attendance['entry_dt'].dt.minute > 30))
+        attendance['is_late'] = (attendance['entry_dt'].dt.hour > 9) | \
+                                ((attendance['entry_dt'].dt.hour == 9) & (attendance['entry_dt'].dt.minute > 15))
 
         attendance['is_early'] = (attendance['exit_dt'].dt.hour < 17) & (attendance['exit_dt'].notna())
 
@@ -255,7 +255,12 @@ class DataPipeline:
                 dow_absent=('is_absent', 'sum')
             ).reset_index()
             dow_data[f'dow_{dow}_absence_rate'] = (dow_data['dow_absent'] / dow_data['dow_total']).fillna(0).round(4)
-            counts = counts.merge(dow_data[['utilisateur_id', f'dow_{dow}_absence_rate']], on='utilisateur_id', how='left').fillna(0)
+            counts = counts.merge(
+                dow_data[['utilisateur_id', f'dow_{dow}_absence_rate']],
+                on='utilisateur_id',
+                how='left',
+            )
+            counts[f'dow_{dow}_absence_rate'] = counts[f'dow_{dow}_absence_rate'].fillna(0.0).astype(float)
 
         # Attendance streak (requires loop but only once per user, still more efficient than original)
         streaks = []
@@ -413,7 +418,7 @@ class DataPipeline:
                 if pd.notna(row['heure_entree']):
                     try:
                         entry = pd.to_datetime(row['heure_entree'])
-                        if entry.hour > 8 or (entry.hour == 8 and entry.minute > 30):
+                        if entry.hour > 9 or (entry.hour == 9 and entry.minute > 15):
                             was_late = 1.0
                     except Exception:
                         pass

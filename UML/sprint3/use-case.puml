@@ -1,0 +1,46 @@
+@startuml sprint3_use_case
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Sprint 3 — Leave Management Use Case Diagram
+
+actor "Employee" as Emp
+actor "Team Leader" as Chef
+actor "HR Administrator" as RH
+
+Emp <|-- Chef
+Chef <|-- RH
+
+rectangle "TAC-TIC HR System\n(Sprint 3 — Leave Management)" as System {
+
+  usecase "Request Leave" as UC_Request
+  usecase "View Leave History\nand Balance" as UC_History
+  usecase "Cancel Pending\nLeave Request" as UC_Cancel
+
+  usecase "View Team Pending\nLeave Requests" as UC_TeamPending
+  usecase "Approve Leave Request" as UC_Approve
+  usecase "Reject Leave Request" as UC_Reject
+
+  usecase "View All Pending\nLeave Requests" as UC_AllPending
+  usecase "Check Team Leave\nConflicts" as UC_Conflicts
+  usecase "Download Medical\nCertificate" as UC_Medical
+
+  UC_Approve ..> UC_Conflicts : <<include>>
+  UC_Reject ..> UC_Conflicts : <<include>>
+}
+
+Emp --> UC_Request
+Emp --> UC_History
+Emp --> UC_Cancel
+
+Chef --> UC_TeamPending
+Chef --> UC_Approve
+Chef --> UC_Reject
+
+RH --> UC_AllPending
+RH --> UC_Approve
+RH --> UC_Reject
+RH --> UC_Medical
+
+@enduml

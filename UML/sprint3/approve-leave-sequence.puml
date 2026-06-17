@@ -1,0 +1,88 @@
+@startuml approve_leave_sequence
+title Detailed Sequence Diagram — Approve Leave Request
+
+actor "Manager\n(Team Leader / HR)" as Manager
+participant "LeaveManagement Page\n(React)" as UI
+participant "CongeController" as Controller
+participant "CongeService" as Service
+participant "LeaveConflictService" as ConflictSvc
+participant "CongeRepository" as CongeRepo
+participant "UtilisateurRepository" as UserRepo
+participant "CacheService" as Cache
+participant "LeaveStatusNotification\n(Event)" as Event
+database "PostgreSQL" as DB
+
+== View pending requests ==
+
+Manager -> UI : Open leave management page
+
+alt Team Leader
+  UI -> Controller : GET /api/conges/en-attente/equipe
+  Controller -> Service : getEnAttenteByEquipe(equipeId)
+else HR Administrator
+  UI -> Controller : GET /api/conges/en-attente
+  Controller -> Service : getEnAttente()
+end
+
+Service -> CongeRepo : getEnAttente[ByEquipe]()
+CongeRepo -> DB : SELECT pending conges\nWITH utilisateur
+DB --> CongeRepo : pending leaves
+CongeRepo --> Service : collection
+
+Service -> ConflictSvc : checkConflictsForMany(leaves)
+ConflictSvc -> DB : Batch team capacity\nand overlap queries
+DB --> ConflictSvc : conflict data
+ConflictSvc --> Service : conflicts map
+Service --> Controller : leaves + conflicts
+Controller --> UI : JSON response
+UI --> Manager : Display pending list\nwith conflict warnings
+
+== Approve request ==
+
+Manager -> UI : Click Approve on request
+UI -> Controller : POST /api/conges/{id}/approuver
+Controller -> Service : approuver(congeId, managerId)
+
+Service -> Cache : invalidateDashboard()
+Service -> CongeRepo : findOrFail(congeId)
+CongeRepo -> DB : SELECT conge
+DB --> CongeRepo : conge
+
+alt Status is not EN_ATTENTE
+  Service --> Controller : false
+  Controller --> UI : 400 Bad Request
+  UI --> Manager : Display error
+else Status is EN_ATTENTE
+  alt Type != SANS_SOLDE
+    Service -> UserRepo : updateSoldeConge(userId, days)
+    UserRepo -> DB : UPDATE solde_conge
+    DB --> UserRepo : ok
+  end
+
+  Service -> UserRepo : updateStatus(userId, EN_CONGE)
+  UserRepo -> DB : UPDATE utilisateur.status
+  DB --> UserRepo : ok
+
+  Service -> CongeRepo : approuver(congeId, managerId)
+  CongeRepo -> DB : UPDATE statut = APPROUVE,\napprouve_par = managerId
+  DB --> CongeRepo : ok
+  CongeRepo --> Service : true
+
+  Service -> Event : dispatch(LeaveStatusNotification)
+  Event --> Service : notification queued
+
+  Service --> Controller : true
+  Controller --> UI : 200 OK
+  UI --> Manager : Success message
+  UI -> Controller : Refresh pending list
+  Controller --> UI : Updated data
+  UI --> Manager : Updated table
+end
+
+note right of ConflictSvc
+  Detects team capacity issues
+  and manager/employee overlap
+  before approval decision
+end note
+
+@enduml

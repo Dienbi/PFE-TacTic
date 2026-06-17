@@ -1,0 +1,63 @@
+@startuml generate_payroll_sequence
+title Detailed Sequence Diagram — Generate Payroll
+
+actor "HR Administrator" as HR
+participant "PayrollDashboard\n(React)" as UI
+participant "PaieController" as Controller
+participant "PaieService" as Service
+participant "PointageRepository" as PointageRepo
+participant "PayrollCalculator" as Calculator
+participant "PaieRepository" as PaieRepo
+participant "UtilisateurRepository" as UserRepo
+database "PostgreSQL" as DB
+
+HR -> UI : Open payroll dashboard
+UI -> Controller : GET /api/paies/employees-config
+Controller -> Service : getEmployeesWithSalaryConfig()
+Service --> Controller : employees + salaries
+Controller --> UI : configuration list
+UI --> HR : Display salary config\nand generation form
+
+HR -> UI : Select period and employee(s)\n(individual or bulk)
+UI -> Controller : POST /api/paies/generer\nor /api/paies/generer-tous
+Controller -> Service : generer(userId, periodeDebut, periodeFin)
+
+Service -> PaieRepo : existsForPeriod(userId, dates)
+PaieRepo -> DB : SELECT existing paie
+DB --> PaieRepo : exists?
+
+alt Payslip already exists for period
+  PaieRepo --> Service : true
+  Service --> Controller : { error: duplicate }
+  Controller --> UI : 400 Bad Request
+  UI --> HR : Display error
+else No duplicate
+  Service -> UserRepo : findOrFail(userId)
+  UserRepo -> DB : SELECT utilisateur
+  DB --> UserRepo : user (salaire_base)
+
+  alt Base salary not configured
+    Service --> Controller : { error: salary not set }
+    Controller --> UI : 400 Bad Request
+    UI --> HR : Display error
+  else Salary configured
+    Service -> PointageRepo : getStatsByPeriod(userId, dates)
+    PointageRepo -> DB : SUM duree_travail
+    DB --> PointageRepo : total hours
+    PointageRepo --> Service : stats
+
+    Service -> Service : Compute normal/overtime hours
+    Service -> Calculator : calculatePayroll(base, heuresSupp)
+    Calculator --> Service : gross, CNSS, tax, net
+
+    Service -> PaieRepo : create(GENERE)
+    PaieRepo -> DB : INSERT paie
+    DB --> PaieRepo : payslip record
+    PaieRepo --> Service : Paie
+    Service --> Controller : Paie
+    Controller --> UI : 201 Created
+    UI --> HR : Display success +\npayslip in list
+  end
+end
+
+@enduml

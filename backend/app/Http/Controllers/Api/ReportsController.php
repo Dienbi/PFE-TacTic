@@ -28,33 +28,43 @@ class ReportsController extends Controller
 
         if ($request->boolean('noCache')) {
             Cache::forget($cacheKey);
+        } elseif (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
         }
 
-        $data = Cache::remember($cacheKey, 600, function () use ($attendanceLimit, $performanceLimit) {
-            try {
-                $ai = $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit);
-                $hasData = ! empty($ai['ai_attendance'])
-                    || ! empty($ai['ai_performance'])
-                    || ! empty($ai['ai_kpis']);
+        $data = $this->fetchAiReports($attendanceLimit, $performanceLimit);
 
-                return [
-                    'ai_available' => $hasData,
-                    'attendance_predictions' => $ai['ai_attendance'] ?? [],
-                    'performance_scores' => $ai['ai_performance'] ?? [],
-                    'ai_kpis' => $ai['ai_kpis'] ?? [],
-                ];
-            } catch (\Throwable $e) {
-                Log::warning('reports.ai.failed', ['message' => $e->getMessage()]);
-
-                return [
-                    'ai_available' => false,
-                    'attendance_predictions' => [],
-                    'performance_scores' => [],
-                    'ai_kpis' => [],
-                ];
-            }
-        });
+        if ($data['ai_available']) {
+            Cache::put($cacheKey, $data, 600);
+        }
 
         return response()->json($data);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function fetchAiReports(int $attendanceLimit, int $performanceLimit): array
+    {
+        try {
+            $ai = $this->aiService->getDashboardAIData($attendanceLimit, $performanceLimit);
+            $hasData = ! empty($ai['ai_attendance']) || ! empty($ai['ai_performance']);
+
+            return [
+                'ai_available' => $hasData,
+                'attendance_predictions' => $ai['ai_attendance'] ?? [],
+                'performance_scores' => $ai['ai_performance'] ?? [],
+                'ai_kpis' => $ai['ai_kpis'] ?? [],
+            ];
+        } catch (\Throwable $e) {
+            Log::warning('reports.ai.failed', ['message' => $e->getMessage()]);
+
+            return [
+                'ai_available' => false,
+                'attendance_predictions' => [],
+                'performance_scores' => [],
+                'ai_kpis' => [],
+            ];
+        }
     }
 }

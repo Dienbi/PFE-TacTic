@@ -1,0 +1,36 @@
+@startuml authenticate_sequence
+title Detailed Sequence Diagram — Authenticate
+
+actor User
+participant "Login Page\n(React)" as UI
+participant "AuthController" as Controller
+participant "AuthService" as Service
+participant "UtilisateurRepository" as Repo
+database "PostgreSQL" as DB
+
+User -> UI : Enter email and password
+UI -> Controller : POST /api/auth/login
+Controller -> Controller : Validate LoginRequest
+Controller -> Service : login(email, password)
+
+Service -> Repo : findByEmail(email)
+Repo -> DB : SELECT utilisateur
+DB --> Repo : user record
+
+alt Invalid credentials or inactive account
+  Repo --> Service : null / inactive
+  Service --> Controller : null
+  Controller --> UI : 401 Unauthorized
+  UI --> User : Display error message
+else Valid credentials
+  Service -> Service : Hash::check(password)
+  Service -> Service : JWTAuth::fromUser(user)
+  Service -> Repo : updateLastConnection(userId)
+  Repo -> DB : UPDATE last_connection
+  Service --> Controller : { access_token, user }
+  Controller --> UI : 200 OK + JWT
+  UI -> UI : Store token in localStorage
+  UI --> User : Redirect to role dashboard
+end
+
+@enduml

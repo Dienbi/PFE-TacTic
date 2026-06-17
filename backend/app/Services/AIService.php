@@ -73,14 +73,12 @@ class AIService
         }
 
         try {
-            // Aggressive timeout for dashboard: if AI is slow, don't hold up the rest of the stats
-            $timeout = (int) config('services.ai.dashboard_timeout', 3);
+            $timeout = (int) config('services.ai.dashboard_timeout', 15);
 
             $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($timeout) {
                 return [
                     $pool->as('attendance')->timeout($timeout)->get($this->baseUrl.'/api/predictions/attendance/all'),
                     $pool->as('performance')->timeout($timeout)->get($this->baseUrl.'/api/predictions/performance/all'),
-                    $pool->as('kpis')->timeout($timeout)->get($this->baseUrl.'/api/predictions/dashboard-kpis'),
                 ];
             });
 
@@ -94,10 +92,7 @@ class AIService
                 ? array_slice($performanceResponse->json() ?? [], 0, $performanceLimit)
                 : [];
 
-            $kpisResponse = $responses['kpis'] ?? null;
-            $kpis = ($kpisResponse instanceof Response && $kpisResponse->successful())
-                ? ($kpisResponse->json() ?? [])
-                : [];
+            $kpis = $this->buildDashboardKpis($attendanceResponse, $performanceResponse, $attendance, $performance);
 
             $result = [
                 'ai_attendance' => $attendance,
@@ -105,8 +100,7 @@ class AIService
                 'ai_kpis' => $kpis,
             ];
 
-            // Only cache if we actually got some AI data to avoid caching empty results during a temporary failure
-            if (! empty($attendance) || ! empty($performance) || ! empty($kpis)) {
+            if (! empty($attendance) || ! empty($performance)) {
                 \Illuminate\Support\Facades\Cache::put($cacheKey, $result, 600);
             }
 
@@ -120,6 +114,72 @@ class AIService
                 'ai_kpis' => [],
             ];
         }
+    }
+
+    /**
+     * Build dashboard KPIs locally from attendance/performance responses
+     * to avoid a third slow round-trip to the AI service.
+     */
+    private function buildDashboardKpis(
+        mixed $attendanceResponse,
+        mixed $performanceResponse,
+        array $attendanceSlice,
+        array $performanceSlice
+    ): array {
+        $generatedAt = now()->toIso8601String();
+        $attendanceKpis = null;
+        $performanceKpis = null;
+
+        if ($attendanceResponse instanceof Response && $attendanceResponse->successful()) {
+            $allAttendance = $attendanceResponse->json() ?? [];
+            if (! empty($allAttendance)) {
+                $risks = array_column($allAttendance, 'avg_absence_risk');
+                $high = count(array_filter($allAttendance, fn ($r) => ($r['risk_level'] ?? '') === 'high'));
+                $medium = count(array_filter($allAttendance, fn ($r) => ($r['risk_level'] ?? '') === 'medium'));
+                $withAlerts = count(array_filter($allAttendance, fn ($r) => ! empty($r['alert_dates'])));
+
+                $attendanceKpis = [
+                    'predicted_absence_rate' => round((array_sum($risks) / count($risks)) * 100, 1),
+                    'high_risk_employees' => $high,
+                    'medium_risk_employees' => $medium,
+                    'employees_with_alerts' => $withAlerts,
+                    'total_analyzed' => count($allAttendance),
+                    'top_at_risk' => array_slice($allAttendance, 0, 5),
+                ];
+            }
+        }
+
+        if ($performanceResponse instanceof Response && $performanceResponse->successful()) {
+            $allPerformance = $performanceResponse->json() ?? [];
+            if (! empty($allPerformance)) {
+                $scores = array_column($allPerformance, 'performance_score');
+                $grades = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'F' => 0];
+                foreach ($allPerformance as $row) {
+                    $g = $row['grade'] ?? 'F';
+                    if (isset($grades[$g])) {
+                        $grades[$g]++;
+                    }
+                }
+
+                $performanceKpis = [
+                    'avg_performance' => round(array_sum($scores) / count($scores), 1),
+                    'min_performance' => round(min($scores), 1),
+                    'max_performance' => round(max($scores), 1),
+                    'total_scored' => count($scores),
+                    'grade_distribution' => $grades,
+                    'top_performers' => array_slice($allPerformance, 0, 5),
+                    'needs_improvement' => count($allPerformance) >= 5
+                        ? array_slice(array_reverse($allPerformance), 0, 5)
+                        : [],
+                ];
+            }
+        }
+
+        return [
+            'generated_at' => $generatedAt,
+            'attendance_predictions' => $attendanceKpis,
+            'performance_scores' => $performanceKpis,
+        ];
     }
 
     // ─── Job Matching ────────────────────────────────────────────

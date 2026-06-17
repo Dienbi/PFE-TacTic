@@ -14,11 +14,13 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  useEffect(() => {
+    useEffect(() => {
     if (isSubscribed.current) return;
 
     const userStr = localStorage.getItem("user");
     if (!userStr) return;
+
+    if (!echoService.isEnabled()) return;
 
     const user = JSON.parse(userStr);
     const token = localStorage.getItem("token");
@@ -79,6 +81,11 @@ export const useRealtimeNotifications = (options: UseRealtimeNotificationsOption
         .listen(".AttendanceNotification", (data: any) => {
           console.log("Attendance notification received:", data);
           showToast(data.type || "info", data.title, data.message);
+          callbacks.onAttendanceNotification?.(data);
+        })
+        .listen(".PredictedAbsenceAlert", (data: any) => {
+          console.log("Predicted absence alert received:", data);
+          showToast("warning", data.title || "Alerte absence prévue", data.message);
           callbacks.onAttendanceNotification?.(data);
         });
     }

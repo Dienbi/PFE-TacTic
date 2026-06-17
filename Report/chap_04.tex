@@ -1,0 +1,374 @@
+\chapter{Sprint 3 \& 4: Leave Management and Payroll}
+
+\section*{Introduction}
+In the previous chapter, we completed Release 1, which delivered authentication, user management, and attendance tracking. This chapter covers \textbf{Release 2}, which groups Sprint 3 and Sprint 4. Sprint 3 implements the leave management module, allowing employees to submit and track leave requests while managers validate them with conflict detection. Sprint 4 delivers the payroll module, automating salary calculation based on attendance data, CNSS contributions, and income tax rules, and providing payslip generation and workflow management for HR.
+
+% ==================================================
+\section{Sprint Backlogs}
+
+\subsection{Backlog of the Third Sprint}
+Table \ref{tab:leave-backlog} presents the backlog of the third sprint.
+
+\begin{longtable}[c]{
+    |p{.10\textwidth}
+    |p{.20\textwidth}|
+    p{.30\textwidth}|
+    p{.10\textwidth}| 
+}
+    \caption{Backlog of the third sprint.}
+    \label{tab:leave-backlog}\\
+    \hline
+    ID & User Story & Tasks & Points \\
+    \hline
+    US-14 & As an employee, I can submit a leave request
+    & -Design of sequence diagram\newline
+-Development of US-14 & 3 \\
+    \hline
+    US-15 & As an employee, I can view my leave history and remaining balance
+    & -Design of sequence diagram\newline
+-Development of US-15 & 3 \\
+    \hline
+    US-16 & As an employee, I can cancel a pending leave request
+    & -Design of sequence diagram\newline
+-Development of US-16 & 3 \\
+    \hline
+    US-17 & As a team leader, I can view and process pending leave requests for my team
+    & -Design of sequence diagram\newline
+-Development of US-17 & 3 \\
+    \hline
+    US-18 & As HR, I can approve or reject leave requests and check team conflicts
+    & -Design of sequence diagram\newline
+-Development of US-18 & 3 \\
+    \hline
+\end{longtable}
+
+\subsection{Backlog of the Fourth Sprint}
+Table \ref{tab:payroll-backlog} presents the backlog of the fourth sprint.
+
+\begin{longtable}[c]{
+    |p{.10\textwidth}
+    |p{.20\textwidth}|
+    p{.30\textwidth}|
+    p{.10\textwidth}| 
+}
+    \caption{Backlog of the fourth sprint.}
+    \label{tab:payroll-backlog}\\
+    \hline
+    ID & User Story & Tasks & Points \\
+    \hline
+    US-19 & As an employee, I can view and download my payslips
+    & -Design of sequence diagram\newline
+-Development of US-19 & 3 \\
+    \hline
+    US-20 & As HR, I can configure employee base salaries
+    & -Design of sequence diagram\newline
+-Development of US-20 & 3 \\
+    \hline
+    US-21 & As HR, I can generate monthly payroll (individual or bulk)
+    & -Design of sequence diagram\newline
+-Development of US-21 & 3 \\
+    \hline
+    US-22 & As HR, I can validate and mark payroll as paid
+    & -Design of sequence diagram\newline
+-Development of US-22 & 3 \\
+    \hline
+    US-23 & As HR, I can simulate and preview payroll before generation
+    & -Design of sequence diagram\newline
+-Development of US-23 & 3 \\
+    \hline
+\end{longtable}
+
+% ==================================================
+\section{Functional Specification of Release 2}
+The objective of the functional specification is to accurately describe all the application functions delivered in Release 2 and thus define its functional scope. A single use case diagram covers both Sprint 3 (leave management) and Sprint 4 (payroll), while the textual descriptions below detail the main use cases selected for each sprint.
+
+\subsection{Use Case Diagram of Release 2}
+Figure \ref{fig:release2-usecase} represents the use case diagram of Release 2, grouping the functionalities of Sprint 3 and Sprint 4 within the system boundary.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/release2 use case.jpg}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/release2 use case.jpg}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Diagram path: images/release2 use case.jpg}}%
+}
+\caption{Use case diagram of Release 2 (Sprint 3 and Sprint 4).}
+\label{fig:release2-usecase}
+\end{figure}
+
+\clearpage
+\subsection{Textual Description of Use Cases — Sprint 3}
+
+\paragraph{Textual Description of the ``Request Leave'' Use Case}
+Table \ref{tab:request-leave} presents the textual description of the ``Request Leave'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Request Leave'' use case}
+\label{tab:request-leave}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Request Leave \\
+    \hline
+    \textbf{Actor(s)} & -Employee \\
+    \hline
+    \textbf{Objective} & -Submit a leave request for a given period \\
+    \hline
+    \textbf{Precondition} & -Authenticated employee \\
+    \hline
+    \textbf{Postcondition} & -Leave request created with status \textit{EN\_ATTENTE} \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The employee goes to the leave request page\newline
+2-The system displays the form and the remaining leave balance\newline
+3-The employee selects the leave type, start date, end date, and optional reason\newline
+4-The system verifies the dates, checks for overlapping requests, and validates the leave balance\newline
+5-The system saves the request and displays a confirmation message\newline
+6-The system notifies the team leader and HR that a new request is pending \\ \hline
+    \textbf{Alternative Scenario}
+    & -The system detects insufficient leave balance or an overlapping period\newline
+-The nominal scenario stops at step 4\newline
+1-The system displays an error message\newline
+2-The employee corrects the entered information\newline
+-The nominal scenario resumes at step 4\newline
+\newline
+-For sick leave (\textit{MALADIE}), the employee must upload a medical certificate.\newline
+-If the file is missing, the system displays an error and blocks submission \\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``Approve Leave Request'' Use Case}
+Table \ref{tab:approve-leave} presents the textual description of the ``Approve Leave Request'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Approve Leave Request'' use case}
+\label{tab:approve-leave}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Approve Leave Request \\
+    \hline
+    \textbf{Actor(s)} & -Team Leader \newline -HR \\
+    \hline
+    \textbf{Objective} & -Approve or reject a pending leave request \\
+    \hline
+    \textbf{Precondition} & -Authenticated team leader or HR\newline
+-Existing leave request with status \textit{EN\_ATTENTE} \\
+    \hline
+    \textbf{Postcondition} & -Leave request approved or rejected\newline
+-Employee notified of the decision \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The manager goes to the leave management page\newline
+2-The system displays pending requests with employee details and detected team conflicts\newline
+3-The manager reviews the request and clicks approve\newline
+4-The system deducts the leave days from the employee balance (if applicable)\newline
+5-The system updates the employee status to \textit{EN\_CONGE} and changes the request status to \textit{APPROUVE}\newline
+6-The system notifies the employee that the request has been approved \\ \hline
+    \textbf{Alternative Scenario}
+    & -The manager rejects the request\newline
+1-The manager enters an optional rejection reason\newline
+2-The system updates the request status to \textit{REFUSE}\newline
+3-The system notifies the employee with the rejection reason\newline
+\newline
+-If team conflicts are detected (e.g., insufficient team capacity or manager overlap), the system displays a warning before approval \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Textual Description of Use Cases — Sprint 4}
+
+\paragraph{Textual Description of the ``Generate Payroll'' Use Case}
+Table \ref{tab:generate-payroll} presents the textual description of the ``Generate Payroll'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Generate Payroll'' use case}
+\label{tab:generate-payroll}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Generate Payroll \\
+    \hline
+    \textbf{Actor(s)} & -HR \\
+    \hline
+    \textbf{Objective} & -Generate a monthly payslip for one or all employees \\
+    \hline
+    \textbf{Precondition} & -Authenticated HR\newline
+-Employee base salary configured\newline
+-Attendance data available for the selected period \\
+    \hline
+    \textbf{Postcondition} & -Payslip created with status \textit{GENERE}\newline
+-Gross salary, deductions (CNSS, income tax), and net salary computed \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-HR goes to the payroll dashboard\newline
+2-The system displays employee salary configuration and payroll history\newline
+3-HR selects the pay period and chooses individual or bulk generation\newline
+4-The system retrieves attendance hours for the period\newline
+5-The system calculates gross salary (base + overtime), CNSS contribution, and progressive income tax\newline
+6-The system saves the payslip and displays a confirmation message \\ \hline
+    \textbf{Alternative Scenario}
+    & -A payslip already exists for the selected period\newline
+-The nominal scenario stops at step 5\newline
+1-The system displays an error message and blocks duplicate generation\newline
+\newline
+-Employee base salary is not configured\newline
+1-The system displays an error and prompts HR to configure the salary first \\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``View and Download Payslip'' Use Case}
+Table \ref{tab:view-payslip} presents the textual description of the ``View and Download Payslip'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``View and Download Payslip'' use case}
+\label{tab:view-payslip}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -View and Download Payslip \\
+    \hline
+    \textbf{Actor(s)} & -Employee \newline -HR \\
+    \hline
+    \textbf{Objective} & -Consult and download a generated payslip \\
+    \hline
+    \textbf{Precondition} & -Authenticated user\newline
+-Existing payslip for the employee \\
+    \hline
+    \textbf{Postcondition} & -Payslip details displayed or downloaded \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The employee goes to the salary page\newline
+2-The system displays the list of payslips with period, gross, and net amounts\newline
+3-The employee selects a payslip and clicks download\newline
+4-The system generates the payslip document (HTML/PDF) and opens it in a new window \\ \hline
+    \textbf{Alternative Scenario}
+    & -No payslip exists for the employee\newline
+1-The system displays an empty state with an informative message\newline
+\newline
+-HR validates and marks a payslip as paid\newline
+1-HR selects a generated payslip and clicks validate, then mark as paid\newline
+2-The system updates the payslip status to \textit{VALIDE} then \textit{PAYE} \\ \hline
+\end{tabular}
+\end{table}
+
+% ==================================================
+\section{Sprint 3: Leave Management}
+
+\subsection{Detailed Sequence Diagrams}
+
+\subsubsection{Detailed Sequence Diagram of the ``Request Leave'' Use Case}
+Figure \ref{fig:ds-leave-request} represents the detailed sequence diagram of the ``Request Leave'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/leave request sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/leave request sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/leave request sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Request Leave'' use case}
+\label{fig:ds-leave-request}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``Approve Leave Request'' Use Case}
+Figure \ref{fig:ds-approve-leave} represents the detailed sequence diagram of the ``Approve Leave Request'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/approve leave sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/approve leave sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/approve leave sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Approve Leave Request'' use case}
+\label{fig:ds-approve-leave}
+\end{figure}
+
+\subsection{Implementation}
+After completing the analysis and design of the third sprint, this section presents the main interfaces implemented in the application.
+
+\subsubsection{Employee Leave Request Page}
+Figure \ref{fig:impl-leave-request} shows the leave request page, which allows employees to submit a new request, view their remaining balance, and consult their request history.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/leave request.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/leave request.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/leave request.png}}%
+}
+\caption{Employee leave request page}
+\label{fig:impl-leave-request}
+\end{figure}
+
+\subsubsection{HR Leave Management Page}
+Figure \ref{fig:impl-leave-management} shows the leave management interface used by HR and team leaders to review pending requests, detect team conflicts, and approve or reject leave demands.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/leave management.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/leave management.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/leave management.png}}%
+}
+\caption{HR leave management page}
+\label{fig:impl-leave-management}
+\end{figure}
+
+% ==================================================
+\section{Sprint 4: Payroll Management}
+
+\subsection{Detailed Sequence Diagrams}
+
+\subsubsection{Detailed Sequence Diagram of the ``Generate Payroll'' Use Case}
+Figure \ref{fig:ds-generate-payroll} represents the detailed sequence diagram of the ``Generate Payroll'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/generate payroll sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/generate payroll sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/generate payroll sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Generate Payroll'' use case}
+\label{fig:ds-generate-payroll}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``View and Download Payslip'' Use Case}
+Figure \ref{fig:ds-view-payslip} represents the detailed sequence diagram of the ``View and Download Payslip'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/view payslip sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/view payslip sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/view payslip sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``View and Download Payslip'' use case}
+\label{fig:ds-view-payslip}
+\end{figure}
+
+\subsection{Implementation}
+After completing the analysis and design of the fourth sprint, this section presents the main interfaces implemented in the application.
+
+\subsubsection{Employee Payslip Page}
+Figure \ref{fig:impl-employee-payslip} shows the employee salary page, where staff members can view their payslip history, consult salary statistics, and download individual payslips.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/employee payslip.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/employee payslip.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/employee payslip.png}}%
+}
+\caption{Employee payslip page}
+\label{fig:impl-employee-payslip}
+\end{figure}
+
+\subsubsection{HR Payroll Dashboard}
+Figure \ref{fig:impl-payroll-dashboard} shows the HR payroll dashboard used to configure salaries, simulate payroll, generate payslips in bulk, and manage the validation and payment workflow.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/payroll dashboard.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/payroll dashboard.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/payroll dashboard.png}}%
+}
+\caption{HR payroll dashboard}
+\label{fig:impl-payroll-dashboard}
+\end{figure}
+
+\section*{Conclusion}
+In this chapter, we completed Release 2 by delivering Sprint 3 (leave management) and Sprint 4 (payroll management). The platform now supports the full HR operational cycle: leave validation integrated with employee status, and automated salary calculation based on attendance hours, CNSS contributions, and progressive income tax. In the following chapter, we will present Release 3, starting with Sprint 5, which covers the recruitment and job matching module.

@@ -1,0 +1,41 @@
+@startuml modify_account_sequence
+title Detailed Sequence Diagram — Modify Account
+
+actor User
+participant "Profile Page\n(React)" as UI
+participant "AuthController" as Controller
+participant "AuthService" as Service
+participant "UtilisateurRepository" as Repo
+database "PostgreSQL" as DB
+
+== Load profile ==
+
+User -> UI : Open profile page
+UI -> Controller : GET /api/auth/me
+Controller -> Service : me()
+Service --> Controller : current user
+Controller --> UI : user profile
+UI --> User : Display editable form
+
+== Update profile ==
+
+User -> UI : Edit fields and submit
+UI -> Controller : PUT /api/auth/update-profile
+Controller -> Controller : Validate fields\n(role-based rules)
+
+alt Validation fails
+  Controller --> UI : 422 validation errors
+  UI --> User : Display field errors
+else Validation succeeds
+  Controller -> Service : updateProfile(data)
+  Service -> Repo : update(userId, data)
+  Repo -> DB : UPDATE utilisateur
+  DB --> Repo : ok
+  Repo --> Service : updated
+  Service --> Controller : refreshed user
+  Controller --> UI : 200 OK + user
+  UI -> UI : Update localStorage user
+  UI --> User : Display success confirmation
+end
+
+@enduml

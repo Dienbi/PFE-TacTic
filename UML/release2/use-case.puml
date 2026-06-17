@@ -1,0 +1,62 @@
+@startuml release2_use_case
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Release 2 — Leave Management and Payroll
+
+actor "Employee" as Emp
+actor "Team Leader" as Chef
+actor "HR Administrator" as RH
+
+Emp <|-- Chef
+Chef <|-- RH
+
+rectangle "TAC-TIC HR System\n(Release 2 — Sprint 3 & 4)" as System {
+
+  package "Sprint 3 — Leave Management" {
+    usecase "Request Leave" as UC_Request
+    usecase "View Leave History\nand Balance" as UC_LeaveHistory
+    usecase "Cancel Pending\nLeave Request" as UC_Cancel
+    usecase "View Team Pending\nLeave Requests" as UC_TeamPending
+    usecase "Approve Leave Request" as UC_Approve
+    usecase "Reject Leave Request" as UC_Reject
+    usecase "Check Team Leave\nConflicts" as UC_Conflicts
+    usecase "Download Medical\nCertificate" as UC_Medical
+  }
+
+  package "Sprint 4 — Payroll" {
+    usecase "View and Download\nPayslip" as UC_ViewPayslip
+    usecase "Configure Employee\nBase Salary" as UC_ConfigSalary
+    usecase "Simulate Payroll" as UC_Simulate
+    usecase "Generate Payroll" as UC_Generate
+    usecase "Validate Payroll" as UC_Validate
+    usecase "Mark Payroll as Paid" as UC_Pay
+  }
+
+  UC_Approve ..> UC_Conflicts : <<include>>
+  UC_Reject ..> UC_Conflicts : <<include>>
+  UC_Generate ..> UC_Simulate : <<extend>>
+  UC_Pay ..> UC_Validate : <<include>>
+}
+
+Emp --> UC_Request
+Emp --> UC_LeaveHistory
+Emp --> UC_Cancel
+Emp --> UC_ViewPayslip
+
+Chef --> UC_TeamPending
+Chef --> UC_Approve
+Chef --> UC_Reject
+
+RH --> UC_Approve
+RH --> UC_Reject
+RH --> UC_Medical
+RH --> UC_ConfigSalary
+RH --> UC_Simulate
+RH --> UC_Generate
+RH --> UC_Validate
+RH --> UC_Pay
+RH --> UC_ViewPayslip
+
+@enduml

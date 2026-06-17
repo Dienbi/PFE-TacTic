@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jobMatchingApi, JobApplication } from "../../api/jobMatchingApi";
-import { aiApi, CandidateRecommendation } from "../../../api/aiApi";
+import { aiApi, MatchResponse } from "../../../api/aiApi";
+import MatchRecommendationCard from "../../components/MatchRecommendationCard";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import { useAuth } from "../../../hooks/useAuth";
 import "./ApplicationsView.css";
+
+const AI_PREVIEW_COUNT = 5;
 
 const ApplicationsView: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -19,15 +22,20 @@ const ApplicationsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"applications" | "ai">(
     "applications",
   );
-  const [aiRecommendations, setAiRecommendations] = useState<
-    CandidateRecommendation[]
-  >([]);
+  const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiLoaded, setAiLoaded] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [showAllAiRecs, setShowAllAiRecs] = useState(false);
 
   const { user, displayName } = useAuth();
   const userName = user ? displayName : "HR Manager";
   const userRole = user?.role ?? "rh";
+
+  const aiRecommendations = matchResult?.recommendations ?? [];
+  const visibleRecs = showAllAiRecs
+    ? aiRecommendations
+    : aiRecommendations.slice(0, AI_PREVIEW_COUNT);
 
   useEffect(() => {
     if (postId) {
@@ -58,11 +66,15 @@ const ApplicationsView: React.FC = () => {
   const loadAiRecommendations = async () => {
     try {
       setAiLoading(true);
+      setAiError(null);
       const data = await aiApi.getMatchRecommendations(parseInt(postId!));
-      setAiRecommendations(data);
+      setMatchResult(data);
       setAiLoaded(true);
     } catch (err: any) {
-      console.error("AI recommendations error:", err);
+      setAiError(
+        err.response?.data?.message ||
+          "Impossible de charger les recommandations IA.",
+      );
     } finally {
       setAiLoading(false);
     }
@@ -176,7 +188,6 @@ const ApplicationsView: React.FC = () => {
 
           {error && <div className="alert alert-danger">{error}</div>}
 
-          {/* Tab Navigation */}
           <div className="view-tabs">
             <button
               className={`view-tab ${activeTab === "applications" ? "active" : ""}`}
@@ -196,52 +207,59 @@ const ApplicationsView: React.FC = () => {
           </div>
 
           {activeTab === "ai" ? (
-            /* ── AI Recommendations Tab ──────────────────────────── */
             <div className="ai-recommendations-section">
               {aiLoading ? (
                 <div className="loading-state">
                   <div className="spinner"></div>
                   <p>Analyse IA en cours...</p>
                 </div>
+              ) : aiError ? (
+                <div className="alert alert-danger">{aiError}</div>
               ) : aiRecommendations.length === 0 ? (
                 <div className="empty-state-card">
                   <div className="empty-icon">🤖</div>
                   <h3>Aucune recommandation</h3>
                   <p>
-                    Entraînez les modèles IA pour obtenir des recommandations de
-                    candidats.
+                    Aucun employé actif ne correspond aux critères de ce poste.
                   </p>
                 </div>
               ) : (
-                <div className="ai-rec-list">
-                  {aiRecommendations.map((rec, idx) => (
-                    <div key={rec.utilisateur_id} className="ai-rec-card">
-                      <div className="ai-rec-rank">#{idx + 1}</div>
-                      <div className="ai-rec-avatar">
-                        {rec.prenom.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="ai-rec-info">
-                        <h4>
-                          {rec.prenom} {rec.nom}
-                        </h4>
-                        <div className="ai-rec-scores">
-                          <span className="ai-rec-metric">📧 {rec.email}</span>
-                        </div>
-                      </div>
-                      <div className="ai-rec-score-container">
-                        <div
-                          className="ai-rec-score-circle"
-                          style={{
-                            background: `conic-gradient(${rec.score >= 70 ? "#059669" : rec.score >= 40 ? "#D97706" : "#DC2626"} ${rec.score * 3.6}deg, #F3F4F6 0deg)`,
-                          }}
-                        >
-                          <span>{Math.round(rec.score)}%</span>
-                        </div>
-                        <span className="ai-rec-score-label">Match</span>
-                      </div>
+                <>
+                  <div className="mb-4 px-1">
+                    <h3 className="text-base font-semibold text-gray-800">
+                      Top {Math.min(AI_PREVIEW_COUNT, aiRecommendations.length)} sur{" "}
+                      {matchResult?.total_candidates ?? aiRecommendations.length}{" "}
+                      employés analysés
+                    </h3>
+                    {matchResult?.job_post_titre && (
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        Poste : {matchResult.job_post_titre}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {visibleRecs.map((rec, idx) => (
+                      <MatchRecommendationCard
+                        key={rec.utilisateur_id}
+                        rec={rec}
+                        rank={idx + 1}
+                      />
+                    ))}
+                  </div>
+                  {aiRecommendations.length > AI_PREVIEW_COUNT && (
+                    <div className="text-center mt-4">
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-violet-600 hover:text-violet-800 px-4 py-2 rounded-lg hover:bg-violet-50 transition-colors"
+                        onClick={() => setShowAllAiRecs(!showAllAiRecs)}
+                      >
+                        {showAllAiRecs
+                          ? "Réduire la liste"
+                          : `Voir les ${aiRecommendations.length - AI_PREVIEW_COUNT} autres recommandations`}
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           ) : loading ? (

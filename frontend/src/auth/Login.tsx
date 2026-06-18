@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import client from "../api/client";
 import Loader from "../shared/components/Loader";
 import { getDefaultDashboard } from "../store/authSlice";
 import { useAppDispatch } from "../store";
 import { login } from "../store/authSlice";
+import { useAuth } from "../hooks/useAuth";
 import "./Login.css";
 
 const Login: React.FC = () => {
@@ -14,6 +15,15 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { token, user, hydrated } = useAuth();
+
+  if (!hydrated) {
+    return <Loader fullScreen />;
+  }
+
+  if (token && user?.role) {
+    return <Navigate to={getDefaultDashboard(user.role)} replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +98,7 @@ const Login: React.FC = () => {
             />
           </div>
 
-          <button type="submit" className="login-button" disabled={isLoading}>
+          <button type="submit" className="btn-login" disabled={isLoading}>
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>
         </form>

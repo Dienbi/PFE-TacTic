@@ -1,0 +1,467 @@
+\chapter{Sprint 5 \& 6: Recruitment and AI Analytics}
+
+\section*{Introduction}
+In the previous chapter, we completed Release 2, which delivered leave management and payroll automation. This chapter covers \textbf{Release 3}, which groups Sprint 5 and Sprint 6. Sprint 5 implements the recruitment and job matching module, allowing team leaders to submit job post requests for their teams, HR to approve those requests and publish internal job posts, employees to apply, and the platform to rank candidates using an AI-powered matching engine. Sprint 6 delivers the AI and analytics module, providing 7-day absence risk predictions, employee performance scores, and aggregated KPI dashboards through a dedicated FastAPI microservice proxied by the Laravel backend. AI insights are presented in a simplified, user-friendly interface suitable for HR staff with limited technical background.
+
+% ==================================================
+\section{Sprint Backlogs}
+
+\subsection{Backlog of the Fifth Sprint}
+Table \ref{tab:recruitment-backlog} presents the backlog of the fifth sprint.
+
+\begin{longtable}[c]{
+    |p{.10\textwidth}
+    |p{.20\textwidth}|
+    p{.30\textwidth}|
+    p{.10\textwidth}| 
+}
+    \caption{Backlog of the fifth sprint.}
+    \label{tab:recruitment-backlog}\\
+    \hline
+    ID & User Story & Tasks & Points \\
+    \hline
+    --- & As a team leader, I can create a job post request for my team
+    & -Design of sequence diagram\newline
+-Development of job request creation & 3 \\
+    \hline
+    --- & As a team leader, I can view the status of my job post requests
+    & -Design of sequence diagram\newline
+-Development of job request tracking & 3 \\
+    \hline
+    US-24 & As HR, I can approve job post requests, create, publish, and manage job posts
+    & -Design of sequence diagram\newline
+-Development of US-24 & 3 \\
+    \hline
+    US-25 & As an employee, I can apply to internal job postings
+    & -Design of sequence diagram\newline
+-Development of US-25 & 3 \\
+    \hline
+    US-26 & As HR, I can review and process job applications
+    & -Design of sequence diagram\newline
+-Development of US-26 & 3 \\
+    \hline
+    US-27 & As HR, I can use AI matching to rank candidates for a job post
+    & -Design of sequence diagram\newline
+-Development of US-27 & 5 \\
+    \hline
+\end{longtable}
+
+\subsection{Backlog of the Sixth Sprint}
+Table \ref{tab:ai-backlog} presents the backlog of the sixth sprint.
+
+\begin{longtable}[c]{
+    |p{.10\textwidth}
+    |p{.20\textwidth}|
+    p{.30\textwidth}|
+    p{.10\textwidth}| 
+}
+    \caption{Backlog of the sixth sprint.}
+    \label{tab:ai-backlog}\\
+    \hline
+    ID & User Story & Tasks & Points \\
+    \hline
+    US-28 & As HR, I can view 7-day absence risk predictions per employee
+    & -Design of sequence diagram\newline
+-Development of US-28 & 5 \\
+    \hline
+    US-29 & As HR, I can view employee performance scores
+    & -Design of sequence diagram\newline
+-Development of US-29 & 5 \\
+    \hline
+    US-30 & As HR, I can consult AI-driven KPI dashboards
+    & -Design of sequence diagram\newline
+-Development of US-30 & 3 \\
+    \hline
+    US-31 & As HR, I can view ranked absence risk alerts for all employees
+    & -Design of sequence diagram\newline
+-Development of US-31 & 3 \\
+    \hline
+\end{longtable}
+
+% ==================================================
+\section{Functional Specification of Release 3}
+The objective of the functional specification is to accurately describe all the application functions delivered in Release 3 and thus define its functional scope. A single use case diagram covers both Sprint 5 (recruitment and matching) and Sprint 6 (AI and analytics), while the textual descriptions below detail the main use cases selected for each sprint.
+
+\subsection{Use Case Diagram of Release 3}
+Figure \ref{fig:release3-usecase} represents the use case diagram of Release 3, grouping the functionalities of Sprint 5 and Sprint 6 within the system boundary.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/release3 use case.jpg}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/release3 use case.jpg}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Diagram path: images/release3 use case.jpg}}%
+}
+\caption{Use case diagram of Release 3 (Sprint 5 and Sprint 6).}
+\label{fig:release3-usecase}
+\end{figure}
+
+\clearpage
+\subsection{Textual Description of Use Cases — Sprint 5}
+
+\paragraph{Textual Description of the ``Create Job Post Request'' Use Case}
+Table \ref{tab:create-job-request} presents the textual description of the ``Create Job Post Request'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Create Job Post Request'' use case}
+\label{tab:create-job-request}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Create Job Post Request \\
+    \hline
+    \textbf{Actor(s)} & -Team Leader \\
+    \hline
+    \textbf{Objective} & -Request the opening of a new position for the team \\
+    \hline
+    \textbf{Precondition} & -Authenticated team leader\newline
+-Team leader assigned to the target team \\
+    \hline
+    \textbf{Postcondition} & -Job post request created with status \textit{EN\_ATTENTE}\newline
+-HR notified of the new request \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The team leader opens the job request form\newline
+2-The system displays fields for position title, description, team, and desired start date\newline
+3-The team leader enters the required information and submits the request\newline
+4-The system verifies that the requester belongs to the selected team\newline
+5-The system saves the request and displays a confirmation message\newline
+6-The system notifies HR that a new job post request is pending review \\ \hline
+    \textbf{Alternative Scenario}
+    & -The user is not a team leader\newline
+-The nominal scenario stops at step 4\newline
+1-The system displays an authorization error\newline
+\newline
+-The team leader selects a team they do not manage\newline
+1-The system blocks submission and displays a validation error \\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``View Job Request Status'' Use Case}
+Table \ref{tab:view-job-request} presents the textual description of the ``View Job Request Status'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``View Job Request Status'' use case}
+\label{tab:view-job-request}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -View Job Request Status \\
+    \hline
+    \textbf{Actor(s)} & -Team Leader \\
+    \hline
+    \textbf{Objective} & -Track the review outcome of submitted job post requests \\
+    \hline
+    \textbf{Precondition} & -Authenticated team leader\newline
+-At least one job post request submitted \\
+    \hline
+    \textbf{Postcondition} & -Request list displayed with current status \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The team leader opens the my job requests page\newline
+2-The system retrieves all requests created by the team leader\newline
+3-The system displays each request with its status (\textit{EN\_ATTENTE}, \textit{APPROUVEE}, or \textit{REJETEE})\newline
+4-The team leader filters or reviews the list to follow up on pending demands \\ \hline
+    \textbf{Alternative Scenario}
+    & -HR approves the request\newline
+1-The system updates the status to \textit{APPROUVEE}\newline
+2-The system notifies the team leader and auto-creates a draft job post\newline
+\newline
+-HR rejects the request\newline
+1-The system updates the status to \textit{REJETEE} with an optional reason\newline
+2-The system notifies the team leader of the rejection \\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``Apply to Job Post'' Use Case}
+Table \ref{tab:apply-job} presents the textual description of the ``Apply to Job Post'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Apply to Job Post'' use case}
+\label{tab:apply-job}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Apply to Job Post \\
+    \hline
+    \textbf{Actor(s)} & -Employee \\
+    \hline
+    \textbf{Objective} & -Submit an internal application for a published job post \\
+    \hline
+    \textbf{Precondition} & -Authenticated employee\newline
+-Job post published and open for applications \\
+    \hline
+    \textbf{Postcondition} & -Application created with status \textit{PENDING}\newline
+-HR notified of the new application \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-The employee opens the internal job board\newline
+2-The system displays published job posts\newline
+3-The employee selects a position and enters a motivation letter\newline
+4-The system verifies that the post is open and that the employee has not already applied\newline
+5-The system saves the application and displays a confirmation message\newline
+6-The system notifies HR of the new submission \\ \hline
+    \textbf{Alternative Scenario}
+    & -The job post is closed or not published\newline
+-The nominal scenario stops at step 4\newline
+1-The system displays an error message\newline
+\newline
+-The employee has already applied to the same post\newline
+1-The system blocks duplicate submission and displays an informative message \\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``AI Match Candidates'' Use Case}
+Table \ref{tab:ai-match} presents the textual description of the ``AI Match Candidates'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``AI Match Candidates'' use case}
+\label{tab:ai-match}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -AI Match Candidates \\
+    \hline
+    \textbf{Actor(s)} & -HR \\
+    \hline
+    \textbf{Objective} & -Rank internal candidates for a job post using AI scoring \\
+    \hline
+    \textbf{Precondition} & -Authenticated HR\newline
+-Existing published job post \\
+    \hline
+    \textbf{Postcondition} & -Ranked list of candidates with match scores and explanations \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-HR opens the applications view for a job post\newline
+2-The system displays submitted applications\newline
+3-HR requests AI matching recommendations\newline
+4-The Laravel backend forwards the request to the FastAPI AI service\newline
+5-The AI service computes multi-criteria scores (skills, attendance, tenure, availability)\newline
+6-The system returns ranked candidates with verdicts and reason strings\newline
+7-HR reviews recommendations to support hiring decisions \\ \hline
+    \textbf{Alternative Scenario}
+    & -Job post not found\newline
+1-The system returns a 404 error\newline
+\newline
+-AI service unavailable\newline
+1-The system displays a fallback error and suggests retrying later \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Textual Description of Use Cases — Sprint 6}
+
+\paragraph{Textual Description of the ``Consult AI KPI Dashboard'' Use Case}
+Table \ref{tab:ai-dashboard} presents the textual description of the ``Consult AI KPI Dashboard'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``Consult AI KPI Dashboard'' use case}
+\label{tab:ai-dashboard}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -Consult AI KPI Dashboard \\
+    \hline
+    \textbf{Actor(s)} & -HR \\
+    \hline
+    \textbf{Objective} & -View aggregated AI-driven indicators for decision support \\
+    \hline
+    \textbf{Precondition} & -Authenticated HR\newline
+-AI service reachable \\
+    \hline
+    \textbf{Postcondition} & -Dashboard displays attendance risk KPIs and performance metrics \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-HR opens the HR dashboard\newline
+2-The system requests aggregated KPIs from the AI service via the Laravel proxy\newline
+3-The AI service computes 7-day absence risk summaries and performance score distributions\newline
+4-The system displays predicted absence rate, high-risk employees, average performance, and top performers\newline
+5-HR uses the indicators to prioritize follow-up actions \\ \hline
+    \textbf{Alternative Scenario}
+    & -AI service timeout or error\newline
+1-The dashboard displays cached data if available, otherwise an informative empty state \\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Textual Description of the ``View Attendance Risk Predictions'' Use Case}
+Table \ref{tab:attendance-risk} presents the textual description of the ``View Attendance Risk Predictions'' use case.
+
+\begin{table}[H]
+\centering
+\caption{Textual description of the ``View Attendance Risk Predictions'' use case}
+\label{tab:attendance-risk}
+\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+    \hline
+   \textbf{Use Case} & -View Attendance Risk Predictions \\
+    \hline
+    \textbf{Actor(s)} & -HR \\
+    \hline
+    \textbf{Objective} & -Identify employees with elevated 7-day absence risk \\
+    \hline
+    \textbf{Precondition} & -Authenticated HR\newline
+-AI service reachable\newline
+-Sufficient attendance history in the database \\
+    \hline
+    \textbf{Postcondition} & -Ranked list of employees displayed with risk level badges \\
+    \hline
+    \textbf{Main Scenario}
+    & 1-HR opens the HR dashboard\newline
+2-The system requests attendance predictions for all employees via the Laravel proxy\newline
+3-The AI service analyses recent pointage patterns and computes a 7-day absence risk score per employee\newline
+4-The system classifies each employee as low, medium, or high risk\newline
+5-HR reviews the ranked list and prioritizes follow-up for high-risk cases \\ \hline
+    \textbf{Alternative Scenario}
+    & -AI service unavailable\newline
+1-The system displays a friendly error message and hides the prediction panel\newline
+\newline
+-Insufficient attendance data for an employee\newline
+1-The employee is excluded or shown with a neutral risk indicator \\ \hline
+\end{tabular}
+\end{table}
+
+% ==================================================
+\section{Sprint 5: Recruitment and Job Matching}
+
+\subsection{Detailed Sequence Diagrams}
+
+\subsubsection{Detailed Sequence Diagram of the ``Create Job Post Request'' Use Case}
+Figure \ref{fig:ds-create-job-request} represents the detailed sequence diagram of the ``Create Job Post Request'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/create job request sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/create job request sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/create job request sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Create Job Post Request'' use case}
+\label{fig:ds-create-job-request}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``Apply to Job Post'' Use Case}
+Figure \ref{fig:ds-apply-job} represents the detailed sequence diagram of the ``Apply to Job Post'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/apply job sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/apply job sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/apply job sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Apply to Job Post'' use case}
+\label{fig:ds-apply-job}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``AI Match Candidates'' Use Case}
+Figure \ref{fig:ds-ai-match} represents the detailed sequence diagram of the ``AI Match Candidates'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/ai match sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/ai match sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/ai match sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``AI Match Candidates'' use case}
+\label{fig:ds-ai-match}
+\end{figure}
+
+\subsection{Implementation}
+After completing the analysis and design of the fifth sprint, this section presents the main interfaces implemented in the application.
+
+\subsubsection{Team Leader Job Request Page}
+Figure \ref{fig:impl-job-request-tl} shows the interface used by team leaders to create a job post request and track the status of their submitted demands.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/job request team lead.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/job request team lead.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/job request team lead.png}}%
+}
+\caption{Team leader job request page}
+\label{fig:impl-job-request-tl}
+\end{figure}
+
+\subsubsection{Employee Job Board}
+Figure \ref{fig:impl-job-board} shows the internal job board where employees can browse open positions and submit applications.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/job board.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/job board.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/job board.png}}%
+}
+\caption{Employee job board}
+\label{fig:impl-job-board}
+\end{figure}
+
+\subsubsection{HR Applications and AI Matching View}
+Figure \ref{fig:impl-applications-hr} shows the HR interface for reviewing applications and displaying AI match recommendations with scores and explanations.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/applications hr.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/applications hr.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/applications hr.png}}%
+}
+\caption{HR applications and AI matching view}
+\label{fig:impl-applications-hr}
+\end{figure}
+
+% ==================================================
+\section{Sprint 6: AI and Analytics}
+
+\subsection{Detailed Sequence Diagrams}
+
+\subsubsection{Detailed Sequence Diagram of the ``Consult AI KPI Dashboard'' Use Case}
+Figure \ref{fig:ds-ai-dashboard} represents the detailed sequence diagram of the ``Consult AI KPI Dashboard'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/ai dashboard sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/ai dashboard sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/ai dashboard sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``Consult AI KPI Dashboard'' use case}
+\label{fig:ds-ai-dashboard}
+\end{figure}
+
+\subsubsection{Detailed Sequence Diagram of the ``View Attendance Risk Predictions'' Use Case}
+Figure \ref{fig:ds-attendance-risk} represents the detailed sequence diagram of the ``View Attendance Risk Predictions'' use case.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/attendance risk sequence.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/attendance risk sequence.drawio.png}}%
+}{%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/attendance risk sequence.drawio.png}}%
+}
+\caption{Detailed sequence diagram of the ``View Attendance Risk Predictions'' use case}
+\label{fig:ds-attendance-risk}
+\end{figure}
+
+\subsection{Implementation}
+After completing the analysis and design of the sixth sprint, this section presents the main interfaces implemented in the application.
+
+\subsubsection{HR AI Dashboard}
+Figure \ref{fig:impl-ai-dashboard} shows the HR dashboard integrating AI-powered attendance risk predictions, performance rankings, and aggregated KPI cards.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/ai dashboard.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/ai dashboard.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/ai dashboard.png}}%
+}
+\caption{HR AI dashboard}
+\label{fig:impl-ai-dashboard}
+\end{figure}
+
+\subsubsection{Attendance Risk Predictions Panel}
+Figure \ref{fig:impl-attendance-risk} shows the attendance risk predictions panel on the HR dashboard, presenting employees ranked by 7-day absence risk with clear low, medium, and high indicators.
+\begin{figure}[H]
+\centering
+\IfFileExists{images/attendance risk predictions.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/attendance risk predictions.png}}%
+}{%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/attendance risk predictions.png}}%
+}
+\caption{Attendance risk predictions panel}
+\label{fig:impl-attendance-risk}
+\end{figure}
+
+\section*{Conclusion}
+In this chapter, we completed Release 3 by delivering Sprint 5 (recruitment and AI job matching) and Sprint 6 (AI predictions and analytics). The TAC-TIC platform now offers a complete intelligent HR solution: team-driven hiring requests, internal recruitment with explainable candidate ranking, 7-day absence risk forecasting, performance scoring, and user-friendly AI dashboards. With all three releases implemented, the system centralizes employee management, attendance, leave, payroll, recruitment, and data-driven decision support within a single cohesive platform.

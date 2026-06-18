@@ -21,37 +21,25 @@ import { queryClient } from "../../api/queryClient";
 import { useAuth } from "../../hooks/useAuth";
 import { useAppDispatch } from "../../store";
 import { logout } from "../../store/authSlice";
+import echoService from "../services/echoService";
 import "./Sidebar.css";
 
-interface SidebarProps {
-  role?: string;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ role }) => {
+const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { mappedRole } = useAuth();
 
-  const effectiveRole = role || mappedRole || "rh";
-
-  const handleLogout = async () => {
-    try {
-      await client.post("/auth/logout");
-    } catch (error) {
-      console.error("Logout failed", error);
-    } finally {
-      dispatch(logout());
-      queryClient.clear();
-      setTimeout(() => {
-        navigate("/login");
-      }, 800);
-    }
+  const handleLogout = () => {
+    client.post("/auth/logout").catch(() => {});
+    dispatch(logout());
+    queryClient.clear();
+    echoService.disconnect();
+    navigate("/login", { replace: true });
   };
 
-  // Define menu items based on role
   const getMenuItems = () => {
-    switch (effectiveRole) {
+    switch (mappedRole) {
       case "manager":
         return [
           {
@@ -68,7 +56,6 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           },
           { icon: FileText, label: "Leave", path: "/manager/leave" },
           { icon: DollarSign, label: "Salary", path: "/manager/salary" },
-          { icon: ClipboardList, label: "Requests", path: "/manager/requests" },
           {
             icon: FilePlus,
             label: "Request Job",
@@ -107,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
             path: "/employee/applications",
           },
         ];
-      default: // RH
+      default:
         return [
           { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
           { icon: Users, label: "Employees", path: "/employees" },

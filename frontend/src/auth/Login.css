@@ -118,11 +118,16 @@ body {
 
 .logo-section {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .main-logo {
     height: 80px;
     object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
 
 .page-title {
@@ -183,7 +188,7 @@ body {
     cursor: pointer;
     margin-top: 20px;
     margin-bottom: 30px;
-    text-transform: lowercase; /* Matches 'login' on button */
+    text-transform: none;
 }
 
 .btn-login:hover {

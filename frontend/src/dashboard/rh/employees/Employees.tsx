@@ -314,7 +314,7 @@ const Employees: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar role="rh" />
+      <Sidebar />
       <div className="main-content">
         <Navbar
           userName={rhUser ? displayName : "RH Manager"}

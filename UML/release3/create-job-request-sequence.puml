@@ -1,0 +1,49 @@
+@startuml create_job_request_sequence
+title Detailed Sequence Diagram — Create Job Post Request
+
+actor "Team Leader" as Chef
+participant "RequestJob Page\n(React)" as UI
+participant "JobRequestController" as Controller
+participant "JobRequestService" as Service
+participant "UtilisateurRepository" as UserRepo
+participant "JobRequestRepository" as ReqRepo
+participant "NewJobRequestEvent\n(Event)" as Event
+database "PostgreSQL" as DB
+
+Chef -> UI : Open job request form
+UI --> Chef : Display form fields
+
+Chef -> UI : Enter title, description,\nteam, and desired date
+UI -> Controller : POST /api/job-requests
+Controller -> Controller : Validate JobRequestRequest
+Controller -> Service : create(demandeurId, data)
+
+Service -> UserRepo : findOrFail(demandeurId)
+UserRepo -> DB : SELECT utilisateur
+DB --> UserRepo : team leader
+
+alt User is not team leader
+  Service --> Controller : { error: unauthorized }
+  Controller --> UI : 400 Bad Request
+  UI --> Chef : Display error
+else User is team leader
+  alt Team does not match manager
+    Service --> Controller : { error: wrong team }
+    Controller --> UI : 400 Bad Request
+    UI --> Chef : Display validation error
+  else Valid request
+    Service -> ReqRepo : create(EN_ATTENTE)
+    ReqRepo -> DB : INSERT job_request
+    DB --> ReqRepo : created record
+    ReqRepo --> Service : JobRequest
+
+    Service -> Event : dispatch(NewJobRequestEvent)
+    Event --> Service : HR notified
+
+    Service --> Controller : JobRequest
+    Controller --> UI : 201 Created
+    UI --> Chef : Redirect to my requests list
+  end
+end
+
+@enduml

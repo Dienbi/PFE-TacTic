@@ -157,7 +157,7 @@ const EmployeeSalary: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar role={user?.role} />
+      <Sidebar />
       <div className="main-content">
         <Navbar
           userName={user ? `${user.prenom} ${user.nom}` : "Employé"}

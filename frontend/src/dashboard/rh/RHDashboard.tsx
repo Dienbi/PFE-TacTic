@@ -29,7 +29,7 @@ const RHDashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar role="rh" />
+      <Sidebar />
       <div className="main-content">
         <Navbar userName={userName} userRole={userRole} />
 

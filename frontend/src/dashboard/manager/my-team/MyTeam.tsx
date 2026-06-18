@@ -119,7 +119,7 @@ const MyTeam: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar role={currentUser?.role} />
+      <Sidebar />
       <div className="main-content">
         <Navbar
           userName={

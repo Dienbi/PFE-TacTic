@@ -1,0 +1,38 @@
+@startuml ai_dashboard_sequence
+title Detailed Sequence Diagram - Consult AI KPI Dashboard
+
+actor "HR Administrator" as HR
+participant "RHDashboard\n(React)" as UI
+participant "AIController" as Controller
+participant "AIService\n(Laravel Proxy)" as Proxy
+participant "FastAPI\nAI Service" as AI
+participant "PredictionService" as PredSvc
+database "PostgreSQL" as DB
+
+HR -> UI : Open HR dashboard
+UI -> Controller : GET /api/ai/dashboard-kpis
+Controller -> Controller : Cache remember (600s)
+Controller -> Proxy : getDashboardKPIs()
+Proxy -> AI : GET /api/predictions/dashboard-kpis
+
+AI -> PredSvc : get_dashboard_kpis()
+
+== Attendance predictions ==
+PredSvc -> DB : Load pointage history
+DB --> PredSvc : attendance features
+PredSvc -> PredSvc : predict_attendance_all()
+
+== Performance scores ==
+PredSvc -> DB : Load HR metrics
+DB --> PredSvc : performance features
+PredSvc -> PredSvc : get_performance_all()
+
+PredSvc -> PredSvc : Aggregate KPIs
+PredSvc --> AI : DashboardKPIs
+AI --> Proxy : JSON response
+Proxy --> Controller : KPI data
+Controller --> UI : JSON response
+
+UI --> HR : Render predictions and KPI cards
+
+@enduml

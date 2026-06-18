@@ -1,0 +1,38 @@
+@startuml ai_match_sequence
+title Detailed Sequence Diagram — AI Match Candidates
+
+actor "HR Administrator" as HR
+participant "ApplicationsView\n(React)" as UI
+participant "AIController" as Controller
+participant "AIService\n(Laravel Proxy)" as Proxy
+participant "FastAPI\nAI Service" as AI
+participant "PredictionService" as PredSvc
+participant "DataPipeline /\nMatchingScorer" as Scorer
+database "PostgreSQL" as DB
+
+HR -> UI : Open applications for a job post
+UI -> Controller : GET /api/applications/job-post/{id}
+Controller --> UI : submitted applications
+UI --> HR : Display candidate list
+
+HR -> UI : Click AI Match / Get recommendations
+UI -> Controller : GET /api/ai/match/{jobPostId}
+Controller -> Proxy : getMatchRecommendations(jobPostId)
+Proxy -> AI : POST /api/match\n{ job_post_id }
+
+AI -> PredSvc : match_candidates(jobPostId)
+PredSvc -> DB : Load job post, skills,\nemployee features
+DB --> PredSvc : job and candidate data
+
+PredSvc -> Scorer : build_matching_features()\n+ weighted scoring
+Scorer --> PredSvc : skill, attendance,\ntenure, availability scores
+
+PredSvc -> PredSvc : Rank candidates\nand build reasons[]
+PredSvc --> AI : MatchResponse
+AI --> Proxy : recommendations JSON
+Proxy --> Controller : ranked candidates
+Controller --> UI : JSON response
+
+UI --> HR : Display match scores,\nverdicts, and explanations
+
+@enduml

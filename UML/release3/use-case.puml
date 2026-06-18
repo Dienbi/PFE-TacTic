@@ -1,0 +1,63 @@
+@startuml release3_use_case
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Release 3 — Recruitment and AI \& Analytics
+
+actor "Employee" as Emp
+actor "Team Leader" as Chef
+actor "HR Administrator" as RH
+
+Emp <|-- Chef
+
+rectangle "TAC-TIC HR System\n(Release 3 — Sprint 5 \& 6)" as System {
+
+  package "Sprint 5 — Recruitment \& Matching" {
+    usecase "Create Job Post\nRequest" as UC_CreateJobReq
+    usecase "View Job Request\nStatus" as UC_TrackJobReq
+    usecase "Approve Job Post\nRequest" as UC_ApproveJobReq
+    usecase "Reject Job Post\nRequest" as UC_RejectJobReq
+
+    usecase "Browse Internal\nJob Posts" as UC_Browse
+    usecase "Apply to Job Post" as UC_Apply
+    usecase "View My Applications" as UC_MyApps
+    usecase "Withdraw Application" as UC_Withdraw
+    usecase "Create and Publish\nJob Post" as UC_CreatePost
+    usecase "Review Job\nApplications" as UC_Review
+    usecase "AI Match Candidates" as UC_Match
+    usecase "Accept or Reject\nApplication" as UC_Decide
+  }
+
+  package "Sprint 6 — AI \& Analytics" {
+    usecase "View Attendance Risk\nPredictions" as UC_AttRisk
+    usecase "View Performance\nScores" as UC_Perf
+    usecase "Consult AI KPI\nDashboard" as UC_KPI
+  }
+
+  UC_ApproveJobReq ..> UC_CreatePost : <<include>>
+  UC_Review ..> UC_Match : <<extend>>
+  UC_Decide ..> UC_Review : <<include>>
+}
+
+Chef --> UC_CreateJobReq
+Chef --> UC_TrackJobReq
+Chef --> UC_Browse
+Chef --> UC_MyApps
+
+Emp --> UC_Browse
+Emp --> UC_Apply
+Emp --> UC_MyApps
+Emp --> UC_Withdraw
+
+RH --> UC_ApproveJobReq
+RH --> UC_RejectJobReq
+RH --> UC_CreatePost
+RH --> UC_Review
+RH --> UC_Match
+RH --> UC_Decide
+RH --> UC_AttRisk
+RH --> UC_Perf
+RH --> UC_KPI
+
+@enduml

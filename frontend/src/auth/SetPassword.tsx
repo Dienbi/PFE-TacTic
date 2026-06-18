@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import client from "../api/client";
+import { useAppDispatch } from "../store";
+import { getDefaultDashboard, login } from "../store/authSlice";
 import "./Login.css";
 
 const SetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const token = searchParams.get("token");
 
   const [isValidating, setIsValidating] = useState(true);
@@ -71,19 +74,10 @@ const SetPassword: React.FC = () => {
         password_confirmation: passwordConfirmation,
       });
 
-      // Store token and user info
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      // Redirect based on role
-      const role = response.data.user.role;
-      if (role === "RH") {
-        navigate("/dashboard/rh");
-      } else if (role === "CHEF_EQUIPE") {
-        navigate("/dashboard/manager");
-      } else {
-        navigate("/dashboard/employee");
-      }
+      dispatch(
+        login({ token: response.data.token, user: response.data.user }),
+      );
+      navigate(getDefaultDashboard(response.data.user.role));
     } catch (err: any) {
       setError(
         err.response?.data?.message ||

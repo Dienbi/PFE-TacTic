@@ -1,0 +1,34 @@
+@startuml attendance_risk_sequence
+title Detailed Sequence Diagram - View Attendance Risk Predictions
+
+actor "HR Administrator" as HR
+participant "AttendancePredictions\n(React)" as UI
+participant "AIController" as Controller
+participant "AIService\n(Laravel Proxy)" as Proxy
+participant "FastAPI\nAI Service" as AI
+participant "PredictionService" as PredSvc
+participant "AttendanceScorer" as Scorer
+database "PostgreSQL" as DB
+
+HR -> UI : Open HR dashboard
+UI -> Controller : GET /api/ai/predictions/attendance
+Controller -> Controller : Cache remember (600s)
+Controller -> Proxy : getAttendancePredictionsAll()
+Proxy -> AI : GET /api/predictions/attendance/all
+
+AI -> PredSvc : predict_attendance_all()
+PredSvc -> DB : Load active employees\nand pointage history
+DB --> PredSvc : attendance features
+
+PredSvc -> Scorer : Compute 7-day risk per employee
+Scorer --> PredSvc : avg_absence_risk, risk_level
+
+PredSvc -> PredSvc : Sort by risk descending
+PredSvc --> AI : ranked employee list
+AI --> Proxy : JSON response
+Proxy --> Controller : predictions
+Controller --> UI : JSON response
+
+UI --> HR : Display risk badges\n(low, medium, high)
+
+@enduml

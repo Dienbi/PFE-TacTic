@@ -1,0 +1,56 @@
+@startuml apply_job_sequence
+title Detailed Sequence Diagram — Apply to Job Post
+
+actor Employee
+participant "JobBoard Page\n(React)" as UI
+participant "JobApplicationController" as Controller
+participant "JobApplicationService" as Service
+participant "JobPostRepository" as JobRepo
+participant "JobApplicationRepository" as AppRepo
+participant "NewApplicationEvent\n(Event)" as Event
+database "PostgreSQL" as DB
+
+== Browse open positions ==
+
+Employee -> UI : Open internal job board
+UI -> Controller : GET /api/job-posts/open
+Controller --> UI : published job posts
+UI --> Employee : Display available positions
+
+== Submit application ==
+
+Employee -> UI : Select job and enter motivation
+UI -> Controller : POST /api/applications
+Controller -> Controller : Validate JobApplicationRequest
+Controller -> Service : apply(userId, data)
+
+Service -> JobRepo : findOrFail(job_post_id)
+JobRepo -> DB : SELECT job_post
+DB --> JobRepo : job post
+
+alt Job not published or closed
+  Service --> Controller : { error: unavailable }
+  Controller --> UI : 400 Bad Request
+  UI --> Employee : Display error
+else Already applied
+  Service -> AppRepo : existsForUserAndPost()
+  AppRepo -> DB : SELECT application
+  DB --> AppRepo : exists
+  Service --> Controller : { error: duplicate }
+  Controller --> UI : 400 Bad Request
+  UI --> Employee : Display error
+else Valid application
+  Service -> AppRepo : create(PENDING)
+  AppRepo -> DB : INSERT job_application
+  DB --> AppRepo : created record
+  AppRepo --> Service : JobApplication
+
+  Service -> Event : dispatch(NewApplicationEvent)
+  Event --> Service : HR notified
+
+  Service --> Controller : JobApplication
+  Controller --> UI : 201 Created
+  UI --> Employee : Success confirmation
+end
+
+@enduml

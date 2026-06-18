@@ -49,7 +49,7 @@ const MyJobRequests: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar role={userRole} />
+      <Sidebar />
       <div className="main-content">
         <Navbar userName={userName} userRole={userRole} />
         <div className="dashboard-content">

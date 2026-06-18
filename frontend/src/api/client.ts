@@ -26,7 +26,8 @@ client.interceptors.response.use(
     (error) => {
         const requestUrl = error.config?.url ?? '';
         const isAuthRequest = requestUrl.includes('/auth/login')
-            || requestUrl.includes('/auth/register');
+            || requestUrl.includes('/auth/register')
+            || requestUrl.includes('/auth/logout');
 
         if (error.response?.status === 401 && !isAuthRequest) {
             localStorage.removeItem('token');

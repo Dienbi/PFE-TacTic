@@ -14,7 +14,8 @@ class UtilisateurService
 {
     public function __construct(
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {

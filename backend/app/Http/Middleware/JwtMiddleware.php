@@ -2,11 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Utilisateur;
 use Closure;
 use Illuminate\Http\Request;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Symfony\Component\HttpFoundation\Response;
 
 class JwtMiddleware
@@ -19,7 +21,8 @@ class JwtMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $user = auth()->user();
+            /** @var Utilisateur|null $user */
+            $user = JWTAuth::user();
 
             if (! $user) {
                 return response()->json([

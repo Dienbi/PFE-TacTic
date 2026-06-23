@@ -23,4 +23,6 @@ interface PointageRepositoryInterface
     public function checkOut(int $utilisateurId): bool;
 
     public function getHeuresSupp(int $utilisateurId, Carbon $startDate, Carbon $endDate): float;
+
+    public function getAnomalyAggregates(Carbon $startDate, Carbon $endDate): array;
 }

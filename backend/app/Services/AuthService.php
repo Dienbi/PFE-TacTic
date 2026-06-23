@@ -64,13 +64,13 @@ class AuthService
 
         $checkpoint('password_check');
 
-        $token = auth()->login($utilisateur);
+        auth()->login($utilisateur);
+        $token = JWTAuth::fromUser($utilisateur);
         $checkpoint('jwt_create');
 
         $this->utilisateurRepository->updateLastConnection($utilisateur->id);
         $checkpoint('update_last_connection');
 
-        // Skip broadcast on login to avoid blocking the response on websocket delivery
         ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id, false);
         $checkpoint('activity_log');
 
@@ -99,7 +99,8 @@ class AuthService
 
     public function logout(): void
     {
-        $user = auth()->user();
+        /** @var Utilisateur|null $user */
+        $user = JWTAuth::user();
 
         if ($user) {
             ActivityLogger::log('LOGOUT', 'User logged out', $user->id);
@@ -110,15 +111,21 @@ class AuthService
 
     public function refresh(): array
     {
-        $token = auth()->refresh();
-        $user = auth()->user();
+        /** @var string $token */
+        $token = JWTAuth::refresh(JWTAuth::getToken());
+
+        /** @var Utilisateur $user */
+        $user = JWTAuth::user();
 
         return $this->respondWithToken($token, $user);
     }
 
     public function me(): ?Utilisateur
     {
-        return auth()->user();
+        /** @var Utilisateur|null $user */
+        $user = JWTAuth::user();
+
+        return $user;
     }
 
     public function changePassword(int $utilisateurId, string $currentPassword, string $newPassword): bool
@@ -136,12 +143,13 @@ class AuthService
 
     public function updateProfile(array $data): Utilisateur
     {
+        /** @var Utilisateur|null $user */
         $user = JWTAuth::user();
+
         if (! $user) {
             throw new UserNotFoundException;
         }
 
-        // Use repository to update
         $this->utilisateurRepository->update($user->id, $data);
 
         return $user->refresh();
@@ -155,7 +163,7 @@ class AuthService
         return [
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
             'user' => $utilisateur,
         ];
     }

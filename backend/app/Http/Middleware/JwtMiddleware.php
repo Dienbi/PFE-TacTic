@@ -20,7 +20,7 @@ class JwtMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = auth()->user();
 
             if (! $user) {
                 return response()->json([

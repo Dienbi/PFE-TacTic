@@ -291,11 +291,12 @@ class AccountRequestController extends Controller
         ]);
 
         // Generate JWT token for automatic login
-        $token = JWTAuth::fromUser($user);
+        // Generate JWT token for automatic login
+        $token = auth()->login($user);
 
         return response()->json([
-            'message' => 'Mot de passe défini avec succès.',
-            'token' => $token,
+         'message' => 'Mot de passe défini avec succès.',
+         'token' => $token,
             'user' => $user,
         ]);
     }

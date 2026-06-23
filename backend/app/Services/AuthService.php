@@ -8,7 +8,7 @@ use App\Repositories\UtilisateurRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-
+use App\Services\ActivityLogger;
 class AuthService
 {
     public function __construct(
@@ -64,7 +64,7 @@ class AuthService
 
         $checkpoint('password_check');
 
-        $token = JWTAuth::fromUser($utilisateur);
+        $token = auth()->login($utilisateur);
         $checkpoint('jwt_create');
 
         $this->utilisateurRepository->updateLastConnection($utilisateur->id);
@@ -99,24 +99,26 @@ class AuthService
 
     public function logout(): void
     {
-        $user = JWTAuth::user();
+        $user = auth()->user();
+
         if ($user) {
             ActivityLogger::log('LOGOUT', 'User logged out', $user->id);
         }
-        JWTAuth::invalidate(JWTAuth::getToken());
+
+        auth()->logout();
     }
 
     public function refresh(): array
     {
-        $token = JWTAuth::refresh(JWTAuth::getToken());
-        $utilisateur = JWTAuth::user();
+        $token = auth()->refresh();
+        $user = auth()->user();
 
-        return $this->respondWithToken($token, $utilisateur);
+        return $this->respondWithToken($token, $user);
     }
 
     public function me(): ?Utilisateur
     {
-        return JWTAuth::user();
+        return auth()->user();
     }
 
     public function changePassword(int $utilisateurId, string $currentPassword, string $newPassword): bool
@@ -146,15 +148,15 @@ class AuthService
     }
 
     protected function respondWithToken(string $token, Utilisateur $utilisateur): array
-    {
-        // Load competences relationship
-        $utilisateur->load('competences');
+{
+    $utilisateur = $this->utilisateurRepository->findOrFail($utilisateur->id);
+    $utilisateur->load('competences');
 
-        return [
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => JWTAuth::factory()->getTTL() * 60,
-            'user' => $utilisateur,
-        ];
-    }
+    return [
+        'access_token' => $token,
+        'token_type' => 'bearer',
+        'expires_in' => auth()->factory()->getTTL() * 60,
+        'user' => $utilisateur,
+    ];
+}
 }

@@ -21,8 +21,7 @@ class JobRequestReviewedEvent implements ShouldBroadcastNow
         public string $titre,
         public bool $approved,
         public ?string $raison = null
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {

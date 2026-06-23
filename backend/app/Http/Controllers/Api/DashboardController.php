@@ -15,8 +15,7 @@ class DashboardController extends Controller
 {
     public function __construct(
         private DashboardService $dashboardService
-    ) {
-    }
+    ) {}
 
     private function shouldLogPerf(): bool
     {

@@ -12,8 +12,7 @@ class JobPostController extends Controller
 {
     public function __construct(
         protected JobPostService $jobPostService
-    ) {
-    }
+    ) {}
 
     /**
      * Get job posts (role-based filtering)

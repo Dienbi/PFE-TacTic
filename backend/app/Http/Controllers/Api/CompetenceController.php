@@ -11,8 +11,7 @@ class CompetenceController extends Controller
 {
     public function __construct(
         protected CompetenceRepository $competenceRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Get all competences

@@ -13,8 +13,7 @@ class AuthService
 {
     public function __construct(
         protected UtilisateurRepository $utilisateurRepository
-    ) {
-    }
+    ) {}
 
     private function shouldLogPerf(): bool
     {
@@ -137,7 +136,7 @@ class AuthService
     {
         $user = JWTAuth::user();
         if (! $user) {
-            throw new UserNotFoundException();
+            throw new UserNotFoundException;
         }
 
         // Use repository to update

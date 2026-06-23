@@ -11,8 +11,7 @@ class PosteController extends Controller
 {
     public function __construct(
         protected PosteRepository $posteRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Get all positions

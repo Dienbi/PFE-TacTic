@@ -15,8 +15,7 @@ class UtilisateurController extends Controller
 {
     public function __construct(
         protected UtilisateurService $utilisateurService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all users

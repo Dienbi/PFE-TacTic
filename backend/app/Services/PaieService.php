@@ -18,8 +18,7 @@ class PaieService
         protected PointageRepositoryInterface $pointageRepository,
         protected CacheService $cacheService,
         protected PayrollCalculator $payrollCalculator
-    ) {
-    }
+    ) {}
 
     // ── CRUD ──────────────────────────────────────────────────────────
 

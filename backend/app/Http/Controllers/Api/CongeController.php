@@ -15,8 +15,7 @@ class CongeController extends Controller
 {
     public function __construct(
         protected CongeService $congeService
-    ) {
-    }
+    ) {}
 
     /**
      * Get all leave requests (paginated)

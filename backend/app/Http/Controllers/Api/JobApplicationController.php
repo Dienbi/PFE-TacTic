@@ -12,8 +12,7 @@ class JobApplicationController extends Controller
 {
     public function __construct(
         protected JobApplicationService $jobApplicationService
-    ) {
-    }
+    ) {}
 
     /**
      * Get applications (role-based)

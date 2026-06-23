@@ -6,9 +6,7 @@ use App\Services\CacheService;
 
 class InvalidateDashboardCache
 {
-    public function __construct(private CacheService $cacheService)
-    {
-    }
+    public function __construct(private CacheService $cacheService) {}
 
     /**
      * Handle the event.

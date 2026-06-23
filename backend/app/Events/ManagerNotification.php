@@ -21,8 +21,7 @@ class ManagerNotification implements ShouldBroadcastNow
         public string $title,
         public string $message,
         public array $data = []
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {

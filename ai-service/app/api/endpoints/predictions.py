@@ -2,11 +2,13 @@
 Prediction API endpoints.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.services.prediction_service import PredictionService
 from app.utils.database import get_db
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -3,12 +3,13 @@ Performance Scorer — Feedforward Neural Network that computes an employee
 performance score (0-100) from attendance, skills, tenure, and overtime features.
 """
 
+import logging
+import os
+from typing import Optional
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-import os
-import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,35 +27,35 @@ class PerformanceFFN(nn.Module):
     
     Output: performance score (0-100)
     """
-    
+
     def __init__(self, input_size: int = 9, dropout: float = 0.3):
         super().__init__()
-        
+
         self.network = nn.Sequential(
             nn.Linear(input_size, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Dropout(dropout),
-            
+
             nn.Linear(64, 32),
             nn.BatchNorm1d(32),
             nn.ReLU(),
             nn.Dropout(dropout),
-            
+
             nn.Linear(32, 16),
             nn.ReLU(),
-            
+
             nn.Linear(16, 1),
             nn.Sigmoid(),  # Output [0, 1] — multiply by 100 for score
         )
-    
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.network(x).squeeze(-1)  # (batch,)
 
 
 class PerformanceScorer:
     """Wrapper for training and inference with the performance model."""
-    
+
     # Feature columns and their normalization ranges
     FEATURE_COLS = [
         'presence_rate',        # already 0-1
@@ -67,7 +68,7 @@ class PerformanceScorer:
         'tenure_months',        # normalize by /60
         'overtime_ratio',       # already 0-1
     ]
-    
+
     NORM_FACTORS = {
         'avg_hours_worked': 12.0,
         'leave_frequency': 10.0,
@@ -75,13 +76,13 @@ class PerformanceScorer:
         'avg_skill_level': 5.0,
         'tenure_months': 60.0,
     }
-    
+
     def __init__(self):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model: Optional[PerformanceFFN] = None
         self.is_trained = False
         self._load_model()
-    
+
     def _load_model(self):
         """Load model weights if they exist."""
         if os.path.exists(MODEL_PATH):
@@ -95,7 +96,7 @@ class PerformanceScorer:
                 logger.warning(f"Failed to load performance model: {e}")
                 self.model = None
                 self.is_trained = False
-    
+
     def _normalize_features(self, features: np.ndarray, columns: list) -> np.ndarray:
         """Normalize features to [0, 1] range."""
         result = features.copy()
@@ -103,7 +104,7 @@ class PerformanceScorer:
             if col in self.NORM_FACTORS:
                 result[:, i] = np.clip(result[:, i] / self.NORM_FACTORS[col], 0, 1)
         return result
-    
+
     def train(self, employee_features, performance_labels,
               epochs: int = 100, lr: float = 0.001, batch_size: int = 16) -> dict:
         """
@@ -119,71 +120,71 @@ class PerformanceScorer:
         Returns:
             dict with training metrics
         """
-        
+
         # Merge features with labels
         data = employee_features.merge(performance_labels, on='utilisateur_id', how='inner')
-        
+
         if len(data) < 5:
             raise ValueError(f"Not enough training data: {len(data)} samples")
-        
+
         # Extract feature matrix
         available_cols = [c for c in self.FEATURE_COLS if c in data.columns]
         X = data[available_cols].values.astype(np.float32)
         y = data['performance_label'].values.astype(np.float32) / 100.0  # Normalize to [0, 1]
-        
+
         # Normalize
         X = self._normalize_features(X, available_cols)
-        
+
         # Train/test split
         n = len(X)
         indices = np.random.permutation(n)
         split = max(int(0.8 * n), 1)
-        
+
         X_train = torch.FloatTensor(X[indices[:split]]).to(self.device)
         y_train = torch.FloatTensor(y[indices[:split]]).to(self.device)
         X_test = torch.FloatTensor(X[indices[split:]]).to(self.device)
         y_test = torch.FloatTensor(y[indices[split:]]).to(self.device)
-        
+
         logger.info(f"Training performance model: {len(X_train)} train, {len(X_test)} test samples, {len(available_cols)} features")
-        
+
         # Initialize model
         self.model = PerformanceFFN(input_size=len(available_cols)).to(self.device)
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=1e-4)
         criterion = nn.MSELoss()
-        
+
         best_loss = float('inf')
         train_losses = []
-        
+
         for epoch in range(epochs):
             self.model.train()
-            
+
             # Shuffle
             perm = torch.randperm(X_train.shape[0])
             X_train = X_train[perm]
             y_train = y_train[perm]
-            
+
             epoch_loss = 0
             n_batches = 0
-            
+
             for i in range(0, len(X_train), batch_size):
                 batch_X = X_train[i:i + batch_size]
                 batch_y = y_train[i:i + batch_size]
-                
+
                 if len(batch_X) < 2:
                     continue  # BatchNorm needs at least 2 samples
-                
+
                 optimizer.zero_grad()
                 output = self.model(batch_X)
                 loss = criterion(output, batch_y)
                 loss.backward()
                 optimizer.step()
-                
+
                 epoch_loss += loss.item()
                 n_batches += 1
-            
+
             avg_loss = epoch_loss / max(n_batches, 1)
             train_losses.append(avg_loss)
-            
+
             # Evaluate
             self.model.eval()
             with torch.no_grad():
@@ -194,18 +195,18 @@ class PerformanceScorer:
                 else:
                     test_loss = avg_loss
                     mae = 0
-            
+
             if test_loss < best_loss:
                 best_loss = test_loss
                 self._save_model()
-            
+
             if (epoch + 1) % 20 == 0:
                 logger.info(f"Epoch {epoch+1}/{epochs} | Train Loss: {avg_loss:.4f} | "
                            f"Test Loss: {test_loss:.4f} | MAE: {mae:.2f}")
-        
+
         self.is_trained = True
         self.model.eval()
-        
+
         return {
             'model': 'performance_ffn',
             'epochs': epochs,
@@ -216,7 +217,7 @@ class PerformanceScorer:
             'best_test_loss': best_loss,
             'final_mae': mae,
         }
-    
+
     def predict(self, features: np.ndarray, columns: list) -> np.ndarray:
         """
         Predict performance scores.
@@ -230,15 +231,15 @@ class PerformanceScorer:
         """
         if not self.is_trained or self.model is None:
             raise RuntimeError("Model is not trained yet. Call train() first.")
-        
+
         features = self._normalize_features(features, columns)
-        
+
         self.model.eval()
         with torch.no_grad():
             x = torch.FloatTensor(features).to(self.device)
             output = self.model(x)
             return (output.cpu().numpy() * 100).clip(0, 100)  # Scale back to 0-100
-    
+
     def _save_model(self):
         """Save model weights."""
         os.makedirs(MODELS_DIR, exist_ok=True)

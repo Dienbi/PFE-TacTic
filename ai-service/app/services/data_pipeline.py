@@ -2,13 +2,14 @@
 Data Pipeline — queries PostgreSQL and builds feature matrices for AI models.
 """
 
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
 import numpy as np
 import pandas as pd
-from sqlalchemy.orm import Session
 from sqlalchemy import text
-from datetime import datetime, timedelta
-from typing import Dict, Optional, List
-import logging
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -424,7 +425,7 @@ class DataPipeline:
                         pass
 
                 dow = date.weekday() / 4.0 if hasattr(date, 'weekday') else pd.to_datetime(date).weekday() / 4.0
-                
+
                 on_leave = 0.0
                 d = date.date() if hasattr(date, 'date') else pd.to_datetime(date).date()
                 if uid in leave_dates and d in leave_dates[uid]:

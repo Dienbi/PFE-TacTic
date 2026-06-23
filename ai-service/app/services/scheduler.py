@@ -2,12 +2,14 @@
 Scheduler — weekly automated model retraining using APScheduler.
 """
 
-import os
 import logging
+import os
+from datetime import datetime
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+
 from app.utils.database import SessionLocal
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,7 @@ def retrain_all_models():
     logger.info("=" * 60)
     logger.info(f"[SCHEDULER] Starting weekly model retraining at {datetime.now()}")
     logger.info("=" * 60)
-    
+
     db = SessionLocal()
     try:
         from app.services.training_service import TrainingService
@@ -37,7 +39,7 @@ def start_scheduler():
     # Default: retrain every Sunday at 2:00 AM
     day_of_week = os.getenv("TRAIN_DAY", "sun")
     hour = int(os.getenv("TRAIN_HOUR", "2"))
-    
+
     scheduler.add_job(
         retrain_all_models,
         trigger=CronTrigger(day_of_week=day_of_week, hour=hour, minute=0),
@@ -45,7 +47,7 @@ def start_scheduler():
         name="Weekly AI Model Retraining",
         replace_existing=True,
     )
-    
+
     scheduler.start()
     logger.info(f"Scheduler started — retraining every {day_of_week} at {hour}:00")
 

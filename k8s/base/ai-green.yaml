@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service-green
+  namespace: tactic-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-service
+      version: green
+  template:
+    metadata:
+      labels:
+        app: ai-service
+        version: green
+    spec:
+      containers:
+        - name: ai-service
+          image: nexus.example.local/docker-hosted/tactic-ai-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+          envFrom:
+            - configMapRef:
+                name: tactic-config
+            - secretRef:
+                name: tactic-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false

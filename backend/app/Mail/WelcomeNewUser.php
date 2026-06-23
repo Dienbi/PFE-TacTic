@@ -21,7 +21,8 @@ class WelcomeNewUser extends Mailable
     public function __construct(
         public AccountRequest $accountRequest,
         public Utilisateur $utilisateur
-    ) {}
+    ) {
+    }
 
     /**
      * Get the message envelope.

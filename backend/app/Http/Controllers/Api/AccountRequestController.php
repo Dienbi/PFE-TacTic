@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AccountRequestController extends Controller
 {
@@ -295,8 +294,8 @@ class AccountRequestController extends Controller
         $token = auth()->login($user);
 
         return response()->json([
-         'message' => 'Mot de passe défini avec succès.',
-         'token' => $token,
+            'message' => 'Mot de passe défini avec succès.',
+            'token' => $token,
             'user' => $user,
         ]);
     }

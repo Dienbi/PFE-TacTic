@@ -8,7 +8,7 @@ use App\Repositories\UtilisateurRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use App\Services\ActivityLogger;
+
 class AuthService
 {
     public function __construct(
@@ -148,15 +148,15 @@ class AuthService
     }
 
     protected function respondWithToken(string $token, Utilisateur $utilisateur): array
-{
-    $utilisateur = $this->utilisateurRepository->findOrFail($utilisateur->id);
-    $utilisateur->load('competences');
+    {
+        $utilisateur = $this->utilisateurRepository->findOrFail($utilisateur->id);
+        $utilisateur->load('competences');
 
-    return [
-        'access_token' => $token,
-        'token_type' => 'bearer',
-        'expires_in' => auth()->factory()->getTTL() * 60,
-        'user' => $utilisateur,
-    ];
-}
+        return [
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+            'user' => $utilisateur,
+        ];
+    }
 }

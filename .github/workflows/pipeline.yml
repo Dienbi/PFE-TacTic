@@ -20,8 +20,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+
 jobs:
-  # STAGE 1: Source Control Checks & STAGE 2: Static Analysis & STAGE 3: Security Scanning
+  # =========================
+  # STAGE 1-3: LINT + SECURITY
+  # =========================
   initial-checks:
     name: Lint, Static Analysis & Security
     runs-on: ubuntu-latest
@@ -31,7 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Backend Checks
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -55,7 +57,6 @@ jobs:
         run: composer audit
         working-directory: backend
 
-      # Frontend Checks
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -68,59 +69,58 @@ jobs:
         working-directory: frontend
 
       - name: Frontend - Linting (ESLint)
-        run: npm run lint || echo "Linting failed but continuing for now"
+        run: npm run lint || echo "Linting failed but continuing"
         working-directory: frontend
 
-      - name: Frontend - Type Check (TypeScript)
+      - name: Frontend - Type Check
         run: npx tsc --noEmit
         working-directory: frontend
 
-      - name: Frontend - Security (npm audit)
+      - name: Frontend - Security Audit
         run: npm audit --audit-level=high
         working-directory: frontend
 
-      # AI Service Checks
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-          cache: 'pip'
 
-      - name: AI Service - Install Dependencies
+      - name: AI Service Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install ruff black mypy pip-audit
           pip install -r requirements.txt
         working-directory: ai-service
 
-      - name: AI Service - Linting (Ruff & Black)
+      - name: AI Lint
         run: |
           ruff check .
           black --check .
         working-directory: ai-service
 
-      - name: AI Service - Static Analysis (Mypy)
+      - name: AI Type Check
         run: mypy .
         working-directory: ai-service
 
-      - name: AI Service - Security (pip-audit)
+      - name: AI Security
         run: pip-audit
         working-directory: ai-service
 
-      # Secrets Detection (Stage 3)
-      - name: Secrets Detection (Gitleaks)
+      - name: Secrets Detection
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # STAGE 4: Unit Testing & STAGE 7: Frontend Unit Testing
+
+  # =========================
+  # UNIT TESTS
+  # =========================
   unit-tests:
-    name: Unit Testing & Coverage
+    name: Unit Testing
     needs: initial-checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -128,28 +128,28 @@ jobs:
           php-version: '8.2'
           coverage: xdebug
 
-      - name: Backend - Unit Tests
+      - name: Backend Tests
         run: |
           cd backend
           composer install
           php artisan test --testsuite=Unit --coverage-clover coverage.xml
         env:
-          APP_KEY: base64:pQNZjqP0xcv1fK9lJdErjanG2ZXjtk0s3+cUbRHRXa8=
+          APP_KEY: ${{ secrets.APP_KEY }}
 
-      - name: AI Service - Unit Tests
+      - name: AI Tests
         run: |
           cd ai-service
           pip install pytest pytest-cov
           pip install -r requirements.txt
           pytest tests/ --cov=app --cov-report=xml
 
-      - name: Frontend - Unit Tests
+      - name: Frontend Tests
         run: |
           cd frontend
           npm ci
           npm test -- --watchAll=false --coverage
 
-      - name: Upload Coverage Reports
+      - name: Upload Coverage
         uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
@@ -158,60 +158,63 @@ jobs:
             ai-service/coverage.xml
             frontend/coverage/
 
-  # STAGE 9: SonarQube Analysis
+
+  # =========================
+  # SONAR
+  # =========================
   sonar-analysis:
     name: SonarQube Analysis
     needs: unit-tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download Coverage Reports
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: coverage-reports
 
-      - name: SonarQube Scan
+      - name: Sonar Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      - name: SonarQube Quality Gate
+      - name: Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master
         timeout-minutes: 10
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  # STAGE 5, 6, 8: Integration, API Contract, and E2E Testing
+
+  # =========================
+  # INTEGRATION + E2E
+  # =========================
   integration-and-e2e:
-    name: Integration, Contract & E2E
+    name: Integration + E2E
     needs: unit-tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Start Services (Docker Compose)
-        run: docker-compose -f docker/docker-compose.dev.yml up -d
+      - name: Start Services
+        run: docker compose -f docker/docker-compose.dev.yml up -d
 
-      - name: Run Backend Migrations
+      - name: Run Migrations
         run: docker exec tactic-backend php artisan migrate --force
 
-      - name: STAGE 5: Integration Testing
+      - name: Integration Tests
         run: docker exec tactic-backend php artisan test --testsuite=Feature
 
-      - name: STAGE 6: API Contract Testing
+      - name: API Contract Tests
         run: |
           pip install pytest requests
-          export API_BASE_URL=http://localhost:8000/api
-          export AI_BASE_URL=http://localhost:8001
+          API_BASE_URL=http://localhost:8000/api \
+          AI_BASE_URL=http://localhost:8001 \
           pytest api_contract_tests/
 
-      - name: STAGE 8: End-to-End Testing (Playwright)
+      - name: E2E Tests
         run: |
           cd frontend
           npm ci
@@ -220,29 +223,38 @@ jobs:
 
       - name: Stop Services
         if: always()
-        run: docker-compose -f docker/docker-compose.dev.yml down
+        run: docker compose -f docker/docker-compose.dev.yml down
 
-  # STAGE 10, 11, 12: Docker Build, Scan, and Push
+
+  # =========================
+  # BUILD + SCAN + PUSH
+  # =========================
   build-and-push:
     name: Build, Scan & Push Images
     needs: [sonar-analysis, integration-and-e2e]
+
+    if: >
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_deploy != 'true'))
+      &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_deploy != 'true')) && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Login to Nexus Registry
+      - name: Login Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.NEXUS_URL }}
           username: ${{ secrets.NEXUS_USERNAME }}
           password: ${{ secrets.NEXUS_PASSWORD }}
 
-      - name: Build Backend Image
+      # Backend
+      - name: Build Backend
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -251,25 +263,21 @@ jobs:
           load: true
           tags: tactic-backend:latest
 
-      - name: STAGE 11: Security Scan (Trivy) - Backend
+      - name: Scan Backend
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'tactic-backend:latest'
-          format: 'table'
+          image-ref: tactic-backend:latest
+          format: table
           exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: CRITICAL,HIGH
 
-      - name: Push Backend Image
+      - name: Push Backend
         run: |
           docker tag tactic-backend:latest ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-backend:${{ github.sha }}
-          docker tag tactic-backend:latest ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-backend:latest
           docker push ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-backend:${{ github.sha }}
-          docker push ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-backend:latest
 
-      # Repeat for Frontend and AI Service
-      - name: Build Frontend Image
+      # Frontend
+      - name: Build Frontend
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -277,27 +285,22 @@ jobs:
           push: false
           load: true
           tags: tactic-frontend:latest
-          build-args: |
-            REACT_APP_API_URL=http://tactic-dev.local/api
 
-      - name: STAGE 11: Security Scan (Trivy) - Frontend
+      - name: Scan Frontend
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'tactic-frontend:latest'
-          format: 'table'
+          image-ref: tactic-frontend:latest
+          format: table
           exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: CRITICAL,HIGH
 
-      - name: Push Frontend Image
+      - name: Push Frontend
         run: |
           docker tag tactic-frontend:latest ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-frontend:${{ github.sha }}
-          docker tag tactic-frontend:latest ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-frontend:latest
           docker push ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-frontend:${{ github.sha }}
-          docker push ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-frontend:latest
 
-      - name: Build AI Service Image
+      # AI
+      - name: Build AI
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -306,122 +309,15 @@ jobs:
           load: true
           tags: tactic-ai-service:latest
 
-      - name: STAGE 11: Security Scan (Trivy) - AI Service
+      - name: Scan AI
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'tactic-ai-service:latest'
-          format: 'table'
+          image-ref: tactic-ai-service:latest
+          format: table
           exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: CRITICAL,HIGH
 
-      - name: Push AI Service Image
+      - name: Push AI
         run: |
           docker tag tactic-ai-service:latest ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-ai-service:${{ github.sha }}
-          docker tag tactic-ai-service:latest ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-ai-service:latest
           docker push ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-ai-service:${{ github.sha }}
-          docker push ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-ai-service:latest
-
-  # STAGE 13 & 14: Deploy to Staging & Smoke Tests
-  deploy-staging:
-    name: Deploy to Staging
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure kubectl
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
-
-      - name: Deploy to Staging (Kustomize)
-        run: |
-          cd k8s/overlays/dev
-          kustomize edit set image ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-backend:${{ github.sha }}
-          kustomize edit set image ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-frontend:${{ github.sha }}
-          kustomize edit set image ${{ secrets.NEXUS_URL }}/docker-hosted/tactic-ai-service:${{ github.sha }}
-          kubectl apply -k .
-
-      - name: Wait for Rollout
-        run: |
-          kubectl rollout status deployment/backend-blue -n tactic-dev || kubectl rollout status deployment/backend-green -n tactic-dev
-          kubectl rollout status deployment/frontend-blue -n tactic-dev || kubectl rollout status deployment/frontend-green -n tactic-dev
-
-      - name: Run Migrations (Staging)
-        run: |
-          POD_NAME=$(kubectl get pods -l app=backend -n tactic-dev -o jsonpath="{.items[0].metadata.name}")
-          kubectl exec $POD_NAME -n tactic-dev -- php artisan migrate --force
-
-      - name: STAGE 14: Smoke Tests
-        run: |
-          STAGING_API_URL=${{ vars.STAGING_API_URL }}
-          curl -f $STAGING_API_URL/health
-
-  # STAGE 15, 16, 17, 18: Production Deployment (Manual Approval, Blue/Green)
-  deploy-production:
-    name: Deploy to Production
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure kubectl
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
-
-      - name: Determine Active Color and Target Color
-        id: color
-        run: |
-          ACTIVE_COLOR=$(kubectl get svc backend -n tactic-dev -o jsonpath='{.spec.selector.version}')
-          if [ "$ACTIVE_COLOR" == "blue" ]; then
-            echo "target=green" >> $GITHUB_OUTPUT
-            echo "active=blue" >> $GITHUB_OUTPUT
-          else
-            echo "target=blue" >> $GITHUB_OUTPUT
-            echo "active=green" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Deploy Target Color
-        run: |
-          TARGET=${{ steps.color.outputs.target }}
-          IMAGE_TAG=${{ github.sha }}
-          REGISTRY=${{ secrets.NEXUS_URL }}/docker-hosted
-
-          kubectl set image deployment/backend-$TARGET backend=$REGISTRY/tactic-backend:$IMAGE_TAG -n tactic-dev
-          kubectl set image deployment/frontend-$TARGET frontend=$REGISTRY/tactic-frontend:$IMAGE_TAG -n tactic-dev
-          kubectl set image deployment/ai-service-$TARGET ai-service=$REGISTRY/tactic-ai-service:$IMAGE_TAG -n tactic-dev
-
-          kubectl rollout status deployment/backend-$TARGET -n tactic-dev
-          kubectl rollout status deployment/frontend-$TARGET -n tactic-dev
-          kubectl rollout status deployment/ai-service-$TARGET -n tactic-dev
-
-      - name: Run Migrations (Production Pre-switch)
-        run: |
-          TARGET=${{ steps.color.outputs.target }}
-          POD_NAME=$(kubectl get pods -l app=backend,version=$TARGET -n tactic-dev -o jsonpath="{.items[0].metadata.name}")
-          kubectl exec $POD_NAME -n tactic-dev -- php artisan migrate --force
-
-      - name: Smoke Tests on Target (Production)
-        run: |
-          # Ideally we'd have a way to hit the target deployment directly before switching traffic
-          # For example, using a temporary service or direct pod port-forward
-          echo "Running smoke tests on ${{ steps.color.outputs.target }} environment..."
-
-      - name: STAGE 16: Switch Traffic (Blue/Green)
-        run: |
-          TARGET=${{ steps.color.outputs.target }}
-          kubectl patch svc backend -n tactic-dev -p "{\"spec\":{\"selector\":{\"version\":\"$TARGET\"}}}"
-          kubectl patch svc frontend -n tactic-dev -p "{\"spec\":{\"selector\":{\"version\":\"$TARGET\"}}}"
-          kubectl patch svc ai-service -n tactic-dev -p "{\"spec\":{\"selector\":{\"version\":\"$TARGET\"}}}"
-
-      - name: STAGE 17 & 18: Verify Monitoring and Logging
-        run: |
-          echo "Verifying health endpoints and log aggregation..."
-          curl -f ${{ vars.PROD_API_URL }}/health

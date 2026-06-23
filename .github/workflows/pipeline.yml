@@ -2,16 +2,19 @@ name: TacTic Professional CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
     inputs:
       skip_deploy:
         description: 'Run CI/tests only (skip build, push, and deploy)'
         required: false
-        default: false
-        type: boolean
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -224,11 +227,7 @@ jobs:
     name: Build, Scan & Push Images
     needs: [sonar-analysis, integration-and-e2e]
     runs-on: ubuntu-latest
-    if: >
-      (github.event_name == 'push'
-      || (github.event_name == 'workflow_dispatch' && inputs.skip_deploy != true))
-      && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    steps:
+    if: ${{ (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_deploy != 'true')) && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 

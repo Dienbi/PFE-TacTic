@@ -14,7 +14,8 @@ class ReportsController extends Controller
 {
     public function __construct(
         private AIService $aiService
-    ) {}
+    ) {
+    }
 
     /**
      * AI analytics summary for the Reports page (RH only).

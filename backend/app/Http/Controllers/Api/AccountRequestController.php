@@ -20,7 +20,9 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AccountRequestController extends Controller
 {
-    public function __construct(private CacheService $cacheService) {}
+    public function __construct(private CacheService $cacheService)
+    {
+    }
 
     /**
      * Submit a new account request (public route)

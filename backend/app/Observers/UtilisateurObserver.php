@@ -7,7 +7,9 @@ use App\Services\CacheService;
 
 class UtilisateurObserver
 {
-    public function __construct(protected CacheService $cacheService) {}
+    public function __construct(protected CacheService $cacheService)
+    {
+    }
 
     /**
      * Handle the Utilisateur "created" event.

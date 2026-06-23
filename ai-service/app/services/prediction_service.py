@@ -2,18 +2,19 @@
 Prediction Service — computes deterministic predictions and scores from live data.
 """
 
-import numpy as np
-import pandas as pd
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import text
 
-from app.services.data_pipeline import DataPipeline
+import numpy as np
+import pandas as pd
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 from app.services.attendance_pattern_engine import AttendancePatternEngine
-from app.services.performance_scorer import PerformanceScorer
+from app.services.data_pipeline import DataPipeline
 from app.services.matching_scorer import MatchingScorer
+from app.services.performance_scorer import PerformanceScorer
 from app.utils.groq_client import GroqClient
 
 logger = logging.getLogger(__name__)

@@ -16,7 +16,8 @@ class EquipeService
     public function __construct(
         protected EquipeRepositoryInterface $equipeRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {

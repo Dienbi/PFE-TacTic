@@ -14,7 +14,8 @@ class PaieController extends Controller
 {
     public function __construct(
         protected PaieService $paieService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all payrolls (RH) - paginated

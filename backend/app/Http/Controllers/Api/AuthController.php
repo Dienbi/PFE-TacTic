@@ -15,7 +15,8 @@ class AuthController extends Controller
 {
     public function __construct(
         protected AuthService $authService
-    ) {}
+    ) {
+    }
 
     /**
      * Login user and return JWT token

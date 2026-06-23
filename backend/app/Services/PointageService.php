@@ -25,7 +25,8 @@ class PointageService
     public function __construct(
         protected PointageRepositoryInterface $pointageRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function getSummary(Carbon $date): array
     {

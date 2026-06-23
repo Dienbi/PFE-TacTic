@@ -4,7 +4,11 @@ resources:
   - namespace.yaml
   - configmap.yaml
   - secret-template.yaml
-  - backend-deployment.yaml
-  - frontend-deployment.yaml
-  - ai-service-deployment.yaml
+  - backend-blue.yaml
+  - backend-green.yaml
+  - frontend-blue.yaml
+  - frontend-green.yaml
+  - ai-blue.yaml
+  - ai-green.yaml
+  - services.yaml
   - ingress.yaml

@@ -1,9 +1,11 @@
+import logging
 import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.api.endpoints import matching, predictions, training
 from app.models.schemas import HealthResponse
-import logging
 
 # Configure logging
 logging.basicConfig(

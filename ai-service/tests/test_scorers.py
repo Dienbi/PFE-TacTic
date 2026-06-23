@@ -1,15 +1,15 @@
 """Unit tests for interpretable AI scorers."""
 
-import pandas as pd
-import pytest
 from unittest.mock import MagicMock
 
-from app.services.performance_scorer import PerformanceScorer, GRADE_LABELS
-from app.services.matching_scorer import MatchingScorer
+import pandas as pd
+
 from app.services.attendance_pattern_engine import (
-    AttendancePatternEngine,
     ALERT_PROB_THRESHOLD,
+    AttendancePatternEngine,
 )
+from app.services.matching_scorer import MatchingScorer
+from app.services.performance_scorer import GRADE_LABELS, PerformanceScorer
 
 
 class TestPerformanceScorer:

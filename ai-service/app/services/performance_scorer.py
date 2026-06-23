@@ -8,7 +8,6 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
-
 GRADE_LABELS = {
     'A': 'Excellent',
     'B': 'Très bien',

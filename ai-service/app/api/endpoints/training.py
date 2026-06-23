@@ -2,10 +2,12 @@
 Training API endpoints.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.utils.database import get_db
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +28,14 @@ async def train_model(
     Supported model values: attendance, performance, matching, all
     """
     global _training_in_progress
-    
+
     valid_models = ['attendance', 'performance', 'matching', 'all']
     if model not in valid_models:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid model. Choose from: {valid_models}"
         )
-    
+
     return {
         'status': 'disabled',
         'model': model,

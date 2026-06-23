@@ -12,4 +12,3 @@ parameters:
         maximumNumberOfProcesses: 1
     ignoreErrors:
         - '#Call to an undefined static method PHPOpenSourceSaver\\JWTAuth\\Facades\\JWTAuth::#'
-        - '#Call to an undefined method Illuminate\\Auth\\AuthManager::(refresh|factory)\(\)#'

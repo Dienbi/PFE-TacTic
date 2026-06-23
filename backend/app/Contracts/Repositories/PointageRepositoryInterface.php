@@ -4,7 +4,7 @@ namespace App\Contracts\Repositories;
 
 use App\Models\Pointage;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 interface PointageRepositoryInterface
 {
@@ -24,5 +24,5 @@ interface PointageRepositoryInterface
 
     public function getHeuresSupp(int $utilisateurId, Carbon $startDate, Carbon $endDate): float;
 
-    public function getAnomalyAggregates(Carbon $startDate, Carbon $endDate): array;
+    public function getAnomalyAggregates(Carbon $startDate, Carbon $endDate, string $lateThreshold = '09:15:00'): Collection;
 }

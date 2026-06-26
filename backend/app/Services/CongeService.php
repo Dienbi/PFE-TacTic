@@ -38,15 +38,17 @@ class CongeService
     public function getPaginated(int $perPage, int $page): LengthAwarePaginator
     {
         $paginator = $this->congeRepository->paginateWithUtilisateur($perPage, $page);
-        $items = $paginator->getCollection();
+
+        $items = Conge::hydrate($paginator->getCollection()->all());
         $conflictsMap = $this->leaveConflictService->checkConflictsForMany($items);
 
-        foreach ($items as $leave) {
+        foreach ($paginator->getCollection() as $leave) {
             $leave->conflicts = $conflictsMap[$leave->id] ?? [];
         }
 
         return $paginator;
     }
+
 
     public function getById(int $id): ?Conge
     {

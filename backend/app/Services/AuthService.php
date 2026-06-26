@@ -91,6 +91,7 @@ class AuthService
         $data['password'] = Hash::make($data['password']);
         $data['matricule'] = $this->utilisateurRepository->generateMatricule();
 
+        /** @var Utilisateur $utilisateur */
         $utilisateur = $this->utilisateurRepository->create($data);
         $token = JWTAuth::fromUser($utilisateur);
 

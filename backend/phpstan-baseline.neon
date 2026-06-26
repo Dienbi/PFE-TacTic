@@ -859,3 +859,22 @@ parameters:
 			message: "#^Call to an undefined method App\\\\Contracts\\\\Repositories\\\\UtilisateurRepositoryInterface\\:\\:update\\(\\)\\.$#"
 			count: 3
 			path: app/Services/UtilisateurService.php
+-
+    message: "#^Result of method Illuminate\\\\Contracts\\\\Auth\\\\StatefulGuard\\:\\:login\\(\\) \\(void\\) is used\\.$#"
+    count: 1
+    path: app/Services/AuthService.php
+
+-
+    message: "#^Method App\\\\Services\\\\PointageService\\:\\:getByUtilisateur\\(\\) should return Illuminate\\\\Database\\\\Eloquent\\\\Collection but returns Illuminate\\\\Support\\\\Collection\\.$#"
+    count: 1
+    path: app/Services/PointageService.php
+
+-
+    message: "#^Method App\\\\Services\\\\PointageService\\:\\:getByDate\\(\\) should return Illuminate\\\\Database\\\\Eloquent\\\\Collection but returns Illuminate\\\\Support\\\\Collection\\.$#"
+    count: 1
+    path: app/Services/PointageService.php
+
+-
+    message: "#^Method App\\\\Services\\\\PointageService\\:\\:getByPeriod\\(\\) should return Illuminate\\\\Database\\\\Eloquent\\\\Collection but returns Illuminate\\\\Support\\\\Collection\\.$#"
+    count: 1
+    path: app/Services/PointageService.php

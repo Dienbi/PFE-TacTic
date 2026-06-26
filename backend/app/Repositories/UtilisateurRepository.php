@@ -173,10 +173,10 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
     public function searchByName(string $search): Collection
     {
         return $this->model->where(function ($query) use ($search) {
-            $query->where('nom', 'ILIKE', "%{$search}%")
-                ->orWhere('prenom', 'ILIKE', "%{$search}%")
-                ->orWhere('email', 'ILIKE', "%{$search}%")
-                ->orWhere('matricule', 'ILIKE', "%{$search}%");
+            $query->where('nom', 'LIKE', "%{$search}%")
+                ->orWhere('prenom', 'LIKE', "%{$search}%")
+                ->orWhere('email', 'LIKE', "%{$search}%")
+                ->orWhere('matricule', 'LIKE', "%{$search}%");
         })->get();
     }
 

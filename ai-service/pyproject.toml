@@ -1,7 +1,7 @@
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "W", "I"]
-ignore = []
+lint.select = ["E", "F", "W", "I"]
+lint.ignore = []
 
 [tool.black]
 line-length = 88

@@ -71,7 +71,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Frontend install
-        run: npm ci
+        run: npm install
         working-directory: frontend
 
       - name: ESLint
@@ -155,7 +155,7 @@ jobs:
       - name: Frontend tests
         run: |
           cd frontend
-          npm ci
+          npm install
           npm test -- --watchAll=false
 
 
@@ -215,7 +215,7 @@ jobs:
       - name: E2E tests
         run: |
           cd frontend
-          npm ci
+          npm install
           npx playwright install --with-deps chromium
           STAGING_BASE_URL=http://localhost:3000 npx playwright test
 

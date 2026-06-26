@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 class AccountRequestController extends Controller
 {
     public function __construct(private CacheService $cacheService) {}
@@ -291,8 +291,8 @@ class AccountRequestController extends Controller
 
         // Generate JWT token for automatic login
         // Generate JWT token for automatic login
-        $token = auth()->login($user);
-
+        auth()->login($user);
+        $token = JWTAuth::fromUser($user);
         return response()->json([
             'message' => 'Mot de passe défini avec succès.',
             'token' => $token,

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -67,15 +68,15 @@ class AIService
     public function getDashboardAIData(int $attendanceLimit, int $performanceLimit): array
     {
         // Try to get from cache first to avoid pooling overhead if we have a warm cache
-        $cacheKey = \App\Services\CacheService::KEY_AI_DASHBOARD."_{$attendanceLimit}_{$performanceLimit}";
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-            return \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cacheKey = CacheService::KEY_AI_DASHBOARD."_{$attendanceLimit}_{$performanceLimit}";
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
         }
 
         try {
             $timeout = (int) config('services.ai.dashboard_timeout', 15);
 
-            $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($timeout) {
+            $responses = Http::pool(function ($pool) use ($timeout) {
                 return [
                     $pool->as('attendance')->timeout($timeout)->get($this->baseUrl.'/api/predictions/attendance/all'),
                     $pool->as('performance')->timeout($timeout)->get($this->baseUrl.'/api/predictions/performance/all'),
@@ -101,7 +102,7 @@ class AIService
             ];
 
             if (! empty($attendance) || ! empty($performance)) {
-                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, 600);
+                Cache::put($cacheKey, $result, 600);
             }
 
             return $result;

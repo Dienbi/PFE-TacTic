@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Contracts\Repositories\CongeRepositoryInterface;
 use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Contracts\Repositories\UtilisateurRepositoryInterface;
+use App\Models\AccountRequest;
+use App\Models\ActivityLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -237,7 +239,7 @@ class DashboardService
      */
     public function getPendingAccountRequests()
     {
-        return \App\Models\AccountRequest::pending()
+        return AccountRequest::pending()
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -247,7 +249,7 @@ class DashboardService
      */
     public function getRecentActivityLogs(int $limit = 20)
     {
-        return \App\Models\ActivityLog::with(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')])
+        return ActivityLog::with(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')])
             ->latest()
             ->take($limit)
             ->get();

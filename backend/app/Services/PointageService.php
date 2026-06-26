@@ -6,6 +6,7 @@ use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Events\AttendanceNotification;
 use App\Models\Pointage;
+use App\Models\Utilisateur;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -245,7 +246,7 @@ class PointageService
         $pointage = $this->pointageRepository->pointer($utilisateurId, 'entree');
 
         // Log the check-in activity
-        $user = \App\Models\Utilisateur::find($utilisateurId);
+        $user = Utilisateur::find($utilisateurId);
         if ($user) {
             ActivityLogger::log(
                 'CHECK_IN',
@@ -291,7 +292,7 @@ class PointageService
         $pointage = $this->pointageRepository->pointer($utilisateurId, 'sortie');
 
         // Log the check-out activity
-        $user = \App\Models\Utilisateur::find($utilisateurId);
+        $user = Utilisateur::find($utilisateurId);
         if ($user) {
             $message = $isAutoCheckout
                 ? "{$user->prenom} {$user->nom} - checkout automatique à ".Carbon::now()->format('H:i')

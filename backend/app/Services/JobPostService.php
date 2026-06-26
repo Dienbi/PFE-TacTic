@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\JobPostStatus;
 use App\Events\NewJobPostEvent;
+use App\Models\Competence;
 use App\Models\JobPost;
 use App\Repositories\CompetenceRepository;
 use App\Repositories\JobPostRepository;
@@ -46,7 +47,7 @@ class JobPostService
         // Validate competences if provided
         if (! empty($data['competences'])) {
             $requestedIds = array_column($data['competences'], 'competence_id');
-            $foundIds = \App\Models\Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
+            $foundIds = Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
             $missingIds = array_diff($requestedIds, $foundIds);
             if (! empty($missingIds)) {
                 return ['error' => 'Compétence(s) introuvable(s): ID '.implode(', ', $missingIds)];
@@ -95,7 +96,7 @@ class JobPostService
         // Validate competences if provided
         if (isset($data['competences'])) {
             $requestedIds = array_column($data['competences'], 'competence_id');
-            $foundIds = \App\Models\Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
+            $foundIds = Competence::whereIn('id', $requestedIds)->pluck('id')->toArray();
             $missingIds = array_diff($requestedIds, $foundIds);
             if (! empty($missingIds)) {
                 return ['error' => 'Compétence(s) introuvable(s): ID '.implode(', ', $missingIds)];

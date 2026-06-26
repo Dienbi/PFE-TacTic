@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Enums\StatutConge;
 use App\Events\ManagerNotification;
 use App\Models\Equipe;
+use App\Models\Utilisateur;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -51,7 +52,7 @@ class EquipeService
     public function delete(int $id): bool
     {
         // Remove all members from team in a single bulk UPDATE
-        \App\Models\Utilisateur::where('equipe_id', $id)->update(['equipe_id' => null]);
+        Utilisateur::where('equipe_id', $id)->update(['equipe_id' => null]);
 
         return $this->equipeRepository->delete($id);
     }

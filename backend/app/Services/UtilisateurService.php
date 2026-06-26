@@ -190,7 +190,7 @@ class UtilisateurService
     /**
      * Get all archived users
      */
-    public function getArchived(): \Illuminate\Database\Eloquent\Collection
+    public function getArchived(): Collection
     {
         return $this->utilisateurRepository->getArchived();
     }
@@ -198,7 +198,7 @@ class UtilisateurService
     /**
      * Get archived user by ID
      */
-    public function getArchivedById(int $id): ?\App\Models\Utilisateur
+    public function getArchivedById(int $id): ?Utilisateur
     {
         return $this->utilisateurRepository->getArchivedById($id);
     }

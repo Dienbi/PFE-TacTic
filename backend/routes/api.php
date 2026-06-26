@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\AccountRequestController;
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AffectationController;
 use App\Http\Controllers\Api\AIController;
 use App\Http\Controllers\Api\AuthController;
@@ -7,6 +9,9 @@ use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\CongeController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EquipeController;
+use App\Http\Controllers\Api\JobApplicationController;
+use App\Http\Controllers\Api\JobPostController;
+use App\Http\Controllers\Api\JobRequestController;
 use App\Http\Controllers\Api\PaieController;
 use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
@@ -51,9 +56,9 @@ Broadcast::routes(['middleware' => ['jwt.auth']]);
 
 // Account request public routes
 Route::prefix('account-requests')->group(function () {
-    Route::post('/', [App\Http\Controllers\Api\AccountRequestController::class, 'store']);
-    Route::get('/validate-token/{token}', [App\Http\Controllers\Api\AccountRequestController::class, 'validateToken']);
-    Route::post('/set-password', [App\Http\Controllers\Api\AccountRequestController::class, 'setPassword']);
+    Route::post('/', [AccountRequestController::class, 'store']);
+    Route::get('/validate-token/{token}', [AccountRequestController::class, 'validateToken']);
+    Route::post('/set-password', [AccountRequestController::class, 'setPassword']);
 });
 
 // Protected routes
@@ -92,7 +97,7 @@ Route::middleware('jwt.auth')->group(function () {
         // RH only routes (must be before /{id} to avoid conflict)
         Route::middleware('role:rh')->group(function () {
             Route::get('/archived', [UtilisateurController::class, 'archived']);
-            Route::get('/logs', [App\Http\Controllers\Api\ActivityLogController::class, 'index']);
+            Route::get('/logs', [ActivityLogController::class, 'index']);
             Route::post('/', [UtilisateurController::class, 'store']);
             Route::put('/{id}', [UtilisateurController::class, 'update']);
             Route::delete('/{id}', [UtilisateurController::class, 'destroy']);
@@ -110,12 +115,12 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Account requests (RH only)
     Route::prefix('account-requests')->middleware('role:rh')->group(function () {
-        Route::get('/', [App\Http\Controllers\Api\AccountRequestController::class, 'index']);
-        Route::get('/pending', [App\Http\Controllers\Api\AccountRequestController::class, 'pending']);
-        Route::get('/pending-count', [App\Http\Controllers\Api\AccountRequestController::class, 'pendingCount']);
-        Route::get('/{id}', [App\Http\Controllers\Api\AccountRequestController::class, 'show']);
-        Route::post('/{id}/approve', [App\Http\Controllers\Api\AccountRequestController::class, 'approve']);
-        Route::post('/{id}/reject', [App\Http\Controllers\Api\AccountRequestController::class, 'reject']);
+        Route::get('/', [AccountRequestController::class, 'index']);
+        Route::get('/pending', [AccountRequestController::class, 'pending']);
+        Route::get('/pending-count', [AccountRequestController::class, 'pendingCount']);
+        Route::get('/{id}', [AccountRequestController::class, 'show']);
+        Route::post('/{id}/approve', [AccountRequestController::class, 'approve']);
+        Route::post('/{id}/reject', [AccountRequestController::class, 'reject']);
     });
 
     // Equipe routes
@@ -273,55 +278,55 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Job Request routes - managers create, HR reviews
     Route::prefix('job-requests')->group(function () {
-        Route::get('/', [App\Http\Controllers\Api\JobRequestController::class, 'index']);
-        Route::get('/{id}', [App\Http\Controllers\Api\JobRequestController::class, 'show']);
+        Route::get('/', [JobRequestController::class, 'index']);
+        Route::get('/{id}', [JobRequestController::class, 'show']);
 
         // Manager routes
         Route::middleware('role:chef_equipe')->group(function () {
-            Route::post('/', [App\Http\Controllers\Api\JobRequestController::class, 'store']);
-            Route::put('/{id}', [App\Http\Controllers\Api\JobRequestController::class, 'update']);
-            Route::delete('/{id}', [App\Http\Controllers\Api\JobRequestController::class, 'destroy']);
+            Route::post('/', [JobRequestController::class, 'store']);
+            Route::put('/{id}', [JobRequestController::class, 'update']);
+            Route::delete('/{id}', [JobRequestController::class, 'destroy']);
         });
 
         // HR routes
         Route::middleware('role:rh')->group(function () {
-            Route::get('/pending/list', [App\Http\Controllers\Api\JobRequestController::class, 'pending']);
-            Route::post('/{id}/approve', [App\Http\Controllers\Api\JobRequestController::class, 'approve']);
-            Route::post('/{id}/reject', [App\Http\Controllers\Api\JobRequestController::class, 'reject']);
+            Route::get('/pending/list', [JobRequestController::class, 'pending']);
+            Route::post('/{id}/approve', [JobRequestController::class, 'approve']);
+            Route::post('/{id}/reject', [JobRequestController::class, 'reject']);
         });
     });
 
     // Job Post routes - HR creates, all see published
     Route::prefix('job-posts')->group(function () {
-        Route::get('/', [App\Http\Controllers\Api\JobPostController::class, 'index']);
-        Route::get('/open', [App\Http\Controllers\Api\JobPostController::class, 'open']);
-        Route::get('/{id}', [App\Http\Controllers\Api\JobPostController::class, 'show']);
+        Route::get('/', [JobPostController::class, 'index']);
+        Route::get('/open', [JobPostController::class, 'open']);
+        Route::get('/{id}', [JobPostController::class, 'show']);
 
         // HR only routes
         Route::middleware('role:rh')->group(function () {
-            Route::post('/', [App\Http\Controllers\Api\JobPostController::class, 'store']);
-            Route::put('/{id}', [App\Http\Controllers\Api\JobPostController::class, 'update']);
-            Route::post('/{id}/publish', [App\Http\Controllers\Api\JobPostController::class, 'publish']);
-            Route::post('/{id}/close', [App\Http\Controllers\Api\JobPostController::class, 'close']);
-            Route::delete('/{id}', [App\Http\Controllers\Api\JobPostController::class, 'destroy']);
+            Route::post('/', [JobPostController::class, 'store']);
+            Route::put('/{id}', [JobPostController::class, 'update']);
+            Route::post('/{id}/publish', [JobPostController::class, 'publish']);
+            Route::post('/{id}/close', [JobPostController::class, 'close']);
+            Route::delete('/{id}', [JobPostController::class, 'destroy']);
         });
     });
 
     // Job Application routes - employees apply, HR reviews
     Route::prefix('applications')->group(function () {
-        Route::get('/', [App\Http\Controllers\Api\JobApplicationController::class, 'index']);
-        Route::get('/job-post/{jobPostId}', [App\Http\Controllers\Api\JobApplicationController::class, 'byJobPost']);
-        Route::get('/{id}', [App\Http\Controllers\Api\JobApplicationController::class, 'show']);
+        Route::get('/', [JobApplicationController::class, 'index']);
+        Route::get('/job-post/{jobPostId}', [JobApplicationController::class, 'byJobPost']);
+        Route::get('/{id}', [JobApplicationController::class, 'show']);
 
         // Employee routes
         Route::middleware('role:employe')->group(function () {
-            Route::post('/', [App\Http\Controllers\Api\JobApplicationController::class, 'store']);
-            Route::post('/{id}/withdraw', [App\Http\Controllers\Api\JobApplicationController::class, 'withdraw']);
+            Route::post('/', [JobApplicationController::class, 'store']);
+            Route::post('/{id}/withdraw', [JobApplicationController::class, 'withdraw']);
         });
 
         // HR routes
         Route::middleware('role:rh')->group(function () {
-            Route::post('/{id}/review', [App\Http\Controllers\Api\JobApplicationController::class, 'review']);
+            Route::post('/{id}/review', [JobApplicationController::class, 'review']);
         });
     });
 

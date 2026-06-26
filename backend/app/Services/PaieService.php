@@ -6,7 +6,11 @@ use App\Contracts\Repositories\PaieRepositoryInterface;
 use App\Contracts\Repositories\PointageRepositoryInterface;
 use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\StatutPaie;
+use App\Events\SalaryPaid;
+use App\Models\ActivityLog;
 use App\Models\Paie;
+use App\Models\Utilisateur;
+use App\Notifications\SalaireNotification;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -203,8 +207,8 @@ class PaieService
             if ($paie && $paie->utilisateur) {
                 // Log activity
                 try {
-                    if (class_exists(\App\Models\ActivityLog::class)) {
-                        \App\Models\ActivityLog::create([
+                    if (class_exists(ActivityLog::class)) {
+                        ActivityLog::create([
                             'user_id' => auth()->id() ?? null,
                             'action' => 'PAYROLL_PAID',
                             'description' => "Paiement du salaire de {$paie->utilisateur->prenom} {$paie->utilisateur->nom}",
@@ -217,7 +221,7 @@ class PaieService
 
                 // Fire Reverb Event (Realtime Toast)
                 try {
-                    \App\Events\SalaryPaid::dispatch($paie->utilisateur, $paie->salaire_net);
+                    SalaryPaid::dispatch($paie->utilisateur, $paie->salaire_net);
                 } catch (\Throwable $e) {
                     // Ignore broadcast errors
                 }
@@ -364,7 +368,7 @@ class PaieService
     {
         $count = 0;
         // Use chunk to handle large datasets efficiently
-        \App\Models\Utilisateur::chunk(100, function ($users) use ($percentage, &$count) {
+        Utilisateur::chunk(100, function ($users) use ($percentage, &$count) {
             foreach ($users as $user) {
                 if ($user->salaire_base > 0) {
                     $oldSalary = $user->salaire_base;
@@ -374,7 +378,7 @@ class PaieService
 
                     // Notify user (database notification)
                     try {
-                        $user->notify(new \App\Notifications\SalaireNotification(
+                        $user->notify(new SalaireNotification(
                             "Votre salaire de base a été augmenté de {$percentage}%. Nouveau salaire: ".number_format($user->salaire_base, 2).' TND',
                             'success'
                         ));
@@ -395,7 +399,7 @@ class PaieService
         $user = $this->utilisateurRepository->find($userId);
         if ($user) {
             try {
-                $user->notify(new \App\Notifications\SalaireNotification(
+                $user->notify(new SalaireNotification(
                     'Votre salaire de base a été mis à jour: '.number_format($salaire, 2).' TND',
                     'info'
                 ));

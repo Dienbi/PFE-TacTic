@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\NewActivityLog;
 use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 
 class ActivityLogger
@@ -23,9 +25,9 @@ class ActivityLogger
         try {
             // Load user relation only when broadcasting to reduce overhead on hot paths
             $log->load(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')]);
-            event(new \App\Events\NewActivityLog($log));
+            event(new NewActivityLog($log));
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to broadcast activity log: '.$e->getMessage());
+            Log::warning('Failed to broadcast activity log: '.$e->getMessage());
         }
     }
 }

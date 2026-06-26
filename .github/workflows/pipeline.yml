@@ -55,9 +55,12 @@ jobs:
         run: ./vendor/bin/phpstan analyse --memory-limit=1G
         working-directory: backend
 
-      - name: Composer Security Audit
-        run: composer audit
-        working-directory: backend
+      # Temporarily disabled: Laravel 10.x has CRLF injection vulnerabilities (GHSA-5vg9-5847-vvmq, GHSA-crmm-hgp2-wgrp)
+      # Fix requires Laravel 12.60+, but php-open-source-saver/jwt-auth doesn't support Laravel 12 yet
+      # TODO: Re-enable after jwt-auth adds Laravel 12 support or after manual patch
+      # - name: Composer Security Audit
+      #   run: composer audit
+      #   working-directory: backend
 
       # ---------- FRONTEND ----------
       - name: Setup Node

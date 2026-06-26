@@ -21,11 +21,6 @@ parameters:
 			path: app/Http/Controllers/Api/CongeController.php
 
 		-
-			message: "#^Access to an undefined property PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\:\\:\\$actif\\.$#"
-			count: 1
-			path: app/Http/Middleware/JwtMiddleware.php
-
-		-
 			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Builder\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:actif\\(\\)\\.$#"
 			count: 2
 			path: app/Repositories/AffectationRepository.php
@@ -322,56 +317,6 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$password\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Access to an undefined property PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\:\\:\\$id\\.$#"
-			count: 2
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Call to an undefined method PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\:\\:refresh\\(\\)\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^If condition is always true\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Method App\\\\Services\\\\AuthService\\:\\:me\\(\\) should return App\\\\Models\\\\Utilisateur\\|null but returns PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Negated boolean expression is always false\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Parameter \\#1 \\$forceForever of static method PHPOpenSourceSaver\\\\JWTAuth\\\\JWT\\:\\:invalidate\\(\\) expects bool, PHPOpenSourceSaver\\\\JWTAuth\\\\Token\\|null given\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Parameter \\#1 \\$forceForever of static method PHPOpenSourceSaver\\\\JWTAuth\\\\JWT\\:\\:refresh\\(\\) expects bool, PHPOpenSourceSaver\\\\JWTAuth\\\\Token\\|null given\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Parameter \\#1 \\$user of static method PHPOpenSourceSaver\\\\JWTAuth\\\\JWT\\:\\:fromUser\\(\\) expects PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject, Illuminate\\\\Database\\\\Eloquent\\\\Model given\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Parameter \\#2 \\$utilisateur of method App\\\\Services\\\\AuthService\\:\\:respondWithToken\\(\\) expects App\\\\Models\\\\Utilisateur, Illuminate\\\\Database\\\\Eloquent\\\\Model given\\.$#"
-			count: 1
-			path: app/Services/AuthService.php
-
-		-
-			message: "#^Parameter \\#2 \\$utilisateur of method App\\\\Services\\\\AuthService\\:\\:respondWithToken\\(\\) expects App\\\\Models\\\\Utilisateur, PHPOpenSourceSaver\\\\JWTAuth\\\\Contracts\\\\JWTSubject given\\.$#"
 			count: 1
 			path: app/Services/AuthService.php
 
@@ -831,16 +776,6 @@ parameters:
 			path: app/Services/PointageService.php
 
 		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$heure_entree\\.$#"
-			count: 1
-			path: app/Services/PointageService.php
-
-		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$heure_sortie\\.$#"
-			count: 1
-			path: app/Services/PointageService.php
-
-		-
 			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
 			count: 2
 			path: app/Services/PointageService.php
@@ -862,11 +797,6 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$prenom\\.$#"
-			count: 1
-			path: app/Services/PointageService.php
-
-		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$utilisateur\\.$#"
 			count: 1
 			path: app/Services/PointageService.php
 

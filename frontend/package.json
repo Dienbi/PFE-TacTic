@@ -39,6 +39,11 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-router-dom|@react-router|@remix-run)/)"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",

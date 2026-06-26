@@ -49,7 +49,6 @@ class CongeService
         return $paginator;
     }
 
-
     public function getById(int $id): ?Conge
     {
         $leave = $this->congeRepository->find($id);

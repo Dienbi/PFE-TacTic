@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\AIService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class AIController extends Controller
 {
@@ -23,7 +24,7 @@ class AIController extends Controller
      */
     public function attendancePredictionsAll(): JsonResponse
     {
-        $data = \Illuminate\Support\Facades\Cache::remember('ai_attendance_all', 600, function () {
+        $data = Cache::remember('ai_attendance_all', 600, function () {
             return $this->aiService->getAttendancePredictionsAll();
         });
 
@@ -36,7 +37,7 @@ class AIController extends Controller
      */
     public function attendancePrediction(int $userId): JsonResponse
     {
-        $data = \Illuminate\Support\Facades\Cache::remember("ai_attendance_{$userId}", 600, function () use ($userId) {
+        $data = Cache::remember("ai_attendance_{$userId}", 600, function () use ($userId) {
             return $this->aiService->getAttendancePrediction($userId);
         });
 
@@ -51,7 +52,7 @@ class AIController extends Controller
      */
     public function performanceScoresAll(): JsonResponse
     {
-        $data = \Illuminate\Support\Facades\Cache::remember('ai_performance_all', 600, function () {
+        $data = Cache::remember('ai_performance_all', 600, function () {
             return $this->aiService->getPerformanceScoresAll();
         });
 
@@ -64,7 +65,7 @@ class AIController extends Controller
      */
     public function performanceScore(int $userId): JsonResponse
     {
-        $data = \Illuminate\Support\Facades\Cache::remember("ai_performance_{$userId}", 600, function () use ($userId) {
+        $data = Cache::remember("ai_performance_{$userId}", 600, function () use ($userId) {
             return $this->aiService->getPerformanceScore($userId);
         });
 
@@ -79,7 +80,7 @@ class AIController extends Controller
      */
     public function dashboardKPIs(): JsonResponse
     {
-        $data = \Illuminate\Support\Facades\Cache::remember('ai_dashboard_kpis', 600, function () {
+        $data = Cache::remember('ai_dashboard_kpis', 600, function () {
             return $this->aiService->getDashboardKPIs();
         });
 
@@ -113,9 +114,9 @@ class AIController extends Controller
         }
 
         // Clear AI cache on training
-        \Illuminate\Support\Facades\Cache::forget('ai_attendance_all');
-        \Illuminate\Support\Facades\Cache::forget('ai_performance_all');
-        \Illuminate\Support\Facades\Cache::forget('ai_dashboard_kpis');
+        Cache::forget('ai_attendance_all');
+        Cache::forget('ai_performance_all');
+        Cache::forget('ai_dashboard_kpis');
 
         return response()->json($this->aiService->triggerTraining($model));
     }

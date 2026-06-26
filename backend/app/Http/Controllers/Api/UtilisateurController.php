@@ -6,6 +6,7 @@ use App\Enums\EmployeStatus;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UtilisateurRequest;
+use App\Services\ActivityLogger;
 use App\Services\UtilisateurService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -214,7 +215,7 @@ class UtilisateurController extends Controller
         $this->utilisateurService->assignToEquipe($id, $request->equipe_id);
 
         // Log the activity
-        \App\Services\ActivityLogger::log('ASSIGN_TEAM', "Assigned user #{$id} to team #{$request->equipe_id}");
+        ActivityLogger::log('ASSIGN_TEAM', "Assigned user #{$id} to team #{$request->equipe_id}");
 
         return response()->json([
             'message' => 'Utilisateur assigné à l\'équipe.',

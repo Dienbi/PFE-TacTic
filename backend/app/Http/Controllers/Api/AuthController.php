@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
@@ -124,7 +125,7 @@ class AuthController extends Controller
         ];
 
         // Authorization for RH only fields
-        if ($user->role === \App\Enums\Role::RH) {
+        if ($user->role === Role::RH) {
             $rules['matricule'] = 'required|string|unique:utilisateurs,matricule,'.$user->id;
             $rules['role'] = 'required|string|in:RH,CHEF_EQUIPE,EMPLOYE';
             $rules['date_embauche'] = 'nullable|date';

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CongeController extends Controller
 {
@@ -188,7 +189,7 @@ class CongeController extends Controller
     /**
      * Download medical file
      */
-    public function downloadMedicalFile(int $id): \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+    public function downloadMedicalFile(int $id): BinaryFileResponse|JsonResponse
     {
         $conge = $this->congeService->getById($id);
 

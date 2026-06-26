@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Events\NewAccountRequest;
+use App\Events\NewActivityLog;
+use App\Listeners\InvalidateDashboardCache;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -18,11 +21,11 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        \App\Events\NewActivityLog::class => [
-            \App\Listeners\InvalidateDashboardCache::class,
+        NewActivityLog::class => [
+            InvalidateDashboardCache::class,
         ],
-        \App\Events\NewAccountRequest::class => [
-            \App\Listeners\InvalidateDashboardCache::class,
+        NewAccountRequest::class => [
+            InvalidateDashboardCache::class,
         ],
     ];
 

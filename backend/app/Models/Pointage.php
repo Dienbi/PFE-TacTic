@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -59,8 +60,8 @@ class Pointage extends Model
     public function calculerDureeTravail()
     {
         if ($this->heure_entree && $this->heure_sortie) {
-            $entree = \Carbon\Carbon::parse($this->heure_entree);
-            $sortie = \Carbon\Carbon::parse($this->heure_sortie);
+            $entree = Carbon::parse($this->heure_entree);
+            $sortie = Carbon::parse($this->heure_sortie);
             $this->duree_travail = $sortie->diffInHours($entree, true);
             $this->save();
         }

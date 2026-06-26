@@ -111,7 +111,7 @@ jobs:
       #   working-directory: ai-service
 
       - name: AI type check
-        run: mypy .
+        run: mypy . --explicit-package-bases
         working-directory: ai-service
 
       # Temporarily disabled: pip-audit may show security vulnerabilities

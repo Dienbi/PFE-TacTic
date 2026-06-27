@@ -7,7 +7,7 @@ FROM php:8.2-cli-alpine
 WORKDIR /var/www/html
 
 # Install runtime deps and build deps to compile extensions, then remove build deps
-RUN apk add --no-cache bash oniguruma-dev libzip-dev \
+RUN apk add --no-cache bash oniguruma-dev libzip-dev libpq \
     && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS postgresql-dev \
     && docker-php-ext-install pdo_pgsql bcmath \
     && apk del .build-deps \

@@ -173,29 +173,27 @@ jobs:
   # =========================
   # SONARQUBE
   # =========================
-  # Temporarily disabled: SonarQube server not configured or unreachable
-  # TODO: Configure SONAR_TOKEN and SONAR_HOST_URL secrets and re-enable
-  # sonar-analysis:
-  #   name: SonarQube
-  #   needs: unit-tests
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #
-  #     - name: Sonar scan
-  #       uses: sonarsource/sonarqube-scan-action@master
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-  #
-  #     - name: Quality Gate
-  #       uses: sonarsource/sonarqube-quality-gate-action@master
-  #       timeout-minutes: 10
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  sonar-analysis:
+    name: SonarQube
+    needs: unit-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sonar scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 10
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 
   # =========================

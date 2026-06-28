@@ -34,7 +34,9 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
     networks:
-      - platform
+      platform:
+        aliases:
+          - sonarqube
 
   nexus:
     image: sonatype/nexus3:latest

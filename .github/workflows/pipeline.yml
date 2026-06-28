@@ -176,12 +176,16 @@ jobs:
   sonar-analysis:
     name: SonarQube
     needs: unit-tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Add SonarQube to /etc/hosts
+        run: |
+          echo "172.26.0.5 sonarqube" | sudo tee -a /etc/hosts
 
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master

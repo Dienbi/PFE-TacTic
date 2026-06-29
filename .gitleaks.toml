@@ -1,0 +1,8 @@
+title = "TacTic Gitleaks Configuration"
+
+# Allowlist for files that contain non-secret credentials
+[allowlist]
+  description = "Allowlist for runner environment files"
+  paths = [
+    '''docker\/\.env\.runners''',
+  ]

@@ -66,7 +66,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -183,9 +183,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Resolve the real Windows host IP so WSL2 can route to SonarQube.
+      # 127.0.0.1 doesn't work in WSL2 — the host lives on the vEthernet gateway.
       - name: Add SonarQube to /etc/hosts
         run: |
-          echo "127.0.0.1 sonarqube" | sudo tee -a /etc/hosts
+          HOST_IP=$(ip route show | grep -i default | awk '{ print $3}')
+          echo "Detected host IP: $HOST_IP"
+          echo "$HOST_IP sonarqube" | sudo tee -a /etc/hosts
+
+      # Verify connectivity before wasting time on the full scan
+      - name: Debug SonarQube connectivity
+        run: |
+          echo "=== /etc/hosts ==="
+          cat /etc/hosts
+          echo "=== Curl SonarQube ==="
+          curl -sf "${{ secrets.SONAR_HOST_URL }}/api/v2/analysis/version" \
+            && echo "SonarQube reachable" \
+            || { echo "ERROR: SonarQube not reachable at ${{ secrets.SONAR_HOST_URL }}"; exit 1; }
 
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -213,6 +227,19 @@ jobs:
 
       - name: Start services
         run: docker compose -f docker/docker-compose.dev.yml up -d
+
+      # Wait for all containers to be healthy before proceeding
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          for i in $(seq 1 30); do
+            if docker exec tactic-backend php artisan about --only=environment > /dev/null 2>&1; then
+              echo "Backend is ready after ${i} attempts"
+              break
+            fi
+            echo "Attempt $i/30 — retrying in 3s..."
+            sleep 3
+          done
 
       - name: Run migrations
         run: docker exec tactic-backend php artisan migrate --force

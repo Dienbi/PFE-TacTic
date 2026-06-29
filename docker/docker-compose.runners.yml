@@ -17,6 +17,8 @@ x-runner-env: &runner-env
   DISABLE_AUTOMATIC_DEREGISTRATION: "true"
   CONFIGURED_ACTIONS_RUNNER_FILES_DIR: /runner-data
   LABELS: self-hosted,linux,x64,docker,ci
+  # Use a PAT instead of registration token for longer-lived runners
+  # Generate at: https://github.com/settings/tokens (repo scope required)
 
 services:
   github-runner-1:

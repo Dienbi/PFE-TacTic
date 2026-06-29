@@ -18,7 +18,7 @@ services:
       - platform
 
   sonarqube:
-    image: sonarqube:10.6.0-community
+    image: sonarqube:10.8-community
     container_name: tactic-sonarqube
     depends_on:
       - sonar-db

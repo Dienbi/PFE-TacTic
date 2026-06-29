@@ -185,23 +185,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Resolve the real Windows host IP so WSL2 can route to SonarQube.
-      # 127.0.0.1 doesn't work in WSL2 — the host lives on the vEthernet gateway.
+      # Runners are on platform network, so SonarQube is reachable by container name
       - name: Add SonarQube to /etc/hosts
         run: |
-          HOST_IP=$(ip route show | grep -i default | awk '{ print $3}')
-          echo "Detected host IP: $HOST_IP"
-          echo "$HOST_IP sonarqube" | sudo tee -a /etc/hosts
-
-      # Verify connectivity before wasting time on the full scan
-      - name: Debug SonarQube connectivity
-        run: |
-          echo "=== /etc/hosts ==="
-          cat /etc/hosts
-          echo "=== Curl SonarQube ==="
-          curl -sf "${{ secrets.SONAR_HOST_URL }}/api/v2/analysis/version" \
-            && echo "SonarQube reachable" \
-            || { echo "ERROR: SonarQube not reachable at ${{ secrets.SONAR_HOST_URL }}"; exit 1; }
+          echo "127.0.0.1 sonarqube" | sudo tee -a /etc/hosts
 
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master

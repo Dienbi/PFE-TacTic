@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Users,
   Search,
@@ -41,23 +41,7 @@ const MyTeam: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.error("No authentication token found");
-      navigate("/login");
-      return;
-    }
-
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    fetchMyTeam();
-  }, []);
-
-  const fetchMyTeam = async () => {
+  const fetchMyTeam = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -86,7 +70,23 @@ const MyTeam: React.FC = () => {
       // Fallback in case of error
       setTeam(null);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No authentication token found");
+      navigate("/login");
+      return;
+    }
+
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+    fetchMyTeam();
+  }, [fetchMyTeam, navigate]);
 
   const getStatusClass = (status: string) => {
     switch (status) {

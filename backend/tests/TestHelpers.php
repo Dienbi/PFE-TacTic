@@ -127,7 +127,7 @@ trait TestHelpers
         DB::flushQueryLog();
         DB::enableQueryLog();
 
-        $callback();
+        $callback($this);
 
         $queryCount = count(DB::getQueryLog());
         DB::disableQueryLog();

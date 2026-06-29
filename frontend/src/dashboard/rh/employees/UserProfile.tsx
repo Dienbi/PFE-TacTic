@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   User,
@@ -9,14 +9,12 @@ import {
   Calendar,
   CreditCard,
   ArrowLeft,
-  Edit3,
   Users,
   Award,
 } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
-import Loader from "../../../shared/components/Loader";
 import "./UserProfile.css";
 
 interface Competence {
@@ -55,16 +53,7 @@ const UserProfile: React.FC = () => {
   );
   const [rhUser, setRhUser] = useState<any>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setRhUser(JSON.parse(storedUser));
-    }
-    // Always fetch user data to ensure we have the latest details (including competences)
-    fetchUser();
-  }, [id]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const response = await client.get(`/utilisateurs/${id}`);
       setUser(response.data);
@@ -72,7 +61,16 @@ const UserProfile: React.FC = () => {
       console.error("Error fetching user:", error);
       navigate("/employees");
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setRhUser(JSON.parse(storedUser));
+    }
+    // Always fetch user data to ensure we have the latest details (including competences)
+    fetchUser();
+  }, [id, fetchUser]);
 
   const getStatusClass = (status: string) => {
     switch (status) {

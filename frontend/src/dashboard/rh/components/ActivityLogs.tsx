@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Activity, Clock, RefreshCw } from "lucide-react";
+import { Clock, RefreshCw } from "lucide-react";
 import client from "../../../api/client";
 import echoService from "../../../shared/services/echoService";
 import "./ActivityLogs.css";

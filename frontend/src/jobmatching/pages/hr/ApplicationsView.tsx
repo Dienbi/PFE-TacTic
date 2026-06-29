@@ -41,7 +41,7 @@ const ApplicationsView: React.FC = () => {
     if (postId) {
       loadApplications();
     }
-  }, [postId]);
+  }, [postId, loadApplications]);
 
   useEffect(() => {
     if (postId && activeTab === "ai" && !aiLoaded) {

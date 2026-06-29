@@ -140,7 +140,7 @@ const AttendanceSection: React.FC = () => {
     const interval = setInterval(checkAutoCheckout, 60000);
 
     return () => clearInterval(interval);
-  }, [isCheckedIn, showAutoCheckoutAlert, autoCheckoutCancelled]);
+  }, [isCheckedIn, showAutoCheckoutAlert, autoCheckoutCancelled, handleAutoCheckout]);
 
   const handleCheckIn = async () => {
     setActionLoading(true);

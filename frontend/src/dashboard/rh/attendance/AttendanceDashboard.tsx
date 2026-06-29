@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Clock,
   UserX,
@@ -84,11 +84,7 @@ const AttendanceDashboard: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [date]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [summaryRes, anomaliesRes] = await Promise.all([
         client.get(`/pointages/summary?date=${date}`),
@@ -99,7 +95,11 @@ const AttendanceDashboard: React.FC = () => {
     } catch (error) {
       console.error("Error fetching attendance data:", error);
     }
-  };
+  }, [date]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const UserListItem = ({
     user,

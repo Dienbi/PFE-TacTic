@@ -55,17 +55,6 @@ const AttendanceHistory: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  // Format date
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
   // Format time
   const formatTime = (timeStr: string | null): string => {
     if (!timeStr) return "--:--";

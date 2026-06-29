@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jobMatchingApi, JobApplication } from "../../api/jobMatchingApi";
 import { aiApi, MatchResponse } from "../../../api/aiApi";
@@ -37,19 +37,7 @@ const ApplicationsView: React.FC = () => {
     ? aiRecommendations
     : aiRecommendations.slice(0, AI_PREVIEW_COUNT);
 
-  useEffect(() => {
-    if (postId) {
-      loadApplications();
-    }
-  }, [postId, loadApplications]);
-
-  useEffect(() => {
-    if (postId && activeTab === "ai" && !aiLoaded) {
-      loadAiRecommendations();
-    }
-  }, [postId, activeTab, aiLoaded]);
-
-  const loadApplications = async () => {
+  const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
       const data = await jobMatchingApi.getJobPostApplications(
@@ -61,9 +49,9 @@ const ApplicationsView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [postId]);
 
-  const loadAiRecommendations = async () => {
+  const loadAiRecommendations = useCallback(async () => {
     try {
       setAiLoading(true);
       setAiError(null);
@@ -78,7 +66,19 @@ const ApplicationsView: React.FC = () => {
     } finally {
       setAiLoading(false);
     }
-  };
+  }, [postId]);
+
+  useEffect(() => {
+    if (postId) {
+      loadApplications();
+    }
+  }, [postId, loadApplications]);
+
+  useEffect(() => {
+    if (postId && activeTab === "ai" && !aiLoaded) {
+      loadAiRecommendations();
+    }
+  }, [postId, activeTab, aiLoaded, loadAiRecommendations]);
 
   const handleAccept = async (applicationId: number) => {
     if (

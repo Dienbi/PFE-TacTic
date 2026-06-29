@@ -173,7 +173,7 @@ const AttendanceSection: React.FC = () => {
     }
   };
 
-  const handleAutoCheckout = async () => {
+  const handleAutoCheckout = useCallback(async () => {
     setActionLoading(true);
     try {
       await checkOut(true);
@@ -185,7 +185,7 @@ const AttendanceSection: React.FC = () => {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [invalidateAttendance, refetchPointage, refetchStats]);
 
   const handleCancelAutoCheckout = () => {
     setAutoCheckoutCancelled(true);

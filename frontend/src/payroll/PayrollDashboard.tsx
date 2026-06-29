@@ -17,7 +17,6 @@ import {
   ChevronDown,
   ChevronUp,
   Play,
-  Eye,
   Download,
   Percent,
 } from "lucide-react";
@@ -73,15 +72,6 @@ interface PayrollRecord {
     email: string;
     salaire_base: string;
   };
-}
-
-interface GlobalStats {
-  total_paies: number;
-  total_masse_salariale: number;
-  total_net_mensuel: number;
-  total_cnss_mensuel: number;
-  total_impot_mensuel: number;
-  total_deductions_mensuel: number;
   paies_en_attente: number;
   paies_validees: number;
   paies_payees: number;

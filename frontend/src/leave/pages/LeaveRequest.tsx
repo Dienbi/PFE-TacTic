@@ -14,7 +14,7 @@ import Navbar from "../../shared/components/Navbar";
 import client from "../../api/client";
 import "./LeaveRequest.css";
 
-interface LeaveRequest {
+interface LeaveRequestData {
   id: number;
   type: string;
   date_debut: string;
@@ -36,7 +36,7 @@ interface UserInfo {
 
 const LeaveRequest: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
-  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
+  const [leaves, setLeaves] = useState<LeaveRequestData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);

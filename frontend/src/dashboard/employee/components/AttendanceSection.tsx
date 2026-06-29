@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Clock, AlertTriangle, X } from "lucide-react";
 import {
   checkIn,
@@ -21,6 +21,19 @@ const AttendanceSection: React.FC = () => {
   const [autoCheckoutCancelled, setAutoCheckoutCancelled] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Use refs for values read inside intervals to avoid stale closures
+  // and prevent the interval from being re-created on every state change.
+  const autoCheckoutCancelledRef = useRef(autoCheckoutCancelled);
+  const showAutoCheckoutAlertRef = useRef(showAutoCheckoutAlert);
+
+  useEffect(() => {
+    autoCheckoutCancelledRef.current = autoCheckoutCancelled;
+  }, [autoCheckoutCancelled]);
+
+  useEffect(() => {
+    showAutoCheckoutAlertRef.current = showAutoCheckoutAlert;
+  }, [showAutoCheckoutAlert]);
+
   const isCheckedIn =
     todayPointage?.heure_entree && !todayPointage?.heure_sortie;
 
@@ -31,13 +44,10 @@ const AttendanceSection: React.FC = () => {
   ): Date | null => {
     if (!timeStr) return null;
 
-    // If it's already a full datetime string (contains 'T' or has date part)
     if (timeStr.includes("T") || timeStr.includes("-")) {
       return new Date(timeStr);
     }
 
-    // It's just a time string like "08:30" or "08:30:00"
-    // Combine with today's date or provided date
     const today = dateStr ? new Date(dateStr) : new Date();
     const [hours, minutes, seconds = 0] = timeStr.split(":").map(Number);
     today.setHours(hours, minutes, seconds, 0);
@@ -48,9 +58,8 @@ const AttendanceSection: React.FC = () => {
   const formatTime = (timeStr: string | null): string => {
     if (!timeStr) return "--:--";
 
-    // If it's just a time string like "08:30", return it directly
     if (!timeStr.includes("T") && !timeStr.includes("-")) {
-      return timeStr.substring(0, 5); // Return "HH:mm"
+      return timeStr.substring(0, 5);
     }
 
     const date = new Date(timeStr);
@@ -93,7 +102,29 @@ const AttendanceSection: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.attendance.stats() });
   }, []);
 
-  // Timer effect - update elapsed time every second when checked in
+  // Declared before the auto-checkout useEffect that calls it
+  const handleAutoCheckout = useCallback(async () => {
+    setActionLoading(true);
+    try {
+      await checkOut(true);
+      setShowAutoCheckoutAlert(false);
+      invalidateAttendance();
+      await Promise.all([refetchPointage(), refetchStats()]);
+    } catch (error) {
+      console.error("Error auto checking out:", error);
+    } finally {
+      setActionLoading(false);
+    }
+  }, [invalidateAttendance, refetchPointage, refetchStats]);
+
+  // Keep a stable ref to handleAutoCheckout so the interval never
+  // needs to be re-created when the callback identity changes.
+  const handleAutoCheckoutRef = useRef(handleAutoCheckout);
+  useEffect(() => {
+    handleAutoCheckoutRef.current = handleAutoCheckout;
+  }, [handleAutoCheckout]);
+
+  // Timer effect — update elapsed time every second when checked in
   useEffect(() => {
     if (!isCheckedIn) {
       if (todayPointage?.heure_entree && todayPointage?.heure_sortie) {
@@ -109,38 +140,37 @@ const AttendanceSection: React.FC = () => {
     return () => clearInterval(timer);
   }, [isCheckedIn, calculateElapsedTime, todayPointage]);
 
-  // Auto-checkout effect
+  // Auto-checkout effect — uses refs so the interval is only created
+  // once per check-in session, avoiding stale-closure bugs.
   useEffect(() => {
-    if (!isCheckedIn || autoCheckoutCancelled) return;
+    if (!isCheckedIn) return;
 
     const checkAutoCheckout = () => {
+      if (autoCheckoutCancelledRef.current) return;
+
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
 
-      // Show alert 5 minutes before 5 PM
       if (
         currentHour === AUTO_CHECKOUT_HOUR - 1 &&
         currentMinute >= 60 - ALERT_MINUTES_BEFORE &&
-        !showAutoCheckoutAlert
+        !showAutoCheckoutAlertRef.current
       ) {
         setShowAutoCheckoutAlert(true);
       }
 
-      // Auto checkout at 5 PM
-      if (currentHour >= AUTO_CHECKOUT_HOUR && !autoCheckoutCancelled) {
-        handleAutoCheckout();
+      if (currentHour >= AUTO_CHECKOUT_HOUR) {
+        handleAutoCheckoutRef.current();
       }
     };
 
-    // Check immediately
     checkAutoCheckout();
-
-    // Check every minute
     const interval = setInterval(checkAutoCheckout, 60000);
 
     return () => clearInterval(interval);
-  }, [isCheckedIn, showAutoCheckoutAlert, autoCheckoutCancelled, handleAutoCheckout]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCheckedIn]); // Intentionally omit ref-backed values — they're always current
 
   const handleCheckIn = async () => {
     setActionLoading(true);
@@ -173,20 +203,6 @@ const AttendanceSection: React.FC = () => {
     }
   };
 
-  const handleAutoCheckout = useCallback(async () => {
-    setActionLoading(true);
-    try {
-      await checkOut(true);
-      setShowAutoCheckoutAlert(false);
-      invalidateAttendance();
-      await Promise.all([refetchPointage(), refetchStats()]);
-    } catch (error) {
-      console.error("Error auto checking out:", error);
-    } finally {
-      setActionLoading(false);
-    }
-  }, [invalidateAttendance, refetchPointage, refetchStats]);
-
   const handleCancelAutoCheckout = () => {
     setAutoCheckoutCancelled(true);
     setShowAutoCheckoutAlert(false);
@@ -210,7 +226,6 @@ const AttendanceSection: React.FC = () => {
 
   return (
     <div className="attendance-section-full">
-      {/* Auto-checkout Alert Modal */}
       {showAutoCheckoutAlert && (
         <div className="auto-checkout-overlay">
           <div className="auto-checkout-modal">
@@ -265,7 +280,6 @@ const AttendanceSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Live Timer */}
           {isCheckedIn && (
             <div className="live-timer">
               <div className="timer-label">Temps de travail</div>

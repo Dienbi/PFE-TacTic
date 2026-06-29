@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { User, Settings } from "lucide-react";
+import { User } from "lucide-react";
 import "./Navbar.css";
 
 interface NavbarProps {

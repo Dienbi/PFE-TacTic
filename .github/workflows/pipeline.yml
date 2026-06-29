@@ -185,7 +185,7 @@ jobs:
 
       - name: Add SonarQube to /etc/hosts
         run: |
-          echo "172.26.0.5 sonarqube" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 sonarqube" | sudo tee -a /etc/hosts
 
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master

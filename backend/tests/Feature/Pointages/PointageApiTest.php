@@ -5,7 +5,6 @@ namespace Tests\Feature\Pointages;
 use App\Enums\Role;
 use App\Models\Pointage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Tests\Feature\Concerns\AuthenticatesApiUsers;
 use Tests\TestCase;
 use Tests\TestHelpers;

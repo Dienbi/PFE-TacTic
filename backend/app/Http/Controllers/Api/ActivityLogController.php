@@ -18,7 +18,7 @@ class ActivityLogController extends Controller
         $perPage = $request->integer('per_page', 20);
         $page = $request->integer('page', 1);
 
-        $result = Cache::remember("activity_logs_p{$page}_pp{$perPage}", 300, function () use ($perPage, $page) {
+        $result = Cache::remember("activity_logs_p{$page}_pp{$perPage}", 300, function ($cached) use ($perPage, $page) {
             $total = ActivityLog::count();
             $items = ActivityLog::with(['user' => fn ($q) => $q->select('id', 'nom', 'prenom', 'role')])
                 ->latest()

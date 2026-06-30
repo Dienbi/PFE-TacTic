@@ -65,7 +65,7 @@ class CongeController extends Controller
         $conges = Cache::remember(
             CacheService::KEY_CONGES_EN_ATTENTE,
             300,
-            fn () => $this->congeService->getEnAttente()
+            fn ($cached) => $this->congeService->getEnAttente()
         );
 
         return response()->json($conges);

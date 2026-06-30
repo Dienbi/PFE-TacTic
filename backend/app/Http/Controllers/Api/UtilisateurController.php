@@ -33,7 +33,7 @@ class UtilisateurController extends Controller
                 ], 403);
             }
 
-            $users = Cache::remember('users_all', 120, fn () => $this->utilisateurService->getAll());
+            $users = Cache::remember('users_all', 120, fn ($cached) => $this->utilisateurService->getAll());
         } else {
             $users = $this->utilisateurService->getPaginated($perPage);
         }

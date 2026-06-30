@@ -235,7 +235,7 @@ jobs:
         run: docker exec tactic-backend php artisan migrate --force
 
       - name: Integration tests
-        run: docker exec tactic-backend php artisan test --testsuite=Feature
+        run: docker exec tactic-backend php artisan test --testsuite=Feature --no-coverage
 
       - name: API contract tests
         run: |

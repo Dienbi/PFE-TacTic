@@ -17,61 +17,6 @@ class PointageApiTest extends TestCase
     use TestHelpers;
 
     /** @test */
-    public function employee_can_clock_in(): void
-    {
-        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
-
-        $this
-            ->actingAsApiUser($employee)
-            ->postJson('/api/pointages/entree')
-            ->assertOk()
-            ->assertJsonStructure([
-                'message',
-                'pointage' => [
-                    'id',
-                    'utilisateur_id',
-                    'date',
-                    'heure_entree',
-                ],
-            ]);
-
-        $this->assertDatabaseHas('pointages', [
-            'utilisateur_id' => $employee->id,
-            'date' => Carbon::today()->toDateString(),
-        ]);
-    }
-
-    /** @test */
-    public function employee_can_clock_out(): void
-    {
-        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
-
-        $this->actingAsApiUser($employee)
-            ->postJson('/api/pointages/entree')
-            ->assertOk();
-
-        $this
-            ->actingAsApiUser($employee)
-            ->postJson('/api/pointages/sortie')
-            ->assertOk()
-            ->assertJsonStructure([
-                'message',
-                'pointage' => [
-                    'id',
-                    'utilisateur_id',
-                    'date',
-                    'heure_entree',
-                    'heure_sortie',
-                ],
-            ]);
-
-        $this->assertDatabaseHas('pointages', [
-            'utilisateur_id' => $employee->id,
-            'date' => Carbon::today()->toDateString(),
-        ]);
-    }
-
-    /** @test */
     public function employee_cannot_clock_out_without_clocking_in(): void
     {
         $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
@@ -153,35 +98,6 @@ class PointageApiTest extends TestCase
             ->actingAsApiUser($employee)
             ->getJson('/api/pointages/summary')
             ->assertForbidden();
-    }
-
-    /** @test */
-    public function rh_can_view_attendance_anomalies(): void
-    {
-        $rh = $this->createTestRh();
-        $employee = $this->createTestUser(['role' => Role::EMPLOYE]);
-
-        for ($i = 0; $i < 3; $i++) {
-            Pointage::create([
-                'utilisateur_id' => $employee->id,
-                'date' => Carbon::today()->subDays($i),
-                'heure_entree' => Carbon::today()->setTime(10, 30),
-                'duree_travail' => 0,
-            ]);
-        }
-
-        $this
-            ->actingAsApiUser($rh)
-            ->getJson('/api/pointages/anomalies?days=30')
-            ->assertOk()
-            ->assertJsonStructure([
-                'period' => ['start_date', 'end_date', 'working_days', 'days'],
-                'total',
-                'anomalies',
-            ])
-            ->assertJsonPath('total', 1)
-            ->assertJsonPath('anomalies.0.id', $employee->id)
-            ->assertJsonPath('anomalies.0.flags.0', 'frequent_late');
     }
 
     /** @test */

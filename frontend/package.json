@@ -14,6 +14,7 @@
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "axios": "^1.13.4",
+    "framer-motion": "^12.42.0",
     "laravel-echo": "^2.3.0",
     "lucide-react": "^0.563.0",
     "pusher-js": "^8.4.0",

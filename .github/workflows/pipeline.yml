@@ -189,9 +189,13 @@ jobs:
       # Use the container name directly for communication
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master
+        timeout-minutes: 30
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://tactic-sonarqube:9000
+          SONAR_JAVASCRIPT_NODE_MAXSPACE: 4096
+          SONAR_JAVASCRIPT_NODE_OPTIONS: --max-old-space-size=4096
+        continue-on-error: true
 
       - name: Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master

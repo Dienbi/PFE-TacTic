@@ -185,16 +185,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Runners are on platform network, so SonarQube is reachable by container name
-      - name: Add SonarQube to /etc/hosts
-        run: |
-          echo "127.0.0.1 sonarqube" | sudo tee -a /etc/hosts
-
+      # Runners and SonarQube are both on platform network
+      # Use the container name directly for communication
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: http://tactic-sonarqube:9000
 
       - name: Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master

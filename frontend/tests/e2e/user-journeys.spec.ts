@@ -10,7 +10,7 @@ test.describe('SmartHR User Journeys', () => {
     // await page.fill('input[name="password"]', 'password');
     // await page.click('button[type="submit"]');
     // await expect(page).toHaveURL(`${BASE_URL}/dashboard`);
-    await expect(page).toHaveTitle(/SmartHR/i);
+    await expect(page).toHaveTitle(/TacTic/i);
   });
 
   test('Employee Check-in', async ({ page }) => {

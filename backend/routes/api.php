@@ -74,8 +74,8 @@ Route::middleware('jwt.auth')->group(function () {
         Route::put('update-skills', [AuthController::class, 'updateSkills']);
     });
 
-    // Dashboard routes
-    Route::prefix('dashboard')->group(function () {
+    // Dashboard routes (RH only)
+    Route::prefix('dashboard')->middleware('role:rh')->group(function () {
         Route::get('/all', [DashboardController::class, 'rhDashboardAll']);
         Route::get('/rh-stats', [DashboardController::class, 'rhStats']);
         Route::get('/attendance-trend', [DashboardController::class, 'attendanceTrend']);

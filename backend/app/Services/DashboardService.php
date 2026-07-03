@@ -129,13 +129,19 @@ class DashboardService
         $startDate = Carbon::now()->subMonths($months - 1)->startOfMonth();
         $endDate = Carbon::now();
 
-        // Single query: count attendances grouped by year-month
-        $monthlyCounts = DB::table('pointages')
+        // Database-agnostic: fetch raw dates and group in PHP
+        $attendances = DB::table('pointages')
             ->whereBetween('date', [$startDate, $endDate])
             ->whereNotNull('heure_entree')
-            ->selectRaw("TO_CHAR(date, 'YYYY-MM') as month_key, COUNT(*) as cnt")
-            ->groupByRaw("TO_CHAR(date, 'YYYY-MM')")
-            ->pluck('cnt', 'month_key');
+            ->select('date')
+            ->get();
+
+        // Group by year-month in PHP
+        $monthlyCounts = [];
+        foreach ($attendances as $attendance) {
+            $monthKey = Carbon::parse($attendance->date)->format('Y-m');
+            $monthlyCounts[$monthKey] = ($monthlyCounts[$monthKey] ?? 0) + 1;
+        }
 
         $trend = [];
         for ($i = $months - 1; $i >= 0; $i--) {

@@ -8,7 +8,7 @@ def test_health_check():
     """Validate that the backend health check endpoint returns 200."""
     response = requests.get(f"{BASE_URL}/health")
     assert response.status_code == 200
-    assert response.json().get("status") == "ok"
+    assert response.json().get("status") == "healthy"
 
 def test_auth_me_unauthorized():
     """Validate that accessing /auth/me without a token returns 401."""
@@ -20,4 +20,4 @@ def test_ai_service_health():
     AI_BASE_URL = os.getenv("AI_BASE_URL", "http://localhost:8001")
     response = requests.get(f"{AI_BASE_URL}/health")
     assert response.status_code == 200
-    assert response.json().get("status") == "ok"
+    assert response.json().get("status") == "healthy"

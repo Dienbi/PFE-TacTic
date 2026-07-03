@@ -71,6 +71,8 @@ services:
     build:
       context: ..
       dockerfile: docker/backend/Dockerfile
+      args:
+        APP_ENV: local
     container_name: tactic-backend
     environment:
       APP_ENV: local

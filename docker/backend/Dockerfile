@@ -1,7 +1,12 @@
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY backend/composer.json backend/composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-source --optimize-autoloader --no-scripts
+ARG APP_ENV=production
+RUN if [ "$APP_ENV" = "production" ]; then \
+      composer install --no-dev --no-interaction --prefer-source --optimize-autoloader --no-scripts; \
+    else \
+      composer install --no-interaction --prefer-source --optimize-autoloader --no-scripts; \
+    fi
 
 FROM php:8.2-cli-alpine
 WORKDIR /var/www/html

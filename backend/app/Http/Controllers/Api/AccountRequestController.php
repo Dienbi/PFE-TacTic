@@ -76,7 +76,7 @@ class AccountRequestController extends Controller
         $requests = Cache::remember(
             CacheService::KEY_PENDING_REQUESTS,
             300,
-            fn ($cached) => AccountRequest::pending()
+            fn () => AccountRequest::pending()
                 ->orderBy('created_at', 'desc')
                 ->get()
         );

@@ -2,10 +2,7 @@
 
 namespace Tests\Performance;
 
-use App\Models\Pointage;
-use App\Services\DashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 use Tests\TestHelpers;
 
@@ -14,5 +11,14 @@ class DashboardPerformanceTest extends TestCase
     use RefreshDatabase;
     use TestHelpers;
 
-    // Dashboard performance tests temporarily disabled due to Cache::remember closure reflection issues
+    /** @test */
+    public function dashboard_all_stays_within_query_budget(): void
+    {
+        $rh = $this->createTestRh();
+        $this->actingAsApiUser($rh);
+
+        $this->assertQueryCount(15, function () {
+            $this->getJson('/api/dashboard/all');
+        });
+    }
 }

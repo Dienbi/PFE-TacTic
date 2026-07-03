@@ -24,7 +24,7 @@ class AIController extends Controller
      */
     public function attendancePredictionsAll(): JsonResponse
     {
-        $data = Cache::remember('ai_attendance_all', 600, function ($cached) {
+        $data = Cache::remember('ai_attendance_all', 600, function () {
             return $this->aiService->getAttendancePredictionsAll();
         });
 
@@ -52,7 +52,7 @@ class AIController extends Controller
      */
     public function performanceScoresAll(): JsonResponse
     {
-        $data = Cache::remember('ai_performance_all', 600, function ($cached) {
+        $data = Cache::remember('ai_performance_all', 600, function () {
             return $this->aiService->getPerformanceScoresAll();
         });
 
@@ -65,7 +65,7 @@ class AIController extends Controller
      */
     public function performanceScore(int $userId): JsonResponse
     {
-        $data = Cache::remember("ai_performance_{$userId}", 600, function ($cached) use ($userId) {
+        $data = Cache::remember("ai_performance_{$userId}", 600, function () use ($userId) {
             return $this->aiService->getPerformanceScore($userId);
         });
 
@@ -80,7 +80,7 @@ class AIController extends Controller
      */
     public function dashboardKPIs(): JsonResponse
     {
-        $data = Cache::remember('ai_dashboard_kpis', 600, function ($cached) {
+        $data = Cache::remember('ai_dashboard_kpis', 600, function () {
             return $this->aiService->getDashboardKPIs();
         });
 

@@ -44,7 +44,7 @@ class DashboardController extends Controller
             $hit = Cache::has($key);
             $segmentStart = microtime(true);
 
-            $result = Cache::remember($key, $ttl, function (?string $cached) use ($callback) {
+            $result = Cache::remember($key, $ttl, function () use ($callback) {
                 return $callback();
             });
 
@@ -59,7 +59,7 @@ class DashboardController extends Controller
             return $result;
         };
 
-        $data = Cache::remember($cacheKey, 300, function ($cached) use ($months, $recentLeavesLimit, $fetch) {
+        $data = Cache::remember($cacheKey, 300, function () use ($months, $recentLeavesLimit, $fetch) {
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
 
@@ -68,37 +68,37 @@ class DashboardController extends Controller
                     'dashboard_rh_stats',
                     CacheService::KEY_DASHBOARD_STATS,
                     300,
-                    fn ($cached) => $this->dashboardService->getRhDashboardStats()
+                    fn () => $this->dashboardService->getRhDashboardStats()
                 ),
                 'trend' => $fetch(
                     'dashboard_trend',
                     CacheService::KEY_DASHBOARD_TREND."_{$months}",
                     300,
-                    fn ($cached) => $this->dashboardService->getAttendanceTrend($months)
+                    fn () => $this->dashboardService->getAttendanceTrend($months)
                 ),
                 'absence' => $fetch(
                     'absence_distribution',
                     CacheService::KEY_ABSENCE_DIST.'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d'),
                     300,
-                    fn ($cached) => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
+                    fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
                 ),
                 'recent_leaves' => $fetch(
                     'recent_leaves',
                     CacheService::KEY_RECENT_LEAVES."_{$recentLeavesLimit}",
                     300,
-                    fn ($cached) => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
+                    fn () => $this->dashboardService->getRecentLeaves($recentLeavesLimit)
                 ),
                 'pending_requests' => $fetch(
                     'pending_account_requests',
                     CacheService::KEY_PENDING_REQUESTS,
                     300,
-                    fn ($cached) => $this->dashboardService->getPendingAccountRequests()
+                    fn () => $this->dashboardService->getPendingAccountRequests()
                 ),
                 'recent_logs' => $fetch(
                     'recent_activity_logs',
                     CacheService::KEY_RECENT_LOGS,
                     300,
-                    fn ($cached) => $this->dashboardService->getRecentActivityLogs()
+                    fn () => $this->dashboardService->getRecentActivityLogs()
                 ),
             ];
         });
@@ -123,7 +123,7 @@ class DashboardController extends Controller
         $stats = Cache::remember(
             CacheService::KEY_DASHBOARD_STATS,
             300,
-            fn ($cached) => $this->dashboardService->getRhDashboardStats()
+            fn () => $this->dashboardService->getRhDashboardStats()
         );
 
         return response()->json($stats);
@@ -138,7 +138,7 @@ class DashboardController extends Controller
         $trend = Cache::remember(
             CacheService::KEY_DASHBOARD_TREND."_{$months}",
             300,
-            fn ($cached) => $this->dashboardService->getAttendanceTrend($months)
+            fn () => $this->dashboardService->getAttendanceTrend($months)
         );
 
         return response()->json($trend);
@@ -161,7 +161,7 @@ class DashboardController extends Controller
         $distribution = Cache::remember(
             $key,
             300,
-            fn ($cached) => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
+            fn () => $this->dashboardService->getAbsenceDistribution($startDate, $endDate)
         );
 
         return response()->json($distribution);

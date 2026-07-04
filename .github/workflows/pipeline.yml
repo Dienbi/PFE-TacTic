@@ -269,7 +269,7 @@ jobs:
       &&
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@v4
@@ -284,28 +284,34 @@ jobs:
           password: ${{ secrets.NEXUS_PASSWORD }}
 
       # Backend
-      - name: Build backend
+      - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/backend/Dockerfile
-          load: true
-          tags: tactic-backend:latest
+          push: true
+          tags: |
+            ${{ secrets.NEXUS_URL }}/tactic-backend:latest
+            ${{ secrets.NEXUS_URL }}/tactic-backend:${{ github.sha }}
 
       # Frontend
-      - name: Build frontend
+      - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/frontend/Dockerfile
-          load: true
-          tags: tactic-frontend:latest
+          push: true
+          tags: |
+            ${{ secrets.NEXUS_URL }}/tactic-frontend:latest
+            ${{ secrets.NEXUS_URL }}/tactic-frontend:${{ github.sha }}
 
       # AI
-      - name: Build AI service
+      - name: Build and push AI service
         uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/ai-service/Dockerfile
-          load: true
-          tags: tactic-ai-service:latest
+          push: true
+          tags: |
+            ${{ secrets.NEXUS_URL }}/tactic-ai-service:latest
+            ${{ secrets.NEXUS_URL }}/tactic-ai-service:${{ github.sha }}

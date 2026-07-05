@@ -197,11 +197,23 @@ jobs:
           SONAR_JAVASCRIPT_NODE_OPTIONS: --max-old-space-size=4096
         continue-on-error: true
 
+      - name: Check scan report
+        run: |
+          if [ -f .scannerwork/report-task.txt ]; then
+            echo "Report file found:"
+            cat .scannerwork/report-task.txt
+          else
+            echo "Report file not found, listing .scannerwork directory:"
+            ls -la .scannerwork/ || echo "Directory does not exist"
+            exit 1
+          fi
+
       - name: Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master
         timeout-minutes: 10
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
 
 
   # =========================

@@ -195,7 +195,6 @@ jobs:
           SONAR_HOST_URL: http://tactic-sonarqube:9000
           SONAR_JAVASCRIPT_NODE_MAXSPACE: 4096
           SONAR_JAVASCRIPT_NODE_OPTIONS: --max-old-space-size=4096
-        continue-on-error: true
 
       - name: Check scan report
         run: |

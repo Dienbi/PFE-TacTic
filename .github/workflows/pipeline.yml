@@ -288,19 +288,12 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Test connectivity to Nexus
-        run: |
-          REGISTRY=$(echo "${{ secrets.NEXUS_URL }}" | sed -E 's|https?://||')
-          echo "Testing connectivity to $REGISTRY..."
-          curl -v --connect-timeout 5 http://$REGISTRY/v2/ || echo "HTTP failed"
-          curl -v --connect-timeout 5 https://$REGISTRY/v2/ || echo "HTTPS failed"
-
       - name: Login registry
         run: |
-          # Strip http:// prefix - docker login adds protocol automatically
-          REGISTRY=$(echo "${{ secrets.NEXUS_URL }}" | sed -E 's|https?://||')
-          echo "Logging into $REGISTRY..."
-          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login $REGISTRY -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
+          # Extract only host:port, remove protocol and path
+          REGISTRY=$(echo "${{ secrets.NEXUS_URL }}" | sed -E 's|https?://([^/]+)/.*|\1|')
+          echo "Logging into $REGISTRY with TLS verification disabled..."
+          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login $REGISTRY -u ${{ secrets.NEXUS_USERNAME }} --password-stdin --tls-verify=false
           echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> $GITHUB_ENV
 
       # Backend

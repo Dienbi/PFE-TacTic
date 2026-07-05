@@ -290,7 +290,10 @@ jobs:
 
       - name: Login registry
         run: |
-          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login ${{ secrets.NEXUS_URL }} -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
+          # Strip http:// prefix - docker login adds protocol automatically
+          REGISTRY=$(echo "${{ secrets.NEXUS_URL }}" | sed -E 's|https?://||')
+          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login $REGISTRY -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
+          echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> $GITHUB_ENV
 
       # Backend
       - name: Build and push backend
@@ -300,8 +303,8 @@ jobs:
           file: docker/backend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.NEXUS_URL }}/tactic-backend:latest
-            ${{ secrets.NEXUS_URL }}/tactic-backend:${{ github.sha }}
+            ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-backend:latest
+            ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-backend:${{ github.sha }}
 
       # Frontend
       - name: Build and push frontend
@@ -311,8 +314,8 @@ jobs:
           file: docker/frontend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.NEXUS_URL }}/tactic-frontend:latest
-            ${{ secrets.NEXUS_URL }}/tactic-frontend:${{ github.sha }}
+            ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-frontend:latest
+            ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-frontend:${{ github.sha }}
 
       # AI
       - name: Build and push AI service
@@ -322,5 +325,5 @@ jobs:
           file: docker/ai-service/Dockerfile
           push: true
           tags: |
-            ${{ secrets.NEXUS_URL }}/tactic-ai-service:latest
-            ${{ secrets.NEXUS_URL }}/tactic-ai-service:${{ github.sha }}
+            ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-ai-service:latest
+            ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-ai-service:${{ github.sha }}

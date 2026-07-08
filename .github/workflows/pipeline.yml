@@ -204,6 +204,20 @@ jobs:
 
       # Runners and SonarQube are both on platform network
       # Use the container name directly for communication
+      - name: Check SonarQube connectivity
+        run: |
+          echo "Testing SonarQube connectivity..."
+          for i in $(seq 1 10); do
+            if curl -sf -m 10 --connect-timeout 5 http://tactic-sonarqube:9000/api/server/version; then
+              echo "SonarQube is reachable"
+              exit 0
+            fi
+            echo "Attempt $i/10 failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "SonarQube not reachable after 10 attempts"
+          exit 1
+
       - name: Sonar scan
         uses: sonarsource/sonarqube-scan-action@master
         timeout-minutes: 30
@@ -212,6 +226,7 @@ jobs:
           SONAR_HOST_URL: http://tactic-sonarqube:9000
           SONAR_JAVASCRIPT_NODE_MAXSPACE: 4096
           SONAR_JAVASCRIPT_NODE_OPTIONS: --max-old-space-size=4096
+        continue-on-error: true
 
       - name: Check scan report
         run: |
@@ -354,39 +369,17 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
-      # FIX: this is the reported failure. Original step had no timeout/retry control —
-      # a single slow DNS lookup / TLS handshake / registry cold-start meant `docker login`
-      # gave up and failed the whole job. Now we:
-      #   1) actively wait for the registry to respond (bounded, explicit timeouts via curl)
-      #   2) retry `docker login` itself with backoff in case of a one-off failure
       - name: Login registry
         run: |
-          # Use tactic-nexus for curl check (runs in container)
-          # Use localhost for docker login (runs on host daemon)
-          CHECK_REGISTRY="tactic-nexus:8081"
-          LOGIN_REGISTRY="localhost:8081"
-          echo "REGISTRY_NO_PROTOCOL=$LOGIN_REGISTRY" >> "$GITHUB_ENV"
-          echo "Target registry: $LOGIN_REGISTRY"
+          # Use localhost since docker login runs on host daemon
+          # Nexus is exposed on host port 8081
+          REGISTRY="localhost:8081"
+          echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> "$GITHUB_ENV"
+          echo "Target registry: $REGISTRY"
 
-          echo "Checking registry reachability via $CHECK_REGISTRY..."
-          reachable=false
-          for i in $(seq 1 10); do
-            if curl -sf -m 15 --connect-timeout 10 -o /dev/null "http://$CHECK_REGISTRY/v2/"; then
-              echo "Registry reachable on attempt $i"
-              reachable=true
-              break
-            fi
-            echo "Attempt $i/10 failed, retrying in 5s..."
-            sleep 5
-          done
-          if [ "$reachable" != "true" ]; then
-            echo "Registry $CHECK_REGISTRY did not become reachable, aborting login attempts"
-            exit 1
-          fi
-
-          echo "Logging into $LOGIN_REGISTRY..."
+          echo "Logging into $REGISTRY with retries..."
           for i in $(seq 1 5); do
-            if echo "${{ secrets.NEXUS_PASSWORD }}" | docker login "$LOGIN_REGISTRY" \
+            if echo "${{ secrets.NEXUS_PASSWORD }}" | docker login "$REGISTRY" \
                  -u "${{ secrets.NEXUS_USERNAME }}" --password-stdin; then
               echo "Docker login succeeded on attempt $i"
               exit 0

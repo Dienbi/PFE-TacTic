@@ -354,24 +354,6 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Diagnose network connectivity
-        run: |
-          echo "=== Network diagnostics ==="
-          echo "Container IP:"
-          hostname -I
-          echo "DNS resolution:"
-          nslookup tactic-nexus || echo "DNS failed"
-          echo "Gateway:"
-          ip route | grep default
-          echo "=== Testing various endpoints ==="
-          curl -v --connect-timeout 2 http://tactic-nexus:8081/v2/ 2>&1 | head -5 || echo "tactic-nexus failed"
-          curl -v --connect-timeout 2 http://host.docker.internal:8081/v2/ 2>&1 | head -5 || echo "host.docker.internal failed"
-          curl -v --connect-timeout 2 http://192.168.0.104:8081/v2/ 2>&1 | head -5 || echo "192.168.0.104 failed"
-          echo "=== Docker networks ==="
-          docker network ls
-          echo "=== Platform network containers ==="
-          docker network inspect tactic-platform --format '{{range .Containers}}{{.Name}} {{end}}'
-
       # FIX: this is the reported failure. Original step had no timeout/retry control —
       # a single slow DNS lookup / TLS handshake / registry cold-start meant `docker login`
       # gave up and failed the whole job. Now we:
@@ -379,10 +361,9 @@ jobs:
       #   2) retry `docker login` itself with backoff in case of a one-off failure
       - name: Login registry
         run: |
-          # Get the platform network gateway IP
-          GATEWAY_IP=$(docker inspect tactic-platform | jq -r '.[0].IPAM.Config[0].Gateway')
-          echo "Platform network gateway: $GATEWAY_IP"
-          REGISTRY="$GATEWAY_IP:8081"
+          # Use localhost since docker login runs on host daemon
+          # Nexus is exposed on host port 8081
+          REGISTRY="localhost:8081"
           echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> "$GITHUB_ENV"
           echo "Target registry: $REGISTRY"
 

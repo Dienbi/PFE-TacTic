@@ -361,9 +361,9 @@ jobs:
       #   2) retry `docker login` itself with backoff in case of a one-off failure
       - name: Login registry
         run: |
-          # Use container name on platform network instead of host IP
-          # Runners and Nexus are both on the 'platform' Docker network
-          REGISTRY="tactic-nexus:8081"
+          # Use host.docker.internal which is configured in runner docker-compose
+          # This resolves to the host machine from inside the runner container
+          REGISTRY="host.docker.internal:8081"
           echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> "$GITHUB_ENV"
           echo "Target registry: $REGISTRY"
 

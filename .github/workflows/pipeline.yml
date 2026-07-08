@@ -361,15 +361,16 @@ jobs:
       #   2) retry `docker login` itself with backoff in case of a one-off failure
       - name: Login registry
         run: |
-          # Extract only host:port, remove protocol and path
-          REGISTRY=$(echo "${{ secrets.NEXUS_URL }}" | sed -E 's|https?://([^/]+)/.*|\1|')
+          # Use container name on platform network instead of host IP
+          # Runners and Nexus are both on the 'platform' Docker network
+          REGISTRY="tactic-nexus:8081"
           echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> "$GITHUB_ENV"
           echo "Target registry: $REGISTRY"
 
           echo "Checking registry reachability..."
           reachable=false
           for i in $(seq 1 10); do
-            if curl -sf -m 15 --connect-timeout 10 -k -o /dev/null "https://$REGISTRY/v2/"; then
+            if curl -sf -m 15 --connect-timeout 10 -o /dev/null "http://$REGISTRY/v2/"; then
               echo "Registry reachable on attempt $i"
               reachable=true
               break

@@ -17,9 +17,15 @@ on:
           - 'true'
 
 concurrency:
+  # FIX: don't cancel an in-progress run on main — a half-finished deploy
+  # cancelled mid-push/mid-deploy can leave images or containers in a bad state.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+# FIX: explicit least-privilege permissions at the workflow level.
+# Individual jobs escalate only if they need to (none currently do).
+permissions:
+  contents: read
 
 jobs:
 
@@ -29,6 +35,7 @@ jobs:
   initial-checks:
     name: Lint, Static Analysis & Security
     runs-on: ubuntu-latest
+    timeout-minutes: 20   # FIX: bound every job so a hang doesn't burn runner minutes forever
 
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +78,8 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Frontend install
-        run: npm install
+        run: npm ci   # FIX: use `npm ci` in CI instead of `npm install` — installs exactly
+                       # what's in package-lock.json, faster and prevents drift/non-reproducible builds
         working-directory: frontend
 
       - name: ESLint
@@ -94,6 +102,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+          cache: pip   # FIX: cache pip deps, mirrors the npm cache above, cuts job time
 
       - name: AI install deps
         run: |
@@ -138,6 +147,7 @@ jobs:
     name: Unit Testing
     needs: initial-checks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -155,6 +165,12 @@ jobs:
           php artisan test --testsuite=Unit
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: pip
 
       - name: AI tests
         run: |
@@ -179,6 +195,7 @@ jobs:
     name: SonarQube
     needs: unit-tests
     runs-on: self-hosted
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -212,7 +229,11 @@ jobs:
         timeout-minutes: 10
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        continue-on-error: true
+        # FIX: `continue-on-error: true` silently defeated the entire point of a quality
+        # gate — a failed gate would never block the build. Removed so a failing gate
+        # actually stops the pipeline. If you need a "warn only" period while cleaning up
+        # findings, do it explicitly and temporarily, the same way as the other TODOs above,
+        # not as a permanent setting on a gate.
 
 
   # =========================
@@ -220,27 +241,72 @@ jobs:
   # =========================
   integration-and-e2e:
     name: Integration + E2E
-    needs: []
+    # FIX: this had `needs: []`, meaning it started immediately in parallel with
+    # initial-checks and could deploy on totally unlinted/unaudited/unit-untested code
+    # (it doesn't even wait on unit-tests). Chaining it after initial-checks means
+    # broken code fails fast before you spend time spinning up docker compose + Playwright.
+    needs: initial-checks
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
 
+      # FIX: pin Node version here too, matching initial-checks (node 24). Previously
+      # this job used whatever Node ships on the ubuntu-latest image, which can silently
+      # drift from what the app is actually built/tested with elsewhere in the pipeline.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Start services
         run: docker compose -f docker/docker-compose.dev.yml up -d
 
-      # Wait for all containers to be healthy before proceeding
-      - name: Wait for services to be ready
+      # FIX: original loop had no failure path — if the backend never became healthy,
+      # the step still exited 0 and the pipeline continued into migrations/tests against
+      # a service that was never up, giving a confusing failure several steps later.
+      - name: Wait for backend to be ready
         run: |
           echo "Waiting for backend to be ready..."
+          ready=false
           for i in $(seq 1 30); do
             if docker exec tactic-backend php artisan about --only=environment > /dev/null 2>&1; then
               echo "Backend is ready after ${i} attempts"
+              ready=true
               break
             fi
             echo "Attempt $i/30 — retrying in 3s..."
             sleep 3
           done
+          if [ "$ready" != "true" ]; then
+            echo "Backend never became ready after 30 attempts"
+            docker compose -f docker/docker-compose.dev.yml logs --tail=100
+            exit 1
+          fi
+
+      # FIX: added an equivalent readiness wait for the frontend, since Playwright
+      # runs against it later but nothing previously confirmed it was actually serving.
+      - name: Wait for frontend to be ready
+        run: |
+          echo "Waiting for frontend to be ready..."
+          ready=false
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:3000; then
+              echo "Frontend is ready after ${i} attempts"
+              ready=true
+              break
+            fi
+            echo "Attempt $i/30 — retrying in 3s..."
+            sleep 3
+          done
+          if [ "$ready" != "true" ]; then
+            echo "Frontend never became ready after 30 attempts"
+            docker compose -f docker/docker-compose.dev.yml logs --tail=100
+            exit 1
+          fi
 
       - name: Run migrations
         run: docker exec tactic-backend php artisan migrate --force
@@ -258,7 +324,7 @@ jobs:
       - name: E2E tests
         run: |
           cd frontend
-          npm install
+          npm ci
           npx playwright install --with-deps chromium
           STAGING_BASE_URL=http://localhost:3000 npx playwright test
 
@@ -281,20 +347,57 @@ jobs:
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
 
     runs-on: self-hosted
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
 
+      # FIX: this is the reported failure. Original step had no timeout/retry control —
+      # a single slow DNS lookup / TLS handshake / registry cold-start meant `docker login`
+      # gave up and failed the whole job. Now we:
+      #   1) actively wait for the registry to respond (bounded, explicit timeouts via curl)
+      #   2) retry `docker login` itself with backoff in case of a one-off failure
       - name: Login registry
         run: |
           # Extract only host:port, remove protocol and path
           REGISTRY=$(echo "${{ secrets.NEXUS_URL }}" | sed -E 's|https?://([^/]+)/.*|\1|')
-          echo "Logging into $REGISTRY..."
-          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login $REGISTRY -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
-          echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> $GITHUB_ENV
+          echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> "$GITHUB_ENV"
+          echo "Target registry: $REGISTRY"
 
+          echo "Checking registry reachability..."
+          reachable=false
+          for i in $(seq 1 10); do
+            if curl -sf -m 15 --connect-timeout 10 -k -o /dev/null "https://$REGISTRY/v2/"; then
+              echo "Registry reachable on attempt $i"
+              reachable=true
+              break
+            fi
+            echo "Attempt $i/10 failed, retrying in 5s..."
+            sleep 5
+          done
+          if [ "$reachable" != "true" ]; then
+            echo "Registry $REGISTRY did not become reachable, aborting login attempts"
+            exit 1
+          fi
+
+          echo "Logging into $REGISTRY..."
+          for i in $(seq 1 5); do
+            if echo "${{ secrets.NEXUS_PASSWORD }}" | docker login "$REGISTRY" \
+                 -u "${{ secrets.NEXUS_USERNAME }}" --password-stdin; then
+              echo "Docker login succeeded on attempt $i"
+              exit 0
+            fi
+            echo "Login attempt $i/5 failed, retrying in 10s..."
+            sleep 10
+          done
+
+          echo "Docker login failed after 5 attempts"
+          exit 1
+
+      # FIX: added layer caching (registry-backed) so rebuilding the same base layers
+      # across backend/frontend/ai-service doesn't re-download/re-compile every run.
       # Backend
       - name: Build and push backend
         uses: docker/build-push-action@v5
@@ -305,6 +408,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-backend:latest
             ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-backend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY_NO_PROTOCOL }}/tactic-backend:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY_NO_PROTOCOL }}/tactic-backend:buildcache,mode=max
 
       # Frontend
       - name: Build and push frontend
@@ -316,6 +421,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-frontend:latest
             ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-frontend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY_NO_PROTOCOL }}/tactic-frontend:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY_NO_PROTOCOL }}/tactic-frontend:buildcache,mode=max
 
       # AI
       - name: Build and push AI service
@@ -327,3 +434,5 @@ jobs:
           tags: |
             ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-ai-service:latest
             ${{ env.REGISTRY_NO_PROTOCOL }}/tactic-ai-service:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY_NO_PROTOCOL }}/tactic-ai-service:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY_NO_PROTOCOL }}/tactic-ai-service:buildcache,mode=max

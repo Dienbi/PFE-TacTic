@@ -361,16 +361,17 @@ jobs:
       #   2) retry `docker login` itself with backoff in case of a one-off failure
       - name: Login registry
         run: |
-          # Use localhost since docker login runs on host daemon
-          # Nexus is exposed on host port 8081
-          REGISTRY="localhost:8081"
-          echo "REGISTRY_NO_PROTOCOL=$REGISTRY" >> "$GITHUB_ENV"
-          echo "Target registry: $REGISTRY"
+          # Use tactic-nexus for curl check (runs in container)
+          # Use localhost for docker login (runs on host daemon)
+          CHECK_REGISTRY="tactic-nexus:8081"
+          LOGIN_REGISTRY="localhost:8081"
+          echo "REGISTRY_NO_PROTOCOL=$LOGIN_REGISTRY" >> "$GITHUB_ENV"
+          echo "Target registry: $LOGIN_REGISTRY"
 
-          echo "Checking registry reachability..."
+          echo "Checking registry reachability via $CHECK_REGISTRY..."
           reachable=false
           for i in $(seq 1 10); do
-            if curl -sf -m 15 --connect-timeout 10 -o /dev/null "http://$REGISTRY/v2/"; then
+            if curl -sf -m 15 --connect-timeout 10 -o /dev/null "http://$CHECK_REGISTRY/v2/"; then
               echo "Registry reachable on attempt $i"
               reachable=true
               break
@@ -379,13 +380,13 @@ jobs:
             sleep 5
           done
           if [ "$reachable" != "true" ]; then
-            echo "Registry $REGISTRY did not become reachable, aborting login attempts"
+            echo "Registry $CHECK_REGISTRY did not become reachable, aborting login attempts"
             exit 1
           fi
 
-          echo "Logging into $REGISTRY..."
+          echo "Logging into $LOGIN_REGISTRY..."
           for i in $(seq 1 5); do
-            if echo "${{ secrets.NEXUS_PASSWORD }}" | docker login "$REGISTRY" \
+            if echo "${{ secrets.NEXUS_PASSWORD }}" | docker login "$LOGIN_REGISTRY" \
                  -u "${{ secrets.NEXUS_USERNAME }}" --password-stdin; then
               echo "Docker login succeeded on attempt $i"
               exit 0

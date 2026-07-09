@@ -1,37 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { jobMatchingApi, JobPost } from "../../api/jobMatchingApi";
+import { useJobPosts } from "../../../hooks/queries/useJobMatching";
+import { queryClient } from "../../../api/queryClient";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import "./JobBoard.css";
 
 const JobBoard: React.FC = () => {
-  const [posts, setPosts] = useState<JobPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: posts = [], isLoading, error: queryError, refetch } = useJobPosts();
   const [searchTerm, setSearchTerm] = useState("");
   const [applyingTo, setApplyingTo] = useState<number | null>(null);
   const [selectedPost, setSelectedPost] = useState<JobPost | null>(null);
   const [motivation, setMotivation] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userName = user ? `${user.prenom} ${user.nom}` : "Employee";
   const userRole = user ? user.role : "employe";
-
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const loadPosts = async () => {
-    try {
-      setLoading(true);
-      const data = await jobMatchingApi.getPublishedJobPosts();
-      setPosts(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load job posts");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleApply = (post: JobPost) => {
     setSelectedPost(post);
@@ -46,7 +31,8 @@ const JobBoard: React.FC = () => {
       await jobMatchingApi.applyToJob(selectedPost.id, motivation);
       setSelectedPost(null);
       setMotivation("");
-      await loadPosts();
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['job-posts', 'published'] });
     } catch (err: any) {
       const validationErrors = err.response?.data?.errors;
       if (validationErrors) {
@@ -61,7 +47,7 @@ const JobBoard: React.FC = () => {
   };
 
   const filteredPosts = posts.filter(
-    (post) =>
+    (post: JobPost) =>
       post.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.equipe?.nom.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -94,7 +80,7 @@ const JobBoard: React.FC = () => {
 
           {error && <div className="alert alert-danger">{error}</div>}
 
-          {loading ? (
+          {isLoading ? (
             <div className="loading-spinner">Loading opportunities...</div>
           ) : filteredPosts.length === 0 ? (
             <div className="empty-state">
@@ -104,9 +90,9 @@ const JobBoard: React.FC = () => {
             </div>
           ) : (
             <div className="jobs-grid-layout">
-              {filteredPosts.map((post) => {
+              {filteredPosts.map((post: JobPost) => {
                 const hasApplied = post.applications?.some(
-                  (app) => app.candidat?.id === post.id,
+                  (app: any) => app.candidat?.id === post.id,
                 );
 
                 return (
@@ -123,7 +109,7 @@ const JobBoard: React.FC = () => {
                     <h3>{post.titre}</h3>
 
                     <div className="job-tags">
-                      {post.competences?.slice(0, 3).map((comp, idx) => (
+                      {post.competences?.slice(0, 3).map((comp: any, idx: number) => (
                         <span key={idx} className="tag">
                           {comp.nom}
                         </span>

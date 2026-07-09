@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\CacheService;
 use App\Services\PointageService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PointageController extends Controller
 {
@@ -67,7 +69,17 @@ class PointageController extends Controller
     public function summary(Request $request): JsonResponse
     {
         $date = $request->has('date') ? Carbon::parse($request->date) : Carbon::today();
-        $summary = $this->pointageService->getSummary($date);
+        $dateString = $date->toDateString();
+        $cacheKey = CacheService::getAttendanceSummaryKey($dateString);
+        $noCache = $request->boolean('noCache');
+
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
+
+        $summary = Cache::remember($cacheKey, 300, function () use ($date) {
+            return $this->pointageService->getSummary($date);
+        });
 
         return response()->json($summary);
     }
@@ -79,10 +91,19 @@ class PointageController extends Controller
     {
         $endDate = $request->has('end_date') ? Carbon::parse($request->end_date) : Carbon::today();
         $days = (int) $request->input('days', 30);
+        $endDateString = $endDate->toDateString();
+        $cacheKey = CacheService::getAttendanceAnomaliesKey($endDateString, $days);
+        $noCache = $request->boolean('noCache');
 
-        return response()->json(
-            $this->pointageService->getAnomalies($endDate, $days)
-        );
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
+
+        $anomalies = Cache::remember($cacheKey, 600, function () use ($endDate, $days) {
+            return $this->pointageService->getAnomalies($endDate, $days);
+        });
+
+        return response()->json($anomalies);
     }
 
     /**

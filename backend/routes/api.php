@@ -82,6 +82,13 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/absence-distribution', [DashboardController::class, 'absenceDistribution']);
     });
 
+    // Manager dashboard route (accessible by chef_equipe and RH)
+    Route::get('/dashboard/manager', [DashboardController::class, 'managerDashboard'])
+        ->middleware('role:chef_equipe,rh');
+
+    // Employee dashboard route (accessible by all authenticated users)
+    Route::get('/dashboard/employee', [DashboardController::class, 'employeeDashboard']);
+
     // Reports routes (RH only)
     Route::prefix('reports')->middleware('role:rh')->group(function () {
         Route::get('/ai', [ReportsController::class, 'aiReports']);

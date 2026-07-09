@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jobMatchingApi, JobRequest } from "../../api/jobMatchingApi";
+import { useJobRequests } from "../../../hooks/queries/useJobMatching";
+import { queryClient } from "../../../api/queryClient";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import "./MyJobRequests.css";
 
 const MyJobRequests: React.FC = () => {
   const navigate = useNavigate();
-  const [requests, setRequests] = useState<JobRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: requests = [], isLoading, error: queryError } = useJobRequests();
   const [filter, setFilter] = useState<
     "all" | "en_attente" | "approuvee" | "rejetee"
   >("all");
@@ -17,22 +17,6 @@ const MyJobRequests: React.FC = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userName = user ? `${user.prenom} ${user.nom}` : "Manager";
   const userRole = user ? user.role : "manager";
-
-  useEffect(() => {
-    loadRequests();
-  }, []);
-
-  const loadRequests = async () => {
-    try {
-      setLoading(true);
-      const data = await jobMatchingApi.getJobRequests();
-      setRequests(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load requests");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; label: string }> = {
@@ -44,7 +28,7 @@ const MyJobRequests: React.FC = () => {
   };
 
   const filteredRequests = requests.filter(
-    (req) => filter === "all" || req.statut === filter,
+    (req: JobRequest) => filter === "all" || req.statut === filter,
   );
 
   return (
@@ -67,7 +51,7 @@ const MyJobRequests: React.FC = () => {
               </button>
             </div>
 
-            {error && <div className="alert alert-danger">{error}</div>}
+            {queryError && <div className="alert alert-danger">{queryError.message}</div>}
 
             <div className="filters">
               <button
@@ -81,25 +65,25 @@ const MyJobRequests: React.FC = () => {
                 onClick={() => setFilter("en_attente")}
               >
                 Pending (
-                {requests.filter((r) => r.statut === "en_attente").length})
+                {requests.filter((r: JobRequest) => r.statut === "en_attente").length})
               </button>
               <button
                 className={`filter-btn ${filter === "approuvee" ? "active" : ""}`}
                 onClick={() => setFilter("approuvee")}
               >
                 Approved (
-                {requests.filter((r) => r.statut === "approuvee").length})
+                {requests.filter((r: JobRequest) => r.statut === "approuvee").length})
               </button>
               <button
                 className={`filter-btn ${filter === "rejetee" ? "active" : ""}`}
                 onClick={() => setFilter("rejetee")}
               >
                 Rejected (
-                {requests.filter((r) => r.statut === "rejetee").length})
+                {requests.filter((r: JobRequest) => r.statut === "rejetee").length})
               </button>
             </div>
 
-            {loading ? (
+            {isLoading ? (
               <div className="loading-spinner">Loading...</div>
             ) : filteredRequests.length === 0 ? (
               <div className="empty-state">
@@ -113,7 +97,7 @@ const MyJobRequests: React.FC = () => {
               </div>
             ) : (
               <div className="requests-grid">
-                {filteredRequests.map((request) => {
+                {filteredRequests.map((request: JobRequest) => {
                   const badge = getStatusBadge(request.statut);
                   return (
                     <div key={request.id} className="request-card">

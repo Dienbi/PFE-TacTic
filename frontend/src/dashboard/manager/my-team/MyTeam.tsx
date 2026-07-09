@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   Search,
@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
+import { useQuery } from "@tanstack/react-query";
 import "./MyTeam.css";
 
 interface User {
@@ -36,41 +37,19 @@ interface Team {
 
 const MyTeam: React.FC = () => {
   const navigate = useNavigate();
-  const [team, setTeam] = useState<Team | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const fetchMyTeam = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("Token missing before request");
-        navigate("/login");
-        return;
-      }
-
+  const { data: team = null, isLoading } = useQuery({
+    queryKey: ['teams', 'my-team'],
+    queryFn: async () => {
       const response = await client.get("/equipes/my-team");
-      console.log("Team data received:", response.data);
-
-      // If response.data is null or empty (manager has no team)
-      if (!response.data) {
-        console.log("No team data - setting team to null");
-        setTeam(null);
-      } else {
-        console.log("Setting team:", response.data);
-        setTeam(response.data);
-      }
-    } catch (error: any) {
-      console.error("Error fetching team:", error);
-      if (error.response?.status === 401) {
-        console.error("Unauthorized - Token may be invalid or expired");
-        navigate("/login");
-      }
-      // Fallback in case of error
-      setTeam(null);
-    }
-  }, [navigate]);
+      return response.data;
+    },
+    staleTime: 5 * 60_000, // 5 minutes
+    gcTime: 10 * 60_000, // 10 minutes
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -85,8 +64,7 @@ const MyTeam: React.FC = () => {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-    fetchMyTeam();
-  }, [fetchMyTeam, navigate]);
+  }, [navigate]);
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -104,7 +82,7 @@ const MyTeam: React.FC = () => {
   };
 
   const filteredMembers =
-    team?.membres?.filter((member) => {
+    team?.membres?.filter((member: User) => {
       const matchesSearch =
         member.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.prenom.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -138,7 +116,9 @@ const MyTeam: React.FC = () => {
             </div>
           </div>
 
-          {team ? (
+          {isLoading ? (
+            <div className="loading-state">Loading team...</div>
+          ) : team ? (
             <>
               <div className="team-info-card">
                 <h2>{team.nom || "Unnamed Team"}</h2>
@@ -182,7 +162,7 @@ const MyTeam: React.FC = () => {
 
               {filteredMembers.length > 0 ? (
                 <div className="members-grid">
-                  {filteredMembers.map((member) => (
+                  {filteredMembers.map((member: User) => (
                     <div
                       key={member.id}
                       className="member-card"

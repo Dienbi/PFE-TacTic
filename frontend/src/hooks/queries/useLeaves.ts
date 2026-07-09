@@ -9,6 +9,8 @@ export const useMesConges = () =>
             const response = await client.get('/conges/mes-conges');
             return response.data;
         },
+        staleTime: 5 * 60_000, // 5 minutes
+        gcTime: 10 * 60_000, // 10 minutes
     });
 
 const normalizeList = <T,>(payload: T[] | { data?: T[] }): T[] => {
@@ -23,6 +25,8 @@ export const useAllLeaves = () =>
             const response = await client.get('/conges');
             return normalizeList(response.data);
         },
+        staleTime: 5 * 60_000, // 5 minutes
+        gcTime: 10 * 60_000, // 10 minutes
     });
 
 export const usePendingLeaves = () =>
@@ -32,6 +36,8 @@ export const usePendingLeaves = () =>
             const response = await client.get('/conges/en-attente');
             return normalizeList(response.data);
         },
+        staleTime: 5 * 60_000, // 5 minutes
+        gcTime: 10 * 60_000, // 10 minutes
     });
 
 export const useLeaveManagement = () => {

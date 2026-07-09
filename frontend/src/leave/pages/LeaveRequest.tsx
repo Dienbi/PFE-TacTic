@@ -12,6 +12,8 @@ import {
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import client from "../../api/client";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "../../api/queryKeys";
 import "./LeaveRequest.css";
 
 interface LeaveRequestData {
@@ -36,8 +38,15 @@ interface UserInfo {
 
 const LeaveRequest: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
-  const [leaves, setLeaves] = useState<LeaveRequestData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: leaves = [], isLoading, refetch } = useQuery({
+    queryKey: queryKeys.leaves.mine(),
+    queryFn: async () => {
+      const response = await client.get("/conges/mes-conges");
+      return response.data;
+    },
+    staleTime: 5 * 60_000, // 5 minutes
+    gcTime: 10 * 60_000, // 10 minutes
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +65,6 @@ const LeaveRequest: React.FC = () => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    fetchLeaves();
     fetchUserInfo();
   }, []);
 
@@ -68,18 +76,6 @@ const LeaveRequest: React.FC = () => {
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
       console.error("Error fetching user info:", error);
-    }
-  };
-
-  const fetchLeaves = async () => {
-    setIsLoading(true);
-    try {
-      const response = await client.get("/conges/mes-conges");
-      setLeaves(response.data);
-    } catch (error) {
-      console.error("Error fetching leaves:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -122,7 +118,7 @@ const LeaveRequest: React.FC = () => {
         motif: "",
       });
       setMedicalFile(null);
-      fetchLeaves();
+      refetch();
       fetchUserInfo(); // Refresh solde
     } catch (err: any) {
       setError(
@@ -142,7 +138,7 @@ const LeaveRequest: React.FC = () => {
     try {
       await client.delete(`/conges/${id}/annuler`);
       setSuccess("Demande annulée avec succès.");
-      fetchLeaves();
+      refetch();
     } catch (err: any) {
       setError(err.response?.data?.message || "Erreur lors de l'annulation.");
     }
@@ -430,7 +426,7 @@ const LeaveRequest: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {leaves.map((leave) => (
+                    {leaves.map((leave: LeaveRequestData) => (
                       <tr key={leave.id}>
                         <td>{getTypeLabel(leave.type)}</td>
                         <td>

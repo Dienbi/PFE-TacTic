@@ -15,15 +15,27 @@ import {
   Pointage,
   PointageStats,
 } from "../api/attendanceApi";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "../../api/queryKeys";
 import "./AttendanceHistory.css";
 
 const AttendanceHistory: React.FC = () => {
   const [user, setUser] = useState<any>(null);
-  const [pointages, setPointages] = useState<Pointage[]>([]);
-  const [stats, setStats] = useState<PointageStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: pointages = [], isLoading: isLoadingPointages, refetch: refetchPointages } = useQuery({
+    queryKey: ['attendance', 'history'],
+    queryFn: getMesPointages,
+    staleTime: 5 * 60_000, // 5 minutes
+    gcTime: 10 * 60_000, // 10 minutes
+  });
+  const { data: stats = null, isLoading: isLoadingStats, refetch: refetchStats } = useQuery({
+    queryKey: queryKeys.attendance.stats(),
+    queryFn: () => getStats(),
+    staleTime: 5 * 60_000, // 5 minutes
+    gcTime: 10 * 60_000, // 10 minutes
+  });
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const isLoading = isLoadingPointages || isLoadingStats;
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -34,26 +46,6 @@ const AttendanceHistory: React.FC = () => {
 
   const userName = user ? `${user.prenom} ${user.nom}` : "Utilisateur";
   const userRole = user ? user.role : "";
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [pointagesData, statsData] = await Promise.all([
-        getMesPointages(),
-        getStats(),
-      ]);
-      setPointages(pointagesData);
-      setStats(statsData);
-    } catch (error) {
-      console.error("Error fetching attendance data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   // Format time
   const formatTime = (timeStr: string | null): string => {
@@ -94,7 +86,7 @@ const AttendanceHistory: React.FC = () => {
   };
 
   // Filter pointages by current month
-  const filteredPointages = pointages.filter((p) => {
+  const filteredPointages = pointages.filter((p: Pointage) => {
     const pointageDate = new Date(p.date);
     const monthMatch =
       pointageDate.getMonth() === currentMonth.getMonth() &&
@@ -237,7 +229,7 @@ const AttendanceHistory: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPointages.map((pointage) => {
+                  {filteredPointages.map((pointage: Pointage) => {
                     const status = getStatus(pointage);
                     return (
                       <tr key={pointage.id}>

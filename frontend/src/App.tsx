@@ -38,7 +38,6 @@ const JobPosts = lazy(() => import("./jobmatching/pages/hr/JobPosts"));
 const ApplicationsView = lazy(() => import("./jobmatching/pages/hr/ApplicationsView"));
 const JobBoard = lazy(() => import("./jobmatching/pages/employee/JobBoard"));
 const MyApplications = lazy(() => import("./jobmatching/pages/employee/MyApplications"));
-const EmployeeIndicators = lazy(() => import("./dashboard/employee/EmployeeIndicators"));
 
 const PageLoader = () => <Loader fullScreen />;
 
@@ -252,15 +251,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/employee/indicators"
-              element={
-                <ProtectedRoute allowedRoles={["employee"]}>
-                  <EmployeeIndicators />
-                </ProtectedRoute>
-              }
-            />
-
             <Route
               path="/profile"
               element={

@@ -179,7 +179,7 @@ const AttendanceSection: React.FC = () => {
       setAutoCheckoutCancelled(false);
       setShowAutoCheckoutAlert(false);
       invalidateAttendance();
-      await refetchPointage();
+      // Background refetch will happen automatically via query invalidation
     } catch (error) {
       console.error("Error checking in:", error);
       alert("Erreur lors du pointage d'entrée");

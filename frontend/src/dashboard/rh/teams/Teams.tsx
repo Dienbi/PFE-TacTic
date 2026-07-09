@@ -10,6 +10,7 @@ import {
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
+import { useQuery } from "@tanstack/react-query";
 import CreateTeamModal from "./CreateTeamModal";
 import TeamDetailsModal from "./TeamDetailsModal";
 
@@ -73,7 +74,6 @@ const TEAM_COLORS = [
 ];
 
 const Teams: React.FC = () => {
-  const [teams, setTeams] = useState<Equipe[]>([]);
   const [user, setUser] = useState<UserData | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -81,22 +81,22 @@ const Teams: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const { data: teams = [], isLoading, refetch } = useQuery({
+    queryKey: ['teams', 'all'],
+    queryFn: async () => {
+      const response = await client.get("/equipes");
+      return response.data;
+    },
+    staleTime: 5 * 60_000, // 5 minutes
+    gcTime: 10 * 60_000, // 10 minutes
+  });
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    fetchTeams();
   }, []);
-
-  const fetchTeams = async () => {
-    try {
-      const response = await client.get("/equipes");
-      setTeams(response.data);
-    } catch (error) {
-      console.error("Error fetching teams:", error);
-    }
-  };
 
   const handleCreateTeam = async (teamData: {
     nom: string;
@@ -118,7 +118,7 @@ const Teams: React.FC = () => {
       }
     }
     setShowCreateModal(false);
-    fetchTeams();
+    refetch();
   };
 
   const handleDeleteTeam = async (teamId: number) => {
@@ -127,7 +127,7 @@ const Teams: React.FC = () => {
     try {
       setDeletingId(teamId);
       await client.delete(`/equipes/${teamId}`);
-      fetchTeams();
+      refetch();
     } catch (error) {
       console.error("Error deleting team:", error);
     } finally {
@@ -135,12 +135,12 @@ const Teams: React.FC = () => {
     }
   };
 
-  const filteredTeams = teams.filter((team) =>
+  const filteredTeams = teams.filter((team: Equipe) =>
     team.nom.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalMembers = teams.reduce(
-    (sum, t) => sum + (t.membres_count || 0),
+    (sum: number, t: Equipe) => sum + (t.membres_count || 0),
     0,
   );
 
@@ -204,7 +204,7 @@ const Teams: React.FC = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {teams.filter((t) => t.chef_equipe).length}
+                  {teams.filter((t: Equipe) => t.chef_equipe).length}
                 </p>
                 <p className="text-xs text-gray-500">Teams with Manager</p>
               </div>
@@ -226,129 +226,137 @@ const Teams: React.FC = () => {
             />
           </div>
 
-          {/* Empty state */}
-          {filteredTeams.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-                <Users size={32} className="text-indigo-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                {searchQuery ? "No teams found" : "No teams yet"}
-              </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                {searchQuery
-                  ? `No results for "${searchQuery}"`
-                  : "Create your first team to get started"}
-              </p>
-              {!searchQuery && (
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition"
-                >
-                  <Plus size={18} />
-                  New Team
-                </button>
-              )}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-gray-500">Loading teams...</div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {filteredTeams.map((team, idx) => {
-                const color = TEAM_COLORS[idx % TEAM_COLORS.length];
-                const initials = team.nom.slice(0, 2).toUpperCase();
-                const managerInitials = team.chef_equipe
-                  ? `${team.chef_equipe.prenom[0]}${team.chef_equipe.nom[0]}`.toUpperCase()
-                  : null;
+            <>
+              {/* Empty state */}
+              {filteredTeams.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+                    <Users size={32} className="text-indigo-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                    {searchQuery ? "No teams found" : "No teams yet"}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                    {searchQuery
+                      ? `No results for "${searchQuery}"`
+                      : "Create your first team to get started"}
+                  </p>
+                  {!searchQuery && (
+                    <button
+                      onClick={() => setShowCreateModal(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition"
+                    >
+                      <Plus size={18} />
+                      New Team
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {filteredTeams.map((team: Equipe, idx: number) => {
+                    const color = TEAM_COLORS[idx % TEAM_COLORS.length];
+                    const initials = team.nom.slice(0, 2).toUpperCase();
+                    const managerInitials = team.chef_equipe
+                      ? `${team.chef_equipe.prenom[0]}${team.chef_equipe.nom[0]}`.toUpperCase()
+                      : null;
 
-                return (
-                  <div
-                    key={team.id}
-                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
-                  >
-                    {/* Color header */}
-                    <div className={`h-2 bg-gradient-to-r ${color.bg}`} />
+                    return (
+                      <div
+                        key={team.id}
+                        className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
+                      >
+                        {/* Color header */}
+                        <div className={`h-2 bg-gradient-to-r ${color.bg}`} />
 
-                    <div className="p-5 flex flex-col flex-1">
-                      {/* Top row: avatar + delete */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div
-                          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${color.bg} flex items-center justify-center shadow-sm`}
-                        >
-                          <span className="text-white font-bold text-base">
-                            {initials}
-                          </span>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteTeam(team.id);
-                          }}
-                          disabled={deletingId === team.id}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
-                          title="Delete team"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+                        <div className="p-5 flex flex-col flex-1">
+                          {/* Top row: avatar + delete */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div
+                              className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${color.bg} flex items-center justify-center shadow-sm`}
+                            >
+                              <span className="text-white font-bold text-base">
+                                {initials}
+                              </span>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTeam(team.id);
+                              }}
+                              disabled={deletingId === team.id}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+                              title="Delete team"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
 
-                      {/* Team name + description */}
-                      <h3 className="font-semibold text-gray-900 text-base leading-tight mb-1">
-                        {team.nom}
-                      </h3>
-                      {team.description && (
-                        <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                          {team.description}
-                        </p>
-                      )}
+                          {/* Team name + description */}
+                          <h3 className="font-semibold text-gray-900 text-base leading-tight mb-1">
+                            {team.nom}
+                          </h3>
+                          {team.description && (
+                            <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                              {team.description}
+                            </p>
+                          )}
 
-                      {/* Stats */}
-                      <div className="flex items-center gap-3 mt-auto mb-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${color.light} ${color.text}`}
-                        >
-                          <Users size={12} />
-                          {team.membres_count || 0} members
-                        </span>
-                      </div>
-
-                      {/* Manager */}
-                      {team.chef_equipe ? (
-                        <div className="flex items-center gap-2 py-3 border-t border-gray-100">
-                          <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-semibold text-gray-600">
-                              {managerInitials}
+                          {/* Stats */}
+                          <div className="flex items-center gap-3 mt-auto mb-4">
+                            <span
+                              className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${color.light} ${color.text}`}
+                            >
+                              <Users size={12} />
+                              {team.membres_count || 0} members
                             </span>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-medium text-gray-700 truncate">
-                              {team.chef_equipe.prenom} {team.chef_equipe.nom}
-                            </p>
-                            <p className="text-[10px] text-gray-400">Manager</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="py-3 border-t border-gray-100">
-                          <p className="text-xs text-gray-400 italic">
-                            No manager assigned
-                          </p>
-                        </div>
-                      )}
 
-                      {/* Action button */}
-                      <button
-                        onClick={() => {
-                          setSelectedTeam(team);
-                          setShowDetailsModal(true);
-                        }}
-                        className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all duration-150"
-                      >
-                        Manage Team
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                          {/* Manager */}
+                          {team.chef_equipe ? (
+                            <div className="flex items-center gap-2 py-3 border-t border-gray-100">
+                              <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-semibold text-gray-600">
+                                  {managerInitials}
+                                </span>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-medium text-gray-700 truncate">
+                                  {team.chef_equipe.prenom} {team.chef_equipe.nom}
+                                </p>
+                                <p className="text-[10px] text-gray-400">Manager</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="py-3 border-t border-gray-100">
+                              <p className="text-xs text-gray-400 italic">
+                                No manager assigned
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Action button */}
+                          <button
+                            onClick={() => {
+                              setSelectedTeam(team);
+                              setShowDetailsModal(true);
+                            }}
+                            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all duration-150"
+                          >
+                            Manage Team
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -364,7 +372,7 @@ const Teams: React.FC = () => {
         <TeamDetailsModal
           team={selectedTeam}
           onClose={() => setShowDetailsModal(false)}
-          onRefresh={fetchTeams}
+          onRefresh={refetch}
         />
       )}
     </div>

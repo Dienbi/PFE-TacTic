@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Clock,
   UserX,
@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
-import client from "../../../api/client";
+import { useAttendanceSummary, useAttendanceAnomalies, type AttendanceAnomaly } from "../../../hooks/queries/useAttendance";
 import "./AttendanceDashboard.css";
 
 interface UserInfo {
@@ -40,21 +40,6 @@ interface AttendanceStats {
   };
 }
 
-interface AttendanceAnomaly {
-  id: number;
-  nom: string;
-  prenom: string;
-  matricule: string;
-  role: string;
-  role_label: string;
-  absence_count: number;
-  unjustified_absence_count: number;
-  late_count: number;
-  present_count: number;
-  flags: Array<"frequent_late" | "heavy_absence">;
-  severity: "high" | "medium";
-}
-
 interface AnomalyResponse {
   period: {
     start_date: string;
@@ -72,8 +57,6 @@ const FLAG_LABELS: Record<string, string> = {
 };
 
 const AttendanceDashboard: React.FC = () => {
-  const [data, setData] = useState<AttendanceStats | null>(null);
-  const [anomalies, setAnomalies] = useState<AnomalyResponse | null>(null);
   const [user, setUser] = useState<any>(null);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
@@ -84,22 +67,8 @@ const AttendanceDashboard: React.FC = () => {
     }
   }, []);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [summaryRes, anomaliesRes] = await Promise.all([
-        client.get(`/pointages/summary?date=${date}`),
-        client.get(`/pointages/anomalies?end_date=${date}&days=30`),
-      ]);
-      setData(summaryRes.data);
-      setAnomalies(anomaliesRes.data);
-    } catch (error) {
-      console.error("Error fetching attendance data:", error);
-    }
-  }, [date]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const { data: summaryData, isLoading: summaryLoading, error: summaryError } = useAttendanceSummary(date);
+  const { data: anomaliesData, isLoading: anomaliesLoading, error: anomaliesError } = useAttendanceAnomalies(date, 30);
 
   const UserListItem = ({
     user,
@@ -197,13 +166,17 @@ const AttendanceDashboard: React.FC = () => {
             </div>
           </div>
 
-          {data && (
+          {summaryLoading || anomaliesLoading ? (
+            <div className="loading-state">Loading attendance data...</div>
+          ) : summaryError || anomaliesError ? (
+            <div className="error-state">Error loading attendance data</div>
+          ) : summaryData && (
             <>
               <div className="stats-grid">
                 <div className="stat-card stat-present">
                   <div className="stat-content">
                     <h3>Present Today</h3>
-                    <div className="stat-value">{data.stats.present_count}</div>
+                    <div className="stat-value">{summaryData.stats.present_count}</div>
                   </div>
                   <div className="stat-icon">
                     <UserCheck />
@@ -214,7 +187,7 @@ const AttendanceDashboard: React.FC = () => {
                   <div className="stat-content">
                     <h3>Currently In</h3>
                     <div className="stat-value">
-                      {data.stats.currently_in_count}
+                      {summaryData.stats.currently_in_count}
                     </div>
                   </div>
                   <div className="stat-icon">
@@ -225,7 +198,7 @@ const AttendanceDashboard: React.FC = () => {
                 <div className="stat-card stat-late">
                   <div className="stat-content">
                     <h3>Late Arrivals</h3>
-                    <div className="stat-value">{data.stats.late_count}</div>
+                    <div className="stat-value">{summaryData.stats.late_count}</div>
                   </div>
                   <div className="stat-icon">
                     <Calendar />
@@ -235,7 +208,7 @@ const AttendanceDashboard: React.FC = () => {
                 <div className="stat-card stat-absent">
                   <div className="stat-content">
                     <h3>Absent</h3>
-                    <div className="stat-value">{data.stats.absent_count}</div>
+                    <div className="stat-value">{summaryData.stats.absent_count}</div>
                   </div>
                   <div className="stat-icon">
                     <UserX />
@@ -248,12 +221,12 @@ const AttendanceDashboard: React.FC = () => {
                   <div className="list-header">
                     <h2>Currently Working</h2>
                     <span className="count-badge">
-                      {data.lists.currently_in.length}
+                      {summaryData.lists.currently_in.length}
                     </span>
                   </div>
                   <div className="user-list">
-                    {data.lists.currently_in.length > 0 ? (
-                      data.lists.currently_in.map((u) => (
+                    {summaryData.lists.currently_in.length > 0 ? (
+                      summaryData.lists.currently_in.map((u: UserInfo) => (
                         <UserListItem key={u.id} user={u} ShowTime={true} />
                       ))
                     ) : (
@@ -268,12 +241,12 @@ const AttendanceDashboard: React.FC = () => {
                   <div className="list-header">
                     <h2 style={{ color: "#92400e" }}>Late Arrivals</h2>
                     <span className="count-badge">
-                      {data.lists.late.length}
+                      {summaryData.lists.late.length}
                     </span>
                   </div>
                   <div className="user-list">
-                    {data.lists.late.length > 0 ? (
-                      data.lists.late.map((u) => (
+                    {summaryData.lists.late.length > 0 ? (
+                      summaryData.lists.late.map((u: UserInfo) => (
                         <UserListItem key={u.id} user={u} ShowTime={true} />
                       ))
                     ) : (
@@ -286,12 +259,12 @@ const AttendanceDashboard: React.FC = () => {
                   <div className="list-header">
                     <h2 style={{ color: "#991b1b" }}>Absent</h2>
                     <span className="count-badge">
-                      {data.lists.absent.length}
+                      {summaryData.lists.absent.length}
                     </span>
                   </div>
                   <div className="user-list">
-                    {data.lists.absent.length > 0 ? (
-                      data.lists.absent.map((u) => (
+                    {summaryData.lists.absent.length > 0 ? (
+                      summaryData.lists.absent.map((u: UserInfo) => (
                         <UserListItem key={u.id} user={u} />
                       ))
                     ) : (
@@ -310,18 +283,18 @@ const AttendanceDashboard: React.FC = () => {
                       Attendance Anomalies
                     </h2>
                     <span className="count-badge anomaly-count">
-                      {anomalies?.total ?? 0}
+                      {anomaliesData?.total ?? 0}
                     </span>
                   </div>
-                  {anomalies && (
+                  {anomaliesData && (
                     <p className="anomaly-period">
-                      Last {anomalies.period.days} days ({anomalies.period.start_date}{" "}
-                      → {anomalies.period.end_date})
+                      Last {anomaliesData.period.days} days ({anomaliesData.period.start_date}{" "}
+                      → {anomaliesData.period.end_date})
                     </p>
                   )}
                   <div className="user-list">
-                    {anomalies && anomalies.anomalies.length > 0 ? (
-                      anomalies.anomalies.map((a) => (
+                    {anomaliesData && anomaliesData.anomalies.length > 0 ? (
+                      anomaliesData.anomalies.map((a: AttendanceAnomaly) => (
                         <AnomalyListItem key={a.id} anomaly={a} />
                       ))
                     ) : (

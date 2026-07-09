@@ -1,5 +1,9 @@
 export const queryKeys = {
     rhDashboard: (params?: unknown) => ['dashboard', 'rh', params] as const,
+    dashboard: {
+        manager: () => ['dashboard', 'manager'] as const,
+        employee: () => ['dashboard', 'employee'] as const,
+    },
     employees: () => ['employees'] as const,
     employeesArchived: () => ['employees', 'archived'] as const,
     teams: () => ['teams'] as const,
@@ -19,6 +23,8 @@ export const queryKeys = {
     attendance: {
         today: () => ['attendance', 'today'] as const,
         stats: () => ['attendance', 'stats'] as const,
+        summary: (date: string) => ['attendance', 'summary', date] as const,
+        anomalies: (endDate: string, days: number) => ['attendance', 'anomalies', endDate, days] as const,
     },
     jobMatching: {
         applications: (postId: number) => ['job-matching', 'applications', postId] as const,

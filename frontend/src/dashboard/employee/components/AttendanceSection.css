@@ -67,7 +67,7 @@
 
 /* Live Timer */
 .live-timer {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: #3b82f6;
   padding: 1rem 1.5rem;
   border-radius: 12px;
   text-align: center;

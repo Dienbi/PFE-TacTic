@@ -82,11 +82,6 @@ const Sidebar: React.FC = () => {
           },
           { icon: FileText, label: "Leave", path: "/employee/leave" },
           { icon: DollarSign, label: "Salary", path: "/employee/salary" },
-          {
-            icon: BarChart3,
-            label: "My Indicators",
-            path: "/employee/indicators",
-          },
           { icon: Search, label: "Job Board", path: "/employee/jobs" },
           {
             icon: ClipboardList,

@@ -30,6 +30,7 @@ export const useRhDashboard = (params: RhDashboardParams = DEFAULT_PARAMS) =>
             const response = await client.get(`/dashboard/all?${search.toString()}`);
             return response.data;
         },
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
 export interface AiReportsParams {

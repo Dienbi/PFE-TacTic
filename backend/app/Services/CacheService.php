@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -47,6 +48,10 @@ class CacheService
     public const KEY_PAYROLL_EMPLOYEES_CONFIG = 'payroll_employees_config';
 
     public const KEY_CONGES_EN_ATTENTE = 'conges_en_attente';
+
+    public const KEY_ATTENDANCE_SUMMARY = 'attendance_summary';
+
+    public const KEY_ATTENDANCE_ANOMALIES = 'attendance_anomalies';
 
     // Cache TTLs in seconds
     public const TTL_ACTIVE_USERS = 300; // 5 minutes
@@ -270,5 +275,36 @@ class CacheService
     public function forget(string $key): void
     {
         Cache::forget($key);
+    }
+
+    /**
+     * Get cache key for attendance summary (date-specific)
+     */
+    public static function getAttendanceSummaryKey(string $date): string
+    {
+        return self::KEY_ATTENDANCE_SUMMARY."_{$date}";
+    }
+
+    /**
+     * Get cache key for attendance anomalies (date and days-specific)
+     */
+    public static function getAttendanceAnomaliesKey(string $endDate, int $days): string
+    {
+        return self::KEY_ATTENDANCE_ANOMALIES."_{$endDate}_{$days}";
+    }
+
+    /**
+     * Invalidate attendance caches for a specific date
+     */
+    public function invalidateAttendanceForDate(string $date): void
+    {
+        Cache::forget(self::getAttendanceSummaryKey($date));
+
+        // Invalidate anomalies for common day ranges ending on or after this date
+        $endDate = Carbon::parse($date);
+        foreach ([30, 7, 14] as $days) {
+            $anomalyEndDate = $endDate->copy()->addDays($days - 1)->toDateString();
+            Cache::forget(self::getAttendanceAnomaliesKey($anomalyEndDate, $days));
+        }
     }
 }

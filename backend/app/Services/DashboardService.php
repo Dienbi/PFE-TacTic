@@ -289,4 +289,147 @@ class DashboardService
 
         return $workingDays;
     }
+
+    /**
+     * Get manager dashboard data
+     */
+    public function getManagerDashboard(int $managerId): array
+    {
+        $today = Carbon::today();
+        $startOfMonth = Carbon::now()->startOfMonth();
+
+        // Get team info with members
+        $team = DB::table('equipes')
+            ->where('chef_equipe_id', $managerId)
+            ->first();
+
+        if (!$team) {
+            return [
+                'team' => null,
+                'team_size' => 0,
+                'available' => 0,
+                'on_leave' => 0,
+                'alerts' => 0,
+                'pending_leaves' => [],
+            ];
+        }
+
+        // Get team members with their current status
+        $members = DB::table('utilisateurs')
+            ->where('equipe_id', $team->id)
+            ->whereNull('deleted_at')
+            ->select('id', 'nom', 'prenom', 'matricule', 'status')
+            ->get();
+
+        $teamSize = $members->count();
+        $available = 0;
+        $onLeave = 0;
+        $alerts = 0;
+
+        // Get today's attendance for team members
+        $memberIds = $members->pluck('id');
+        $todayAttendances = DB::table('pointages')
+            ->whereIn('utilisateur_id', $memberIds)
+            ->where('date', $today->toDateString())
+            ->select('utilisateur_id', 'heure_entree', 'heure_sortie')
+            ->get()
+            ->keyBy('utilisateur_id');
+
+        // Get approved leaves for today
+        $todayLeaves = DB::table('conges')
+            ->whereIn('utilisateur_id', $memberIds)
+            ->where('statut', 'APPROUVE')
+            ->where('date_debut', '<=', $today->toDateString())
+            ->where('date_fin', '>=', $today->toDateString())
+            ->select('utilisateur_id', 'type')
+            ->get()
+            ->keyBy('utilisateur_id');
+
+        // Get pending leaves for the team
+        $pendingLeaves = DB::table('conges')
+            ->whereIn('utilisateur_id', $memberIds)
+            ->where('statut', 'EN_ATTENTE')
+            ->join('utilisateurs', 'conges.utilisateur_id', '=', 'utilisateurs.id')
+            ->select('conges.id', 'conges.type', 'conges.date_debut', 'conges.date_fin', 'utilisateurs.nom', 'utilisateurs.prenom')
+            ->orderBy('conges.date_debut', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Calculate team status
+        foreach ($members as $member) {
+            $memberId = $member->id;
+
+            if (isset($todayLeaves[$memberId])) {
+                $onLeave++;
+            } elseif (isset($todayAttendances[$memberId])) {
+                $available++;
+            } else {
+                // Not checked in yet and not on leave - could be alert
+                $alerts++;
+            }
+        }
+
+        return [
+            'team' => [
+                'id' => $team->id,
+                'nom' => $team->nom,
+                'chef_id' => $team->chef_equipe_id,
+            ],
+            'team_size' => $teamSize,
+            'available' => $available,
+            'on_leave' => $onLeave,
+            'alerts' => $alerts,
+            'pending_leaves' => $pendingLeaves,
+        ];
+    }
+
+    /**
+     * Get employee dashboard data
+     */
+    public function getEmployeeDashboard(int $employeeId): array
+    {
+        $today = Carbon::today();
+        $startOfMonth = Carbon::now()->startOfMonth();
+
+        // Get today's attendance
+        $todayAttendance = DB::table('pointages')
+            ->where('utilisateur_id', $employeeId)
+            ->where('date', $today->toDateString())
+            ->first();
+
+        // Get monthly stats
+        $monthlyStats = DB::table('pointages')
+            ->where('utilisateur_id', $employeeId)
+            ->whereBetween('date', [$startOfMonth->toDateString(), $today->toDateString()])
+            ->selectRaw('
+                COUNT(*) as total_days,
+                SUM(duree_travail) as total_hours
+            ')
+            ->first();
+
+        // Get recent leaves
+        $recentLeaves = DB::table('conges')
+            ->where('utilisateur_id', $employeeId)
+            ->orderBy('date_debut', 'desc')
+            ->limit(5)
+            ->select('id', 'type', 'date_debut', 'date_fin', 'statut')
+            ->get();
+
+        // Get latest payslip
+        $latestPayslip = DB::table('paies')
+            ->where('utilisateur_id', $employeeId)
+            ->orderBy('periode_debut', 'desc')
+            ->select('id', 'periode_debut', 'periode_fin', 'salaire_brut', 'deductions', 'salaire_net')
+            ->first();
+
+        return [
+            'today_attendance' => $todayAttendance,
+            'monthly_stats' => [
+                'total_days' => (int) ($monthlyStats->total_days ?? 0),
+                'total_hours' => (float) ($monthlyStats->total_hours ?? 0),
+            ],
+            'recent_leaves' => $recentLeaves,
+            'latest_payslip' => $latestPayslip,
+        ];
+    }
 }

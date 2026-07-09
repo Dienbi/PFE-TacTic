@@ -9,6 +9,8 @@ export const useMesPaies = () =>
             const response = await client.get('/paies/mes-paies');
             return response.data;
         },
+        staleTime: 5 * 60_000, // 5 minutes
+        gcTime: 10 * 60_000, // 10 minutes
     });
 
 export const usePayrollStats = () =>
@@ -18,6 +20,8 @@ export const usePayrollStats = () =>
             const response = await client.get('/paies/stats');
             return response.data;
         },
+        staleTime: 5 * 60_000, // 5 minutes
+        gcTime: 10 * 60_000, // 10 minutes
     });
 
 export const usePayrollDashboard = () => {
@@ -29,6 +33,8 @@ export const usePayrollDashboard = () => {
                     const response = await client.get('/paies/global-stats');
                     return response.data;
                 },
+                staleTime: 5 * 60_000,
+                gcTime: 10 * 60_000,
             },
             {
                 queryKey: queryKeys.payroll.employeesConfig(),
@@ -36,6 +42,8 @@ export const usePayrollDashboard = () => {
                     const response = await client.get('/paies/employees-config');
                     return response.data;
                 },
+                staleTime: 5 * 60_000,
+                gcTime: 10 * 60_000,
             },
             {
                 queryKey: queryKeys.payroll.records(),
@@ -43,6 +51,8 @@ export const usePayrollDashboard = () => {
                     const response = await client.get('/paies');
                     return response.data?.data ?? response.data ?? [];
                 },
+                staleTime: 5 * 60_000,
+                gcTime: 10 * 60_000,
             },
         ],
     });
@@ -56,3 +66,14 @@ export const usePayrollDashboard = () => {
         refetch: () => Promise.all(results.map((r) => r.refetch())),
     };
 };
+
+export const useTeamPayroll = () =>
+    useQuery({
+        queryKey: queryKeys.payroll.team(),
+        queryFn: async () => {
+            const response = await client.get('/paies/team');
+            return response.data;
+        },
+        staleTime: 5 * 60_000, // 5 minutes
+        gcTime: 10 * 60_000, // 10 minutes
+    });

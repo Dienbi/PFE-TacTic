@@ -237,7 +237,8 @@ class PointageService
     public function pointerEntree(int $utilisateurId): Pointage
     {
         $existing = $this->pointageRepository->getTodayPointage($utilisateurId);
-        if ($existing && $existing->heure_entree) {
+        // Only prevent check-in if user is currently checked in (has entry but no exit)
+        if ($existing && $existing->heure_entree && !$existing->heure_sortie) {
             throw ValidationException::withMessages([
                 'heure_entree' => ['Vous avez déjà pointé votre entrée aujourd\'hui.'],
             ]);

@@ -166,4 +166,44 @@ class DashboardController extends Controller
 
         return response()->json($distribution);
     }
+
+    /**
+     * Get manager dashboard data (unified endpoint)
+     */
+    public function managerDashboard(Request $request): JsonResponse
+    {
+        $managerId = auth()->id();
+        $cacheKey = "dashboard_manager_{$managerId}";
+        $noCache = $request->boolean('noCache');
+
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
+
+        $data = Cache::remember($cacheKey, 60, function () use ($managerId) {
+            return $this->dashboardService->getManagerDashboard($managerId);
+        });
+
+        return response()->json($data);
+    }
+
+    /**
+     * Get employee dashboard data (unified endpoint)
+     */
+    public function employeeDashboard(Request $request): JsonResponse
+    {
+        $employeeId = auth()->id();
+        $cacheKey = "dashboard_employee_{$employeeId}";
+        $noCache = $request->boolean('noCache');
+
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
+
+        $data = Cache::remember($cacheKey, 30, function () use ($employeeId) {
+            return $this->dashboardService->getEmployeeDashboard($employeeId);
+        });
+
+        return response()->json($data);
+    }
 }

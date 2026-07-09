@@ -16,11 +16,6 @@ parameters:
 			path: app/Http/Controllers/Api/ActivityLogController.php
 
 		-
-			message: "#^Access to an undefined property App\\\\Models\\\\Utilisateur\\:\\:\\$equipeGeree\\.$#"
-			count: 1
-			path: app/Http/Controllers/Api/CongeController.php
-
-		-
 			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Builder\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:actif\\(\\)\\.$#"
 			count: 2
 			path: app/Repositories/AffectationRepository.php
@@ -632,11 +627,6 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Conge\\:\\:\\$utilisateur\\.$#"
-			count: 1
-			path: app/Services/LeaveConflictService.php
-
-		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$date_debut\\.$#"
 			count: 1
 			path: app/Services/LeaveConflictService.php
 

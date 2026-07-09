@@ -11,6 +11,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
+/**
+ * @property Equipe $equipe
+ * @property Equipe $equipeGeree
+ */
 class Utilisateur extends Authenticatable implements JWTSubject
 {
     use HasFactory;

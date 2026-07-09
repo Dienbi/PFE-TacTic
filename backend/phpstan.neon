@@ -10,5 +10,6 @@ parameters:
         - app/Console/Kernel.php
     parallel:
         maximumNumberOfProcesses: 1
+    treatPhpDocTypesAsCertain: false
     ignoreErrors:
         - '#Call to an undefined static method PHPOpenSourceSaver\\JWTAuth\\Facades\\JWTAuth::#'

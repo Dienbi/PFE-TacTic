@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property Utilisateur $utilisateur
  * @property Utilisateur $approbateur
+ *
  * @method utilisateur()
  * @method approbateur()
  */

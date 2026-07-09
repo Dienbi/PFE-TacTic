@@ -112,8 +112,7 @@ class AuthService
 
     public function refresh(): array
     {
-        /** @var string $token */
-        $token = JWTAuth::refresh(JWTAuth::getToken());
+        $token = JWTAuth::refresh();
 
         /** @var Utilisateur $user */
         $user = JWTAuth::user();

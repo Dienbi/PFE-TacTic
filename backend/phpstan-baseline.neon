@@ -356,11 +356,6 @@ parameters:
 			path: app/Services/CongeService.php
 
 		-
-			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
 			message: "#^Property App\\\\Services\\\\DashboardService\\:\\:\\$pointageRepository is never read, only written\\.$#"
 			count: 1
 			path: app/Services/DashboardService.php
@@ -624,31 +619,6 @@ parameters:
 			message: "#^Method App\\\\Services\\\\JobRequestService\\:\\:create\\(\\) should return App\\\\Models\\\\JobRequest\\|array but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\.$#"
 			count: 1
 			path: app/Services/JobRequestService.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Models\\\\Conge\\:\\:\\$utilisateur\\.$#"
-			count: 1
-			path: app/Services/LeaveConflictService.php
-
-		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$date_fin\\.$#"
-			count: 1
-			path: app/Services/LeaveConflictService.php
-
-		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
-			count: 3
-			path: app/Services/LeaveConflictService.php
-
-		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$utilisateur\\.$#"
-			count: 1
-			path: app/Services/LeaveConflictService.php
-
-		-
-			message: "#^Relation 'utilisateur' is not found in App\\\\Models\\\\Conge model\\.$#"
-			count: 3
-			path: app/Services/LeaveConflictService.php
 
 		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Paie\\:\\:\\$utilisateur\\.$#"

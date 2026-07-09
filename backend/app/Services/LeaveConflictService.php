@@ -41,7 +41,7 @@ class LeaveConflictService
      * Check conflicts for many leaves at once (batch optimized).
      * Pre-fetches all needed data to avoid N+1 queries.
      *
-     * @param  Collection  $leaves  Collection of Conge with utilisateur already eager-loaded
+     * @param  Collection<int, Conge>  $leaves  Collection of Conge with utilisateur already eager-loaded
      * @return array Keyed by conge id => array of conflicts
      */
     public function checkConflictsForMany(Collection $leaves): array
@@ -100,6 +100,7 @@ class LeaveConflictService
         // Index overlapping leaves by team
         $overlapsByTeam = $overlappingLeaves->groupBy('utilisateur.equipe_id');
 
+        /** @var Conge $leave */
         foreach ($leaves as $leave) {
             $conflicts = [];
             $user = $leave->utilisateur;

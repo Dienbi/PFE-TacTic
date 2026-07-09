@@ -46,8 +46,8 @@ class PointageObserver
         $user = $pointage->utilisateur;
         if ($user && $user->equipe_id) {
             $team = $user->equipe;
-            if ($team && $team->chef_id) {
-                Cache::forget("dashboard_manager_{$team->chef_id}");
+            if ($team && $team->chef_equipe_id) {
+                Cache::forget("dashboard_manager_{$team->chef_equipe_id}");
             }
         }
 

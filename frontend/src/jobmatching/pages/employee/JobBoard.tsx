@@ -4,6 +4,8 @@ import { useJobPosts } from "../../../hooks/queries/useJobMatching";
 import { queryClient } from "../../../api/queryClient";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
+import { X, Send, Building2, Briefcase, Sparkles } from "lucide-react";
 import "./JobBoard.css";
 
 const JobBoard: React.FC = () => {
@@ -81,7 +83,7 @@ const JobBoard: React.FC = () => {
           {error && <div className="alert alert-danger">{error}</div>}
 
           {isLoading ? (
-            <div className="loading-spinner">Loading opportunities...</div>
+            <DashboardSkeleton type="employee-job-board" />
           ) : filteredPosts.length === 0 ? (
             <div className="empty-state">
               <div className="empty-illustration">🚀</div>
@@ -155,35 +157,69 @@ const JobBoard: React.FC = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="modal-header">
-                  <h3>Apply for {selectedPost.titre}</h3>
+                  <div className="modal-header-content">
+                    <div className="modal-icon-wrapper">
+                      <Briefcase className="modal-icon" />
+                    </div>
+                    <div>
+                      <h3>Apply for Position</h3>
+                      <p className="modal-subtitle">{selectedPost.titre}</p>
+                    </div>
+                  </div>
                   <button
                     className="close-btn"
                     onClick={() => setSelectedPost(null)}
                   >
-                    ×
+                    <X size={20} />
                   </button>
                 </div>
                 <div className="modal-body">
                   <div className="job-summary">
-                    <strong>Team:</strong> {selectedPost.equipe?.nom}
-                    <p>{selectedPost.description}</p>
+                    <div className="summary-item">
+                      <Building2 size={16} className="summary-icon" />
+                      <span className="summary-label">Team</span>
+                      <span className="summary-value">{selectedPost.equipe?.nom || "General"}</span>
+                    </div>
+                    <p className="job-description">{selectedPost.description}</p>
+                    {selectedPost.competences && selectedPost.competences.length > 0 && (
+                      <div className="skills-section">
+                        <span className="skills-label">Required Skills:</span>
+                        <div className="skills-list">
+                          {selectedPost.competences.map((comp: any, idx: number) => (
+                            <span key={idx} className="skill-tag">
+                              <Sparkles size={12} />
+                              {comp.nom}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="input-group">
-                    <label>Why are you a good fit?</label>
+                    <label>
+                      Why are you a good fit?
+                      <span className="character-count">
+                        {motivation.length} / 500
+                      </span>
+                    </label>
                     <textarea
                       className="modal-textarea"
-                      rows={5}
+                      rows={6}
+                      maxLength={500}
                       value={motivation}
                       onChange={(e) => setMotivation(e.target.value)}
-                      placeholder="Share your experience and motivation..."
+                      placeholder="Share your relevant experience, skills, and motivation for this role..."
                       autoFocus
                     />
+                    <div className="input-hint">
+                      Minimum 10 characters required
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer">
                   <button
-                    className="btn-text"
+                    className="btn-secondary"
                     onClick={() => setSelectedPost(null)}
                     disabled={applyingTo !== null}
                   >
@@ -192,9 +228,19 @@ const JobBoard: React.FC = () => {
                   <button
                     className="btn-primary"
                     onClick={handleConfirmApply}
-                    disabled={!motivation.trim() || applyingTo !== null}
+                    disabled={!motivation.trim() || motivation.trim().length < 10 || applyingTo !== null}
                   >
-                    {applyingTo ? "Sending..." : "Submit Application"}
+                    {applyingTo ? (
+                      <>
+                        <span className="btn-spinner"></span>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={16} />
+                        Submit Application
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

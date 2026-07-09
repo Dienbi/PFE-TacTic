@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
+import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import client from "../../api/client";
 import { useLeaveManagement } from "../../hooks/queries";
 import { useLeaveMutations } from "../../hooks/mutations";
@@ -49,7 +50,7 @@ interface LeaveRequestData {
 
 const LeaveManagement: React.FC = () => {
   const { user, displayName } = useAuth();
-  const { allLeaves, pendingLeaves, refetch } = useLeaveManagement();
+  const { allLeaves, pendingLeaves, isLoading, refetch } = useLeaveManagement();
   const leaves = allLeaves as LeaveRequestData[];
   const pending = pendingLeaves as LeaveRequestData[];
   const { approveLeave, rejectLeave } = useLeaveMutations();
@@ -205,260 +206,266 @@ const LeaveManagement: React.FC = () => {
           />
 
           <div className="dashboard-content leave-management-page">
-          <div className="page-header">
-            <div>
-              <h1>Gestion des Congés</h1>
-              <p className="subtitle">
-                Gérez les demandes de congé des employés
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="stats-row">
-            <div className="stat-card stat-pending">
-              <div className="stat-content">
-                <Clock size={20} />
-                <div>
-                  <span className="stat-value">{pending.length}</span>
-                  <span className="stat-label">En attente</span>
-                </div>
-              </div>
-            </div>
-            <div className="stat-card stat-approved">
-              <div className="stat-content">
-                <CheckCircle size={20} />
-                <div>
-                  <span className="stat-value">
-                    {leaves.filter((l) => l.statut === "APPROUVE").length}
-                  </span>
-                  <span className="stat-label">Approuvés</span>
-                </div>
-              </div>
-            </div>
-            <div className="stat-card stat-rejected">
-              <div className="stat-content">
-                <XCircle size={20} />
-                <div>
-                  <span className="stat-value">
-                    {leaves.filter((l) => l.statut === "REFUSE").length}
-                  </span>
-                  <span className="stat-label">Refusés</span>
-                </div>
-              </div>
-            </div>
-            <div className="stat-card stat-total">
-              <div className="stat-content">
-                <FileText size={20} />
-                <div>
-                  <span className="stat-value">{leaves.length}</span>
-                  <span className="stat-label">Total</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Message */}
-          {message && (
-            <div className={`alert alert-${message.type}`}>
-              {message.type === "success" ? (
-                <CheckCircle size={18} />
-              ) : (
-                <XCircle size={18} />
-              )}
-              {message.text}
-            </div>
-          )}
-
-          {/* Tabs & Filters */}
-          <div className="filters-section">
-            <div className="tabs">
-              <button
-                className={`tab ${activeTab === "pending" ? "active" : ""}`}
-                onClick={() => setActiveTab("pending")}
-              >
-                En attente ({pending.length})
-              </button>
-              <button
-                className={`tab ${activeTab === "all" ? "active" : ""}`}
-                onClick={() => setActiveTab("all")}
-              >
-                Toutes les demandes
-              </button>
-            </div>
-
-            <div className="filters">
-              <div className="search-box">
-                <Search size={18} />
-                <input
-                  type="text"
-                  placeholder="Rechercher un employé..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                }
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
-                  background: "white",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  color: "#4b5563",
-                }}
-              >
-                <Clock size={16} />
-                {sortOrder === "asc" ? "Ancien → Récent" : "Récent → Ancien"}
-              </button>
-
-              {activeTab === "all" && (
-                <div className="filter-select">
-                  <Filter size={18} />
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="ALL">Tous les statuts</option>
-                    <option value="EN_ATTENTE">En attente</option>
-                    <option value="APPROUVE">Approuvé</option>
-                    <option value="REFUSE">Refusé</option>
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Leave Requests Table */}
-          <div className="leaves-section">
-            {filteredLeaves.length === 0 ? (
-              <div className="empty-state">
-                <Calendar size={48} />
-                <p>Aucune demande de congé</p>
-              </div>
+            {isLoading ? (
+              <DashboardSkeleton type="leave" />
             ) : (
-              <div className="leaves-table-wrapper">
-                <table className="leaves-table">
-                  <thead>
-                    <tr>
-                      <th>Employé</th>
-                      <th>Type</th>
-                      <th>Période</th>
-                      <th>Durée</th>
-                      <th>Motif</th>
-                      <th>Certificat</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLeaves.map((leave) => (
-                      <tr key={leave.id}>
-                        <td>
-                          <div className="employee-info">
-                            <div className="employee-avatar">
-                              {leave.utilisateur.prenom.charAt(0)}
-                              {leave.utilisateur.nom.charAt(0)}
-                            </div>
-                            <div>
-                              <span className="employee-name">
-                                {leave.utilisateur.prenom}{" "}
-                                {leave.utilisateur.nom}
-                              </span>
-                              <span className="employee-meta">
-                                {leave.utilisateur.matricule}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{getTypeLabel(leave.type)}</td>
-                        <td>
-                          {formatDate(leave.date_debut)} -{" "}
-                          {formatDate(leave.date_fin)}
-                        </td>
-                        <td>{leave.nombre_jours} jour(s)</td>
-                        <td className="motif-cell">
-                          {leave.motif || <span className="text-muted">-</span>}
-                        </td>
-                        <td>
-                          {leave.medical_file ? (
-                            <button
-                              className="btn-download"
-                              onClick={() =>
-                                handleDownloadMedicalFile(
-                                  leave.id,
-                                  leave.medical_file!,
-                                )
-                              }
-                              title="Télécharger le certificat médical"
-                            >
-                              <Download size={16} />
-                              Voir
-                            </button>
-                          ) : (
-                            <span className="text-muted">-</span>
-                          )}
-                        </td>
-                        <td>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "0.5rem",
-                              alignItems: "flex-start",
-                            }}
-                          >
-                            {getStatusBadge(leave.statut)}
-                          </div>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="btn btn-view"
-                              onClick={() => setSelectedLeave(leave)}
-                            >
-                              <Eye size={16} /> Voir détails
-                            </button>
-                            {activeTab === "pending" && (
-                              <>
-                                <button
-                                  className="btn btn-approve"
-                                  onClick={() => handleApprove(leave.id)}
-                                  disabled={processing === leave.id}
+              <>
+                <div className="page-header">
+                  <div>
+                    <h1>Gestion des Congés</h1>
+                    <p className="subtitle">
+                      Gérez les demandes de congé des employés
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="stats-row">
+                  <div className="stat-card stat-pending">
+                    <div className="stat-content">
+                      <Clock size={20} />
+                      <div>
+                        <span className="stat-value">{pending.length}</span>
+                        <span className="stat-label">En attente</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="stat-card stat-approved">
+                    <div className="stat-content">
+                      <CheckCircle size={20} />
+                      <div>
+                        <span className="stat-value">
+                          {leaves.filter((l) => l.statut === "APPROUVE").length}
+                        </span>
+                        <span className="stat-label">Approuvés</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="stat-card stat-rejected">
+                    <div className="stat-content">
+                      <XCircle size={20} />
+                      <div>
+                        <span className="stat-value">
+                          {leaves.filter((l) => l.statut === "REFUSE").length}
+                        </span>
+                        <span className="stat-label">Refusés</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="stat-card stat-total">
+                    <div className="stat-content">
+                      <FileText size={20} />
+                      <div>
+                        <span className="stat-value">{leaves.length}</span>
+                        <span className="stat-label">Total</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Message */}
+                {message && (
+                  <div className={`alert alert-${message.type}`}>
+                    {message.type === "success" ? (
+                      <CheckCircle size={18} />
+                    ) : (
+                      <XCircle size={18} />
+                    )}
+                    {message.text}
+                  </div>
+                )}
+
+                {/* Tabs & Filters */}
+                <div className="filters-section">
+                  <div className="tabs">
+                    <button
+                      className={`tab ${activeTab === "pending" ? "active" : ""}`}
+                      onClick={() => setActiveTab("pending")}
+                    >
+                      En attente ({pending.length})
+                    </button>
+                    <button
+                      className={`tab ${activeTab === "all" ? "active" : ""}`}
+                      onClick={() => setActiveTab("all")}
+                    >
+                      Toutes les demandes
+                    </button>
+                  </div>
+
+                  <div className="filters">
+                    <div className="search-box">
+                      <Search size={18} />
+                      <input
+                        type="text"
+                        placeholder="Rechercher un employé..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                      }
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        padding: "0.5rem 1rem",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        background: "white",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        color: "#4b5563",
+                      }}
+                    >
+                      <Clock size={16} />
+                      {sortOrder === "asc" ? "Ancien → Récent" : "Récent → Ancien"}
+                    </button>
+
+                    {activeTab === "all" && (
+                      <div className="filter-select">
+                        <Filter size={18} />
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                          <option value="ALL">Tous les statuts</option>
+                          <option value="EN_ATTENTE">En attente</option>
+                          <option value="APPROUVE">Approuvé</option>
+                          <option value="REFUSE">Refusé</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Leave Requests Table */}
+                <div className="leaves-section">
+                  {filteredLeaves.length === 0 ? (
+                    <div className="empty-state">
+                      <Calendar size={48} />
+                      <p>Aucune demande de congé</p>
+                    </div>
+                  ) : (
+                    <div className="leaves-table-wrapper">
+                      <table className="leaves-table">
+                        <thead>
+                          <tr>
+                            <th>Employé</th>
+                            <th>Type</th>
+                            <th>Période</th>
+                            <th>Durée</th>
+                            <th>Motif</th>
+                            <th>Certificat</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredLeaves.map((leave) => (
+                            <tr key={leave.id}>
+                              <td>
+                                <div className="employee-info">
+                                  <div className="employee-avatar">
+                                    {leave.utilisateur.prenom.charAt(0)}
+                                    {leave.utilisateur.nom.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <span className="employee-name">
+                                      {leave.utilisateur.prenom}{" "}
+                                      {leave.utilisateur.nom}
+                                    </span>
+                                    <span className="employee-meta">
+                                      {leave.utilisateur.matricule}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>{getTypeLabel(leave.type)}</td>
+                              <td>
+                                {formatDate(leave.date_debut)} -{" "}
+                                {formatDate(leave.date_fin)}
+                              </td>
+                              <td>{leave.nombre_jours} jour(s)</td>
+                              <td className="motif-cell">
+                                {leave.motif || <span className="text-muted">-</span>}
+                              </td>
+                              <td>
+                                {leave.medical_file ? (
+                                  <button
+                                    className="btn-download"
+                                    onClick={() =>
+                                      handleDownloadMedicalFile(
+                                        leave.id,
+                                        leave.medical_file!,
+                                      )
+                                    }
+                                    title="Télécharger le certificat médical"
+                                  >
+                                    <Download size={16} />
+                                    Voir
+                                  </button>
+                                ) : (
+                                  <span className="text-muted">-</span>
+                                )}
+                              </td>
+                              <td>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "0.5rem",
+                                    alignItems: "flex-start",
+                                  }}
                                 >
-                                  <CheckCircle size={16} />
-                                  {processing === leave.id ? "..." : "Approuver"}
-                                </button>
-                                <button
-                                  className="btn btn-reject"
-                                  onClick={() => handleReject(leave.id)}
-                                  disabled={processing === leave.id}
-                                >
-                                  <XCircle size={16} />
-                                  Refuser
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                                  {getStatusBadge(leave.statut)}
+                                </div>
+                              </td>
+                              <td>
+                                <div className="action-buttons">
+                                  <button
+                                    className="btn btn-view"
+                                    onClick={() => setSelectedLeave(leave)}
+                                  >
+                                    <Eye size={16} /> Voir détails
+                                  </button>
+                                  {activeTab === "pending" && (
+                                    <>
+                                      <button
+                                        className="btn btn-approve"
+                                        onClick={() => handleApprove(leave.id)}
+                                        disabled={processing === leave.id}
+                                      >
+                                        <CheckCircle size={16} />
+                                        {processing === leave.id ? "..." : "Approuver"}
+                                      </button>
+                                      <button
+                                        className="btn btn-reject"
+                                        onClick={() => handleReject(leave.id)}
+                                        disabled={processing === leave.id}
+                                      >
+                                        <XCircle size={16} />
+                                        Refuser
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
       </div>
-    </div>
 
       {/* Details Modal */}
       {selectedLeave && (

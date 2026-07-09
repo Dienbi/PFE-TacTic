@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
+import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import client from "../../api/client";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "../../api/queryKeys";
@@ -406,7 +407,7 @@ const LeaveRequest: React.FC = () => {
           <div className="leave-history">
             <h2>Historique des demandes</h2>
             {isLoading ? (
-              <div className="loading-state">Chargement...</div>
+              <DashboardSkeleton type="employee-leave" />
             ) : leaves.length === 0 ? (
               <div className="empty-state">
                 <FileText size={48} />

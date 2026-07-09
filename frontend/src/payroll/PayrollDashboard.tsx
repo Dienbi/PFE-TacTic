@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
+import DashboardSkeleton from "../shared/components/DashboardSkeleton";
 import client from "../api/client";
 import { usePayrollDashboard } from "../hooks/queries";
 import { usePayrollMutations } from "../hooks/mutations";
@@ -101,6 +102,7 @@ const PayrollDashboard: React.FC = () => {
     globalStats,
     employeesConfig: employees,
     payrollRecords: payrolls,
+    isLoading,
     refetch: fetchData,
   } = usePayrollDashboard();
   const employeeList = (employees ?? []) as EmployeeConfig[];
@@ -349,6 +351,10 @@ const PayrollDashboard: React.FC = () => {
           userRole={user?.role || "RH"}
         />
         <div className="dashboard-content payroll-page">
+          {isLoading ? (
+            <DashboardSkeleton type="payroll" />
+          ) : (
+            <>
           {/* Page Header */}
           <div className="payroll-header">
             <div>
@@ -1173,6 +1179,8 @@ const PayrollDashboard: React.FC = () => {
                 </ul>
               </div>
             </div>
+          )}
+            </>
           )}
         </div>
       </div>

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { jobMatchingApi, JobApplication } from "../../api/jobMatchingApi";
+import { jobMatchingApi } from "../../api/jobMatchingApi";
 import { useMyApplications } from "../../../hooks/queries";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import "./MyApplications.css";
 
 const MyApplications: React.FC = () => {
@@ -73,7 +74,7 @@ const MyApplications: React.FC = () => {
           {error && <div className="alert alert-danger">Failed to load applications</div>}
 
           {isLoading ? (
-            <div className="loading-spinner">Loading your applications...</div>
+            <DashboardSkeleton type="employee-applications" />
           ) : applications.length === 0 ? (
             <div className="empty-state-modern">
               <div className="empty-illustration">📂</div>

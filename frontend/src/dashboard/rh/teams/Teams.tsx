@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import client from "../../../api/client";
 import { useQuery } from "@tanstack/react-query";
 import CreateTeamModal from "./CreateTeamModal";
@@ -176,39 +177,67 @@ const Teams: React.FC = () => {
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                <Users size={20} className="text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {teams.length}
-                </p>
-                <p className="text-xs text-gray-500">Total Teams</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                <Users size={20} className="text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {totalMembers}
-                </p>
-                <p className="text-xs text-gray-500">Total Members</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
-              <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
-                <Settings2 size={20} className="text-violet-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {teams.filter((t: Equipe) => t.chef_equipe).length}
-                </p>
-                <p className="text-xs text-gray-500">Teams with Manager</p>
-              </div>
-            </div>
+            {isLoading ? (
+              <>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
+                  <div className="flex-1">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
+                  <div className="flex-1">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
+                  <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
+                  <div className="flex-1">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <Users size={20} className="text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {teams.length}
+                    </p>
+                    <p className="text-xs text-gray-500">Total Teams</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <Users size={20} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {totalMembers}
+                    </p>
+                    <p className="text-xs text-gray-500">Total Members</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
+                  <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                    <Settings2 size={20} className="text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {teams.filter((t: Equipe) => t.chef_equipe).length}
+                    </p>
+                    <p className="text-xs text-gray-500">Teams with Manager</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Search */}
@@ -227,9 +256,7 @@ const Teams: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-gray-500">Loading teams...</div>
-            </div>
+            <DashboardSkeleton type="teams" />
           ) : (
             <>
               {/* Empty state */}

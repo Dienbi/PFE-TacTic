@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
+import DashboardSkeleton from "../shared/components/DashboardSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useAiReports } from "../hooks/queries";
 import AIReportsHeader from "./components/AIReportsHeader";
@@ -36,33 +37,39 @@ const ReportsPage: React.FC = () => {
         <Navbar userName={userName} userRole={userRole} />
 
         <div className="dashboard-content">
-          <AIReportsHeader
-            generatedAt={generatedAt}
-            aiAvailable={!!data?.ai_available && !isError}
-            onRefresh={handleRefresh}
-            isRefreshing={isFetching}
-          />
+          {isLoading ? (
+            <DashboardSkeleton type="reports" />
+          ) : (
+            <>
+              <AIReportsHeader
+                generatedAt={generatedAt}
+                aiAvailable={!!data?.ai_available && !isError}
+                onRefresh={handleRefresh}
+                isRefreshing={isFetching}
+              />
 
-          {!isLoading && !data?.ai_available && (
-            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              {isError
-                ? "Le service IA est momentanément indisponible. Vérifiez que le service Python est démarré."
-                : "Aucune donnée IA disponible pour le moment."}
-            </div>
+              {!data?.ai_available && (
+                <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {isError
+                    ? "Le service IA est momentanément indisponible. Vérifiez que le service Python est démarré."
+                    : "Aucune donnée IA disponible pour le moment."}
+                </div>
+              )}
+
+              <AIOverviewKPIs aiKpis={aiKpis} loading={false} />
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <AttendanceAlertsSection
+                  data={data?.attendance_predictions ?? []}
+                  loading={false}
+                />
+                <PerformanceScoresSection
+                  data={data?.performance_scores ?? []}
+                  loading={false}
+                />
+              </div>
+            </>
           )}
-
-          <AIOverviewKPIs aiKpis={aiKpis} loading={isLoading} />
-
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <AttendanceAlertsSection
-              data={data?.attendance_predictions ?? []}
-              loading={isLoading}
-            />
-            <PerformanceScoresSection
-              data={data?.performance_scores ?? []}
-              loading={isLoading}
-            />
-          </div>
         </div>
       </div>
     </div>

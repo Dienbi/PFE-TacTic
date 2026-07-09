@@ -133,46 +133,89 @@ const AttendanceHistory: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon blue">
-                <Calendar size={24} />
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">{stats?.total_jours || 0}</span>
-                <span className="stat-label">Jours Travaillés</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon green">
-                <Clock size={24} />
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">
-                  {formatHours(stats?.total_heures)}
-                </span>
-                <span className="stat-label">Heures Ce Mois</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon orange">
-                <Calendar size={24} />
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">{stats?.absences || 0}</span>
-                <span className="stat-label">Absences</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon purple">
-                <Calendar size={24} />
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">
-                  {stats?.absences_justifiees || 0}
-                </span>
-                <span className="stat-label">Absences Justifiées</span>
-              </div>
-            </div>
+            {isLoadingStats ? (
+              <>
+                <div className="stat-card">
+                  <div className="stat-icon blue">
+                    <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-12 mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon green">
+                    <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-12 mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon orange">
+                    <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-12 mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon purple">
+                    <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-12 mb-1" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="stat-card">
+                  <div className="stat-icon blue">
+                    <Calendar size={24} />
+                  </div>
+                  <div className="stat-info">
+                    <span className="stat-value">{stats?.total_jours || 0}</span>
+                    <span className="stat-label">Jours Travaillés</span>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon green">
+                    <Clock size={24} />
+                  </div>
+                  <div className="stat-info">
+                    <span className="stat-value">
+                      {formatHours(stats?.total_heures)}
+                    </span>
+                    <span className="stat-label">Heures Ce Mois</span>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon orange">
+                    <Calendar size={24} />
+                  </div>
+                  <div className="stat-info">
+                    <span className="stat-value">{stats?.absences || 0}</span>
+                    <span className="stat-label">Absences</span>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon purple">
+                    <Calendar size={24} />
+                  </div>
+                  <div className="stat-info">
+                    <span className="stat-value">
+                      {stats?.absences_justifiees || 0}
+                    </span>
+                    <span className="stat-label">Absences Justifiées</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Filters and Controls */}

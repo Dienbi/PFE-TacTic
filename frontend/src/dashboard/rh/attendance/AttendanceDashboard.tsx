@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import { useAttendanceSummary, useAttendanceAnomalies, type AttendanceAnomaly } from "../../../hooks/queries/useAttendance";
 import "./AttendanceDashboard.css";
 
@@ -139,7 +140,7 @@ const AttendanceDashboard: React.FC = () => {
           </div>
 
           {summaryLoading || anomaliesLoading ? (
-            <div className="loading-state">Loading attendance data...</div>
+            <DashboardSkeleton type="attendance" />
           ) : summaryError || anomaliesError ? (
             <div className="error-state">Error loading attendance data</div>
           ) : summaryData && (

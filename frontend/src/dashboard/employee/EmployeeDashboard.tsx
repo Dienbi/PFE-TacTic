@@ -8,6 +8,7 @@ import PerformanceSection from "./components/PerformanceSection";
 import SalarySection from "./components/SalarySection";
 import BottomActions from "./components/BottomActions";
 import NotificationsSection from "../manager/components/NotificationsSection";
+import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useAuth } from "../../hooks/useAuth";
 import { useEmployeeDashboard } from "../../hooks/queries";
 import "./EmployeeDashboard.css";
@@ -25,9 +26,7 @@ const EmployeeDashboard: React.FC = () => {
         <Sidebar />
         <div className="main-content">
           <Navbar userName={userName} userRole={userRole} />
-          <div className="dashboard-content">
-            <div className="loading-state">Chargement...</div>
-          </div>
+          <DashboardSkeleton type="employee" />
         </div>
       </div>
     );

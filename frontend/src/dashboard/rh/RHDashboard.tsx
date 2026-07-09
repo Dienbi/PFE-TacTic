@@ -4,6 +4,7 @@ import Navbar from "../../../src/shared/components/Navbar";
 import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
+import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useRhDashboard } from "../../hooks/queries";
 import { useAuth } from "../../hooks/useAuth";
 import "./RHDashboard.css";
@@ -12,12 +13,7 @@ const ActivityLogs = lazy(() => import("./components/ActivityLogs"));
 const AccountRequests = lazy(() => import("./components/AccountRequests"));
 
 const LoadingFallback = () => (
-  <div
-    className="content-card"
-    style={{ padding: "2rem", textAlign: "center", color: "#6b7280" }}
-  >
-    Chargement...
-  </div>
+  <div className="skeleton-card" style={{ height: "400px" }} />
 );
 
 const RHDashboard: React.FC = () => {
@@ -26,6 +22,18 @@ const RHDashboard: React.FC = () => {
 
   const userName = user ? displayName : "RH Manager";
   const userRole = user?.role ?? "RH";
+
+  if (dashboardLoading) {
+    return (
+      <div className="dashboard-container">
+        <Sidebar />
+        <div className="main-content">
+          <Navbar userName={userName} userRole={userRole} />
+          <DashboardSkeleton type="rh" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">

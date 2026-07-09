@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { jobMatchingApi, JobPost } from "../../api/jobMatchingApi";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import { Search } from "lucide-react";
 import "./JobPosts.css";
 
@@ -141,7 +142,7 @@ const JobPosts: React.FC = () => {
           </nav>
 
           {loading ? (
-            <div className="loading-state">Loading...</div>
+            <DashboardSkeleton type="job-posts" />
           ) : filteredPosts.length === 0 ? (
             <div className="empty-state">
               <p>No job posts found</p>

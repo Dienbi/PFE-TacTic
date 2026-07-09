@@ -7,6 +7,7 @@ import NotificationsSection from "./components/NotificationsSection";
 import QuickActions from "./components/QuickActions";
 import BottomActions from "./components/BottomActions";
 import AttendanceSection from "../employee/components/AttendanceSection";
+import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useAuth } from "../../hooks/useAuth";
 import { useManagerDashboard } from "../../hooks/queries";
 import "./ManagerDashboard.css";
@@ -24,9 +25,7 @@ const ManagerDashboard: React.FC = () => {
         <Sidebar />
         <div className="main-content">
           <Navbar userName={userName} userRole={userRole} />
-          <div className="dashboard-content">
-            <div className="loading-state">Chargement...</div>
-          </div>
+          <DashboardSkeleton type="manager" />
         </div>
       </div>
     );

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { jobMatchingApi, JobRequest } from "../../api/jobMatchingApi";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import "./JobRequestsReview.css";
 
 const JobRequestsReview: React.FC = () => {
@@ -97,7 +98,7 @@ const JobRequestsReview: React.FC = () => {
             {error && <div className="alert alert-danger">{error}</div>}
 
             {loading ? (
-              <div className="loading-spinner">Loading...</div>
+              <DashboardSkeleton type="job-requests" />
             ) : requests.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">✓</div>

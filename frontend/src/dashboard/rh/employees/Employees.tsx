@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import {
   useEmployeesPage,
   useArchivedEmployees,
@@ -312,6 +313,21 @@ const Employees: React.FC = () => {
     EN_CONGE: users.filter((u) => u.status === "EN_CONGE").length,
   };
 
+  if (isLoading) {
+    return (
+      <div className="dashboard-container">
+        <Sidebar />
+        <div className="main-content">
+          <Navbar
+            userName={rhUser ? displayName : "RH Manager"}
+            userRole={rhUser ? rhUser.role : "RH"}
+          />
+          <DashboardSkeleton type="employees" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -430,13 +446,7 @@ const Employees: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="text-center p-4">
-                      Loading users...
-                    </td>
-                  </tr>
-                ) : filteredUsers.length === 0 ? (
+                {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center p-4">
                       {viewMode === "archived"

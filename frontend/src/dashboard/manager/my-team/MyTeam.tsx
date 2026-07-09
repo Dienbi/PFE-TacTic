@@ -28,13 +28,6 @@ interface User {
   poste?: string;
 }
 
-interface Team {
-  id: number;
-  nom: string;
-  description?: string;
-  membres: User[];
-}
-
 const MyTeam: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");

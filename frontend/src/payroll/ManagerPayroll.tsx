@@ -54,15 +54,10 @@ interface TeamMember {
   };
 }
 
-interface TeamPayrollData {
-  equipe: string;
-  membres: TeamMember[];
-}
-
 const ManagerPayroll: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [expandedMember, setExpandedMember] = useState<number | null>(null);
-  const { data: teamData, isLoading, error: queryError } = useTeamPayroll();
+  const { data: teamData, error: queryError } = useTeamPayroll();
 
   React.useEffect(() => {
     const storedUser = localStorage.getItem("user");

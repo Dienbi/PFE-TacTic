@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { jobMatchingApi, JobRequest } from "../../api/jobMatchingApi";
+import { JobRequest } from "../../api/jobMatchingApi";
 import { useJobRequests } from "../../../hooks/queries/useJobMatching";
-import { queryClient } from "../../../api/queryClient";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import "./MyJobRequests.css";

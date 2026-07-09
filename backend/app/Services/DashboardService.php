@@ -303,7 +303,7 @@ class DashboardService
             ->where('chef_equipe_id', $managerId)
             ->first();
 
-        if (!$team) {
+        if (! $team) {
             return [
                 'team' => null,
                 'team_size' => 0,

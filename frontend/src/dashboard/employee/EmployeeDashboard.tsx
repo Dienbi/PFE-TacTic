@@ -14,7 +14,7 @@ import "./EmployeeDashboard.css";
 
 const EmployeeDashboard: React.FC = () => {
   const { user, displayName } = useAuth();
-  const { data: dashboardData, isLoading, error } = useEmployeeDashboard();
+  const { isLoading, error } = useEmployeeDashboard();
 
   const userName = user ? displayName : "Employé";
   const userRole = user?.role ?? "Employé";
@@ -46,11 +46,6 @@ const EmployeeDashboard: React.FC = () => {
       </div>
     );
   }
-
-  const todayAttendance = dashboardData?.today_attendance;
-  const monthlyStats = dashboardData?.monthly_stats;
-  const recentLeaves = dashboardData?.recent_leaves ?? [];
-  const latestPayslip = dashboardData?.latest_payslip;
 
   return (
     <div className="dashboard-container">

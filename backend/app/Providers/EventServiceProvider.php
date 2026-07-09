@@ -5,6 +5,10 @@ namespace App\Providers;
 use App\Events\NewAccountRequest;
 use App\Events\NewActivityLog;
 use App\Listeners\InvalidateDashboardCache;
+use App\Models\Conge;
+use App\Models\Pointage;
+use App\Observers\CongeObserver;
+use App\Observers\PointageObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -37,8 +41,8 @@ class EventServiceProvider extends ServiceProvider
         parent::boot();
 
         // Register observers
-        \App\Models\Pointage::observe(\App\Observers\PointageObserver::class);
-        \App\Models\Conge::observe(\App\Observers\CongeObserver::class);
+        Pointage::observe(PointageObserver::class);
+        Conge::observe(CongeObserver::class);
     }
 
     /**

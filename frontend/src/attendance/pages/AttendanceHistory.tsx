@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Calendar,
   Clock,
@@ -13,7 +13,6 @@ import {
   getMesPointages,
   getStats,
   Pointage,
-  PointageStats,
 } from "../api/attendanceApi";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "../../api/queryKeys";
@@ -21,13 +20,13 @@ import "./AttendanceHistory.css";
 
 const AttendanceHistory: React.FC = () => {
   const [user, setUser] = useState<any>(null);
-  const { data: pointages = [], isLoading: isLoadingPointages, refetch: refetchPointages } = useQuery({
+  const { data: pointages = [], isLoading: isLoadingPointages } = useQuery({
     queryKey: ['attendance', 'history'],
     queryFn: getMesPointages,
     staleTime: 5 * 60_000, // 5 minutes
     gcTime: 10 * 60_000, // 10 minutes
   });
-  const { data: stats = null, isLoading: isLoadingStats, refetch: refetchStats } = useQuery({
+  const { data: stats = null, isLoading: isLoadingStats } = useQuery({
     queryKey: queryKeys.attendance.stats(),
     queryFn: () => getStats(),
     staleTime: 5 * 60_000, // 5 minutes

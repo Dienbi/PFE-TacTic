@@ -7,7 +7,7 @@ import Navbar from "../../../shared/components/Navbar";
 import "./JobBoard.css";
 
 const JobBoard: React.FC = () => {
-  const { data: posts = [], isLoading, error: queryError, refetch } = useJobPosts();
+  const { data: posts = [], isLoading } = useJobPosts();
   const [searchTerm, setSearchTerm] = useState("");
   const [applyingTo, setApplyingTo] = useState<number | null>(null);
   const [selectedPost, setSelectedPost] = useState<JobPost | null>(null);

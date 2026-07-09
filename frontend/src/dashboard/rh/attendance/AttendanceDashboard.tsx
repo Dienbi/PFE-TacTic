@@ -23,34 +23,6 @@ interface UserInfo {
   status: string;
 }
 
-interface AttendanceStats {
-  date: string;
-  stats: {
-    total_employees: number;
-    present_count: number;
-    late_count: number;
-    absent_count: number;
-    currently_in_count: number;
-  };
-  lists: {
-    present: UserInfo[];
-    late: UserInfo[];
-    absent: UserInfo[];
-    currently_in: UserInfo[];
-  };
-}
-
-interface AnomalyResponse {
-  period: {
-    start_date: string;
-    end_date: string;
-    working_days: number;
-    days: number;
-  };
-  total: number;
-  anomalies: AttendanceAnomaly[];
-}
-
 const FLAG_LABELS: Record<string, string> = {
   frequent_late: "Retards fréquents",
   heavy_absence: "Absences élevées",

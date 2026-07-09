@@ -14,3 +14,4 @@ export {
     usePayrollDashboard,
 } from './usePayroll';
 export { useTodayPointage, usePointageStats } from './useAttendance';
+export { useJobPosts, useJobRequests, useMyApplications } from './useJobMatching';

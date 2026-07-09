@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DollarSign,
   TrendingUp,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../shared/components/Sidebar";
 import Navbar from "../shared/components/Navbar";
+import { useMesPaies, usePayrollStats } from "../hooks/queries";
 import client from "../api/client";
 import "./EmployeeSalary.css";
 
@@ -50,31 +51,18 @@ interface PayStats {
 
 const EmployeeSalary: React.FC = () => {
   const [user, setUser] = useState<any>(null);
-  const [payslips, setPayslips] = useState<PayslipRecord[]>([]);
-  const [stats, setStats] = useState<PayStats | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const { data: payslips = [], isLoading: payslipsLoading, error: payslipsError } = useMesPaies();
+  const { data: stats, isLoading: statsLoading, error: statsError } = usePayrollStats();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [payRes, statsRes] = await Promise.all([
-        client.get("/paies/mes-paies"),
-        client.get("/paies/stats"),
-      ]);
-      setPayslips(payRes.data);
-      setStats(statsRes.data);
-    } catch (error) {
-      console.error("Error fetching salary data:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const isLoading = payslipsLoading || statsLoading;
+  const error = payslipsError || statsError;
 
   const handleDownload = async (id: number) => {
     // Open a new window immediately to avoid popup blockers
@@ -171,8 +159,18 @@ const EmployeeSalary: React.FC = () => {
             </p>
           </div>
 
+          {error && (
+            <div className="error-state">
+              Erreur lors du chargement des données
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="loading-state">Chargement...</div>
+          )}
+
           {/* KPI Row */}
-          {stats && (
+          {!isLoading && !error && stats && (
             <div className="salary-kpi-grid">
               <div className="salary-kpi-card kpi-green">
                 <div className="kpi-icon">
@@ -220,7 +218,7 @@ const EmployeeSalary: React.FC = () => {
           )}
 
           {/* Summary Cards */}
-          {stats && (
+          {!isLoading && !error && stats && (
             <div className="salary-summary-grid">
               <div className="summary-card">
                 <h3>CNSS (cotisation)</h3>
@@ -251,19 +249,20 @@ const EmployeeSalary: React.FC = () => {
           )}
 
           {/* Payslips List */}
-          <div className="salary-history">
-            <h2>
-              <Calendar size={18} /> Historique des Fiches de Paie
-            </h2>
+          {!isLoading && !error && (
+            <div className="salary-history">
+              <h2>
+                <Calendar size={18} /> Historique des Fiches de Paie
+              </h2>
 
-            {payslips.length === 0 ? (
+              {payslips.length === 0 ? (
               <div className="empty-state">
                 <FileText size={48} />
                 <p>Aucune fiche de paie disponible</p>
               </div>
             ) : (
               <div className="salary-list">
-                {payslips.map((p) => (
+                {payslips.map((p: any) => (
                   <div
                     key={p.id}
                     className={`salary-card ${expandedId === p.id ? "expanded" : ""}`}
@@ -402,6 +401,7 @@ const EmployeeSalary: React.FC = () => {
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

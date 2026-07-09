@@ -7,6 +7,7 @@ export interface AuthUser {
     email: string;
     role: string;
     matricule?: string;
+    salaire_base?: number;
 }
 
 interface AuthState {

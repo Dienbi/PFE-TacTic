@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Calendar, Clock, CheckCircle, XCircle } from "lucide-react";
 import { useMesConges } from "../../../hooks/queries";
 import "./LeaveHistory.css";
 
@@ -16,25 +17,26 @@ const LeaveHistory: React.FC = () => {
   const { data: leaves = [], isLoading: loading } = useMesConges();
 
   const getStatusBadge = (statut: string) => {
-    let className = "";
-    let label = statut;
-
     switch (statut) {
       case "APPROUVE":
-        className = "approved";
-        label = "Approuvé";
-        break;
+        return (
+          <span className="status-badge approved">
+            <CheckCircle size={14} /> Approuvé
+          </span>
+        );
       case "REFUSE":
-        className = "rejected";
-        label = "Refusé";
-        break;
+        return (
+          <span className="status-badge rejected">
+            <XCircle size={14} /> Refusé
+          </span>
+        );
       default:
-        className = "pending";
-        label = "En attente";
-        break;
+        return (
+          <span className="status-badge pending">
+            <Clock size={14} /> En attente
+          </span>
+        );
     }
-
-    return <span className={`status-badge ${className}`}>{label}</span>;
   };
 
   const recentLeaves = (leaves as LeaveHistoryItem[]).slice(0, 5);
@@ -49,19 +51,36 @@ const LeaveHistory: React.FC = () => {
       </div>
 
       {loading ? (
-        <p className="loading-text">Chargement...</p>
+        <div className="loading-state">
+          <div className="skeleton-item" />
+          <div className="skeleton-item" />
+          <div className="skeleton-item" />
+        </div>
       ) : recentLeaves.length === 0 ? (
-        <p className="empty-text">Aucun congé enregistré</p>
+        <div className="empty-state">
+          <Calendar size={32} className="empty-icon" />
+          <p>Aucun congé enregistré</p>
+        </div>
       ) : (
         <div className="leave-list">
           {recentLeaves.map((leave) => (
             <div key={leave.id} className="leave-item">
-              <div className="leave-info">
-                <span className="leave-type">{leave.type}</span>
-                <span className="leave-dates">
-                  {new Date(leave.start_date).toLocaleDateString("fr-FR")} -{" "}
-                  {new Date(leave.end_date).toLocaleDateString("fr-FR")}
-                </span>
+              <div className="leave-icon-wrapper">
+                <Calendar size={16} className="leave-icon" />
+              </div>
+              <div className="leave-content">
+                <div className="leave-type">{leave.type}</div>
+                <div className="leave-dates">
+                  {new Date(leave.start_date).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                  })}{" "}
+                  –{" "}
+                  {new Date(leave.end_date).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                  })}
+                </div>
               </div>
               {getStatusBadge(leave.statut)}
             </div>

@@ -16,3 +16,13 @@ export const useJobRequests = () =>
         staleTime: 5 * 60_000, // 5 minutes
         gcTime: 10 * 60_000, // 10 minutes
     });
+
+export const useMyApplications = () =>
+    useQuery({
+        queryKey: ['applications', 'mine'],
+        queryFn: () => jobMatchingApi.getMyApplications(),
+        staleTime: 10 * 60_000, // 10 minutes
+        gcTime: 30 * 60_000, // 30 minutes
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+    });

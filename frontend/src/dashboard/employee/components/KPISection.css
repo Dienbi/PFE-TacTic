@@ -56,3 +56,42 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Skeleton Loading */
+.kpi-card.skeleton {
+  pointer-events: none;
+}
+
+.skeleton-line {
+  height: 1.5rem;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-line:first-child {
+  height: 1rem;
+  width: 60%;
+}
+
+.skeleton-line:nth-child(2) {
+  height: 2rem;
+  width: 80%;
+}
+
+.skeleton-line:last-child {
+  height: 0.875rem;
+  width: 50%;
+  margin-bottom: 0;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

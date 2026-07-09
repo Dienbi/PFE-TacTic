@@ -1,36 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jobMatchingApi, JobApplication } from "../../api/jobMatchingApi";
+import { useMyApplications } from "../../../hooks/queries";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import "./MyApplications.css";
 
 const MyApplications: React.FC = () => {
   const navigate = useNavigate();
-  const [applications, setApplications] = useState<JobApplication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+
+  const { data: applications = [], isLoading, error, refetch } = useMyApplications();
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userName = user ? `${user.prenom} ${user.nom}` : "Employee";
   const userRole = user ? user.role : "employe";
-
-  useEffect(() => {
-    loadApplications();
-  }, []);
-
-  const loadApplications = async () => {
-    try {
-      setLoading(true);
-      const data = await jobMatchingApi.getMyApplications();
-      setApplications(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load applications");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleWithdraw = async (applicationId: number) => {
     if (!window.confirm("Are you sure you want to withdraw this application?"))
@@ -39,9 +23,9 @@ const MyApplications: React.FC = () => {
     setWithdrawingId(applicationId);
     try {
       await jobMatchingApi.withdrawApplication(applicationId);
-      await loadApplications();
+      refetch();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to withdraw application");
+      console.error("Failed to withdraw application:", err);
     } finally {
       setWithdrawingId(null);
     }
@@ -61,7 +45,7 @@ const MyApplications: React.FC = () => {
     return badges[status] || badges.en_attente;
   };
 
-  const canWithdraw = (application: JobApplication) => {
+  const canWithdraw = (application: any) => {
     return (
       application.statut === "en_attente" || application.statut === "examinee"
     );
@@ -86,9 +70,9 @@ const MyApplications: React.FC = () => {
             </button>
           </div>
 
-          {error && <div className="alert alert-danger">{error}</div>}
+          {error && <div className="alert alert-danger">Failed to load applications</div>}
 
-          {loading ? (
+          {isLoading ? (
             <div className="loading-spinner">Loading your applications...</div>
           ) : applications.length === 0 ? (
             <div className="empty-state-modern">
@@ -106,7 +90,7 @@ const MyApplications: React.FC = () => {
             </div>
           ) : (
             <div className="applications-timeline-view">
-              {applications.map((application) => {
+              {applications.map((application: any) => {
                 const badge = getStatusBadge(application.statut);
 
                 return (

@@ -7,6 +7,10 @@ use App\Enums\TypeConge;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property Utilisateur $utilisateur
+ * @property Utilisateur $approbateur
+ */
 class Conge extends Model
 {
     use HasFactory;

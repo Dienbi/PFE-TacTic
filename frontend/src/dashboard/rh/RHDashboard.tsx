@@ -4,6 +4,7 @@ import Navbar from "../../../src/shared/components/Navbar";
 import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
+import FeedbackNotifications from "./components/FeedbackNotifications";
 import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useRhDashboard } from "../../hooks/queries";
 import { useAuth } from "../../hooks/useAuth";
@@ -81,6 +82,10 @@ const RHDashboard: React.FC = () => {
               initialData={dashboardData?.recent_leaves}
               loading={dashboardLoading}
             />
+          </section>
+
+          <section className="feedback-row">
+            <FeedbackNotifications />
           </section>
         </div>
       </div>

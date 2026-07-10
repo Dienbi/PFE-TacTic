@@ -11,13 +11,14 @@ return new class extends Migration
         Schema::create('performance_reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('utilisateur_id')->constrained('utilisateurs')->cascadeOnDelete();
-            $table->foreignId('reviewer_id')->constrained('utilisateurs')->cascadeOnDelete();
-            $table->decimal('score', 5, 2);
-            $table->string('period', 20)->nullable();
-            $table->text('comment')->nullable();
+            $table->foreignId('chef_id')->constrained('utilisateurs')->cascadeOnDelete();
+            $table->decimal('score', 2, 1); // Range 1.0-10.0
+            $table->text('message');
+            $table->date('review_date');
             $table->timestamps();
 
-            $table->index(['utilisateur_id', 'period']);
+            // Unique constraint: one feedback per employee per manager per month
+            $table->unique(['utilisateur_id', 'chef_id', 'review_date'], 'unique_monthly_feedback');
         });
     }
 

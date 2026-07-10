@@ -8,6 +8,7 @@ import PerformanceSection from "./components/PerformanceSection";
 import SalarySection from "./components/SalarySection";
 import BottomActions from "./components/BottomActions";
 import NotificationsSection from "../manager/components/NotificationsSection";
+import FeedbackHistory from "./components/FeedbackHistory";
 import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useAuth } from "../../hooks/useAuth";
 import { useEmployeeDashboard } from "../../hooks/queries";
@@ -60,6 +61,7 @@ const EmployeeDashboard: React.FC = () => {
           <div className="widgets-grid">
             <div className="widget-column left">
               <LeaveHistory />
+              <FeedbackHistory />
             </div>
             <div className="widget-column right">
               <NotificationsSection />

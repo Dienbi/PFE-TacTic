@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Save, X, Plus } from "lucide-react";
+import { Save, X, Plus, Upload, Check, AlertCircle } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import client from "../../api/client";
+import { useUploadCv, useCvLatest, useConfirmSkills, ExtractedSkills } from "../../api/cvApi";
 import "./Profile.css";
 
 const SUGGESTED_SKILLS = [
@@ -95,6 +96,18 @@ const EditProfile: React.FC = () => {
   const [newSkill, setNewSkill] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  
+  // CV extraction state
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [showCvUpload, setShowCvUpload] = useState(false);
+  const [extractedSkills, setExtractedSkills] = useState<ExtractedSkills | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<ExtractedSkills | null>(null);
+  const [uploadError, setUploadError] = useState("");
+
+  // CV API hooks
+  const uploadCv = useUploadCv();
+  const { data: cvStatus, isLoading: cvLoading } = useCvLatest();
+  const confirmSkills = useConfirmSkills();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -150,6 +163,86 @@ const EditProfile: React.FC = () => {
   const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(skills.filter((skill) => skill !== skillToRemove));
   };
+
+  // CV upload handlers
+  const handleCvFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError("File size exceeds 5MB limit");
+        return;
+      }
+      if (file.type !== "application/pdf" && !file.type.includes("wordprocessingml.document")) {
+        setUploadError("Only PDF and DOCX files are supported");
+        return;
+      }
+      setCvFile(file);
+      setUploadError("");
+    }
+  };
+
+  const handleCvUpload = async () => {
+    if (!cvFile) return;
+
+    setUploadError("");
+    try {
+      await uploadCv.mutateAsync(cvFile);
+      setShowCvUpload(false);
+      setCvFile(null);
+      setSuccess("CV uploaded successfully. Processing started...");
+    } catch (err) {
+      setUploadError("Failed to upload CV. Please try again.");
+    }
+  };
+
+  const handleRemoveExtractedSkill = (skillType: 'technical' | 'soft', skillName: string) => {
+    if (!selectedSkills) return;
+    
+    const updatedSkills = { ...selectedSkills };
+    if (skillType === 'technical') {
+      updatedSkills.technical_skills = updatedSkills.technical_skills.filter(s => s.name !== skillName);
+    } else {
+      updatedSkills.soft_skills = updatedSkills.soft_skills.filter(s => s.name !== skillName);
+    }
+    
+    setSelectedSkills(updatedSkills);
+  };
+
+  const handleConfirmExtractedSkills = async () => {
+    if (!selectedSkills || !cvStatus?.id) return;
+
+    try {
+      await confirmSkills.mutateAsync({
+        cvUploadId: cvStatus.id,
+        skills: selectedSkills,
+      });
+      setSuccess("Skills confirmed and added to your profile!");
+      setExtractedSkills(null);
+      setSelectedSkills(null);
+      
+      // Refresh user data
+      const response = await client.get("/auth/me");
+      if (response.data.user) {
+        // Update localStorage with new user data
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        setUser({ ...user, ...response.data.user } as UserData);
+        
+        if (response.data.user.competences) {
+          setSkills(response.data.user.competences.map((c: any) => c.nom));
+        }
+      }
+    } catch (err) {
+      setError("Failed to confirm skills. Please try again.");
+    }
+  };
+
+  // Update extracted skills when CV status changes
+  useEffect(() => {
+    if (cvStatus?.status === 'completed' && cvStatus.extracted_data) {
+      setExtractedSkills(cvStatus.extracted_data);
+      setSelectedSkills(cvStatus.extracted_data);
+    }
+  }, [cvStatus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -384,6 +477,266 @@ const EditProfile: React.FC = () => {
                 </div>
               ) : (
                 <div className="skills-section">
+                  {/* CV Upload Section */}
+                  <div className="form-group" style={{ marginBottom: "2rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Upload size={18} />
+                      Upload CV for AI Skill Extraction
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowCvUpload(!showCvUpload)}
+                      className="edit-profile-btn"
+                      style={{
+                        backgroundColor: "#4F46E5",
+                        color: "white",
+                        border: "none",
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      {showCvUpload ? "Cancel" : "Upload CV"}
+                    </button>
+
+                    {showCvUpload && (
+                      <div
+                        style={{
+                          marginTop: "1rem",
+                          padding: "1.5rem",
+                          border: "2px dashed #D1D5DB",
+                          borderRadius: "8px",
+                          textAlign: "center",
+                          backgroundColor: "#F9FAFB",
+                        }}
+                      >
+                        <input
+                          type="file"
+                          accept=".pdf,.docx"
+                          onChange={handleCvFileChange}
+                          style={{ display: "none" }}
+                          id="cv-file-input"
+                        />
+                        <label
+                          htmlFor="cv-file-input"
+                          style={{
+                            display: "block",
+                            padding: "2rem",
+                            cursor: "pointer",
+                            color: "#6B7280",
+                          }}
+                        >
+                          <Upload size={32} style={{ marginBottom: "0.5rem" }} />
+                          <div>
+                            {cvFile ? cvFile.name : "Click to upload or drag and drop"}
+                          </div>
+                          <div style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
+                            PDF or DOCX, max 5MB
+                          </div>
+                        </label>
+
+                        {uploadError && (
+                          <div
+                            style={{
+                              color: "#EF4444",
+                              marginTop: "1rem",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "0.5rem",
+                            }}
+                          >
+                            <AlertCircle size={16} />
+                            {uploadError}
+                          </div>
+                        )}
+
+                        {cvFile && (
+                          <button
+                            type="button"
+                            onClick={handleCvUpload}
+                            disabled={uploadCv.isPending}
+                            className="edit-profile-btn"
+                            style={{
+                              backgroundColor: "#4F46E5",
+                              color: "white",
+                              border: "none",
+                              marginTop: "1rem",
+                              opacity: uploadCv.isPending ? 0.6 : 1,
+                            }}
+                          >
+                            {uploadCv.isPending ? "Uploading..." : "Upload & Extract Skills"}
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {cvLoading && (
+                      <div
+                        style={{
+                          marginTop: "1rem",
+                          padding: "1rem",
+                          backgroundColor: "#EFF6FF",
+                          borderRadius: "8px",
+                          color: "#1E40AF",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        <AlertCircle size={16} />
+                        Processing your CV...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Extracted Skills Confirmation */}
+                  {extractedSkills && (
+                    <div
+                      style={{
+                        marginBottom: "2rem",
+                        padding: "1.5rem",
+                        backgroundColor: "#F0FDF4",
+                        borderRadius: "8px",
+                        border: "1px solid #22C55E",
+                      }}
+                    >
+                      <h3 style={{ marginBottom: "1rem", color: "#166534" }}>
+                        <Check size={20} style={{ marginRight: "0.5rem" }} />
+                        Skills Extracted from CV
+                      </h3>
+
+                      {/* Technical Skills */}
+                      {selectedSkills?.technical_skills && (
+                        <div style={{ marginBottom: "1rem" }}>
+                          <h4 style={{ marginBottom: "0.5rem" }}>Technical Skills</h4>
+                          <div className="skills-tags-container">
+                            {selectedSkills.technical_skills.map((skill, idx) => (
+                              <div
+                                key={idx}
+                                className="skill-tag"
+                                style={{
+                                  background: "white",
+                                  border: "1px solid #22C55E",
+                                  color: "#166534",
+                                }}
+                              >
+                                <span>{skill.name}</span>
+                                <span
+                                  style={{
+                                    fontSize: "0.7rem",
+                                    marginLeft: "0.5rem",
+                                    padding: "0.1rem 0.4rem",
+                                    backgroundColor: "#DCFCE7",
+                                    borderRadius: "4px",
+                                  }}
+                                >
+                                  {skill.confidence}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveExtractedSkill('technical', skill.name)}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    marginLeft: "0.5rem",
+                                    color: "#EF4444",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                  title="Remove skill"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Soft Skills */}
+                      {selectedSkills?.soft_skills && (
+                        <div style={{ marginBottom: "1rem" }}>
+                          <h4 style={{ marginBottom: "0.5rem" }}>Soft Skills</h4>
+                          <div className="skills-tags-container">
+                            {selectedSkills.soft_skills.map((skill, idx) => (
+                              <div
+                                key={idx}
+                                className="skill-tag"
+                                style={{
+                                  background: "white",
+                                  border: "1px solid #22C55E",
+                                  color: "#166534",
+                                }}
+                              >
+                                <span>{skill.name}</span>
+                                <span
+                                  style={{
+                                    fontSize: "0.7rem",
+                                    marginLeft: "0.5rem",
+                                    padding: "0.1rem 0.4rem",
+                                    backgroundColor: "#DCFCE7",
+                                    borderRadius: "4px",
+                                  }}
+                                >
+                                  {skill.confidence}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveExtractedSkill('soft', skill.name)}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    marginLeft: "0.5rem",
+                                    color: "#EF4444",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                  title="Remove skill"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleConfirmExtractedSkills}
+                        disabled={confirmSkills.isPending}
+                        className="edit-profile-btn"
+                        style={{
+                          backgroundColor: "#22C55E",
+                          color: "white",
+                          border: "none",
+                          marginTop: "1rem",
+                          opacity: confirmSkills.isPending ? 0.6 : 1,
+                        }}
+                      >
+                        {confirmSkills.isPending ? "Adding Skills..." : "Confirm & Add Skills"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setExtractedSkills(null);
+                          setSelectedSkills(null);
+                        }}
+                        className="edit-profile-btn"
+                        style={{
+                          backgroundColor: "#EF4444",
+                          color: "white",
+                          border: "none",
+                          marginTop: "1rem",
+                          marginLeft: "0.5rem",
+                        }}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+
                   <div className="form-group">
                     <label>Add New Skill</label>
                     <div className="skills-input-container">

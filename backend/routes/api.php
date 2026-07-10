@@ -7,12 +7,14 @@ use App\Http\Controllers\Api\AIController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\CongeController;
+use App\Http\Controllers\Api\CvUploadController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EquipeController;
 use App\Http\Controllers\Api\JobApplicationController;
 use App\Http\Controllers\Api\JobPostController;
 use App\Http\Controllers\Api\JobRequestController;
 use App\Http\Controllers\Api\PaieController;
+use App\Http\Controllers\Api\PerformanceReviewController;
 use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
 use App\Http\Controllers\Api\ReportsController;
@@ -72,6 +74,14 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('change-password', [AuthController::class, 'changePassword']);
         Route::put('update-profile', [AuthController::class, 'updateProfile']);
         Route::put('update-skills', [AuthController::class, 'updateSkills']);
+    });
+
+    // CV upload routes (accessible by all authenticated users)
+    Route::prefix('cv')->group(function () {
+        Route::post('/upload', [CvUploadController::class, 'upload']);
+        Route::get('/latest', [CvUploadController::class, 'latest']);
+        Route::post('/{id}/confirm', [CvUploadController::class, 'confirm']);
+        Route::get('/{id}', [CvUploadController::class, 'show']);
     });
 
     // Dashboard routes (RH only)
@@ -335,6 +345,29 @@ Route::middleware('jwt.auth')->group(function () {
         Route::middleware('role:rh')->group(function () {
             Route::post('/{id}/review', [JobApplicationController::class, 'review']);
         });
+    });
+
+    // Performance Review routes
+    Route::prefix('performance-reviews')->group(function () {
+        // Manager routes
+        Route::middleware('role:chef_equipe')->group(function () {
+            Route::post('/', [PerformanceReviewController::class, 'store']);
+            Route::put('/{id}', [PerformanceReviewController::class, 'update'])->where('id', '[0-9]+');
+            Route::delete('/{id}', [PerformanceReviewController::class, 'destroy'])->where('id', '[0-9]+');
+            Route::get('/team', [PerformanceReviewController::class, 'teamFeedback']);
+        });
+
+        // Employee routes
+        Route::get('/employee/{employeeId}', [PerformanceReviewController::class, 'employeeHistory'])->where('employeeId', '[0-9]+');
+        Route::get('/employee/{employeeId}/latest', [PerformanceReviewController::class, 'latestFeedback'])->where('employeeId', '[0-9]+');
+
+        // HR routes
+        Route::middleware('role:rh')->group(function () {
+            Route::get('/all', [PerformanceReviewController::class, 'allFeedback']);
+        });
+
+        // Common routes
+        Route::get('/{id}', [PerformanceReviewController::class, 'show'])->where('id', '[0-9]+');
     });
 
     // ─── AI Routes ──────────────────────────────────────────────

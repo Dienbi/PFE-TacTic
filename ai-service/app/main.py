@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import matching, predictions, training
+from app.api.endpoints import matching, predictions, training, cv_extraction
 from app.models.schemas import HealthResponse
 
 # Configure logging
@@ -40,6 +40,7 @@ app.add_middleware(
 app.include_router(matching.router, prefix="/api", tags=["matching"])
 app.include_router(predictions.router, prefix="/api", tags=["predictions"])
 app.include_router(training.router, prefix="/api", tags=["training"])
+app.include_router(cv_extraction.router, prefix="/api", tags=["cv_extraction"])
 
 
 @app.get("/", response_model=HealthResponse)

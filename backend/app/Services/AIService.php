@@ -195,6 +195,18 @@ class AIService
         ]);
     }
 
+    // ─── CV Skills Extraction ────────────────────────────────────
+
+    /**
+     * Extract skills from CV file using AI service.
+     */
+    public function extractCvSkills(string $filePath): array
+    {
+        return $this->post('/api/cv/extract', [
+            'file_path' => $filePath,
+        ]);
+    }
+
     // ─── Training ────────────────────────────────────────────────
 
     /**
@@ -259,8 +271,15 @@ class AIService
     private function post(string $path, array $data = []): array
     {
         try {
+            Log::info("AI Service POST request to: {$path}", ['data' => $data]);
+            
             $response = Http::timeout(300) // Training can be slow
                 ->post($this->baseUrl.$path, $data);
+
+            Log::info("AI Service POST response status: {$response->status()}", [
+                'successful' => $response->successful(),
+                'body' => $response->body(),
+            ]);
 
             if ($response->successful()) {
                 return $response->json();
@@ -276,7 +295,9 @@ class AIService
                 'message' => $response->json()['detail'] ?? 'AI Service request failed',
             ];
         } catch (\Exception $e) {
-            Log::error("AI Service unreachable: {$e->getMessage()}");
+            Log::error("AI Service unreachable: {$e->getMessage()}", [
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return [
                 'error' => true,

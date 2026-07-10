@@ -1,0 +1,127 @@
+.feedback-notifications-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-notifications-header {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.empty-feedback {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.empty-feedback .empty-icon {
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+
+.feedback-notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feedback-notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.feedback-notification-item.success {
+  border-left-color: #10b981;
+  background: #ecfdf5;
+}
+
+.feedback-notification-item.warning {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.feedback-notification-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.feedback-notification-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.feedback-notification-item.success .feedback-notification-icon {
+  background: #d1fae5;
+  color: #10b981;
+}
+
+.feedback-notification-item.warning .feedback-notification-icon {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.feedback-notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.feedback-notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.feedback-employee-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.feedback-time {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.feedback-notification-details {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.feedback-manager,
+.feedback-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

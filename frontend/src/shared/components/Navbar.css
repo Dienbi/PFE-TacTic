@@ -1,6 +1,6 @@
 .navbar {
     height: 80px;
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.8);
     padding: 0 2rem;
     display: flex;
     align-items: center;
@@ -9,6 +9,8 @@
     position: sticky;
     top: 0;
     z-index: 95;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 

@@ -8,12 +8,15 @@ import {
   Briefcase,
   MapPin,
   Eye,
+  MessageSquare,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import client from "../../../api/client";
 import { useQuery } from "@tanstack/react-query";
+import FeedbackForm from "../components/FeedbackForm";
+import { performanceReviewsApi, PerformanceReview } from "../../../api/performanceReviews";
 import "./MyTeam.css";
 
 interface User {
@@ -33,6 +36,9 @@ const MyTeam: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [selectedMember, setSelectedMember] = useState<User | null>(null);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [existingReview, setExistingReview] = useState<PerformanceReview | undefined>(undefined);
 
   const { data: team = null, isLoading } = useQuery({
     queryKey: ['teams', 'my-team'],
@@ -87,6 +93,36 @@ const MyTeam: React.FC = () => {
 
       return matchesSearch && matchesStatus;
     }) || [];
+
+  const handleGiveFeedback = async (member: User, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedMember(member);
+    
+    // Check for existing feedback this month
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    try {
+      const history = await performanceReviewsApi.getEmployeeHistory(member.id);
+      const thisMonthReview = history.find(review => 
+        review.review_date.startsWith(currentMonth)
+      );
+      setExistingReview(thisMonthReview);
+    } catch (error) {
+      setExistingReview(undefined);
+    }
+    
+    setShowFeedbackForm(true);
+  };
+
+  const handleCloseFeedbackForm = () => {
+    setShowFeedbackForm(false);
+    setSelectedMember(null);
+    setExistingReview(undefined);
+  };
+
+  const handleFeedbackSuccess = () => {
+    // Refresh team data or handle success
+    handleCloseFeedbackForm();
+  };
 
   return (
     <div className="dashboard-container">
@@ -205,6 +241,14 @@ const MyTeam: React.FC = () => {
                         </span>
 
                         <div className="actions-wrapper">
+                          <button 
+                            className="feedback-btn"
+                            onClick={(e) => handleGiveFeedback(member, e)}
+                            title="Give Feedback"
+                          >
+                            <MessageSquare size={16} />
+                            Feedback
+                          </button>
                           <button className="view-btn">
                             <Eye size={16} />
                             Profile
@@ -229,6 +273,16 @@ const MyTeam: React.FC = () => {
           )}
         </div>
       </div>
+
+      {showFeedbackForm && selectedMember && (
+        <FeedbackForm
+          employeeId={selectedMember.id}
+          employeeName={`${selectedMember.prenom} ${selectedMember.nom}`}
+          existingReview={existingReview}
+          onClose={handleCloseFeedbackForm}
+          onSuccess={handleFeedbackSuccess}
+        />
+      )}
     </div>
   );
 };

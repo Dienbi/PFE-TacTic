@@ -40,6 +40,7 @@ class Utilisateur extends Authenticatable implements JWTSubject
         'solde_conge',
         'equipe_id',
         'date_derniere_connexion',
+        'gender',
     ];
 
     protected $hidden = [
@@ -109,6 +110,11 @@ class Utilisateur extends Authenticatable implements JWTSubject
         return $this->hasMany(Paie::class);
     }
 
+    public function payslips()
+    {
+        return $this->hasMany(\App\Models\Payslip::class, 'employee_id');
+    }
+
     public function affectations()
     {
         return $this->hasMany(Affectation::class);
@@ -119,6 +125,11 @@ class Utilisateur extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Competence::class, 'utilisateur_competence')
             ->withPivot('niveau')
             ->withTimestamps();
+    }
+
+    public function fiscalProfile()
+    {
+        return $this->hasOne(\App\Models\EmployeeFiscalProfile::class, 'employee_id');
     }
 
     // Accessors

@@ -14,11 +14,23 @@ use App\Http\Controllers\Api\JobApplicationController;
 use App\Http\Controllers\Api\JobPostController;
 use App\Http\Controllers\Api\JobRequestController;
 use App\Http\Controllers\Api\PaieController;
+use App\Http\Controllers\Api\Payroll\AuditLogController;
+use App\Http\Controllers\Api\Payroll\FiscalRuleManagementController;
+use App\Http\Controllers\Api\Payroll\PaymentTrackingController;
+use App\Http\Controllers\Api\Payroll\PayslipCorrectionController;
+use App\Http\Controllers\Api\Payroll\PayslipGenerationController;
+use App\Http\Controllers\Api\Payroll\RuleImportController;
+use App\Http\Controllers\Api\Payroll\YearEndRegularizationController;
 use App\Http\Controllers\Api\PerformanceReviewController;
 use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
 use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\UtilisateurController;
+use App\Http\Controllers\Api\FiscalProfile\PersonalInfoChangeRequestController;
+use App\Http\Controllers\Api\FiscalProfile\FiscalProfileGroupController;
+use App\Http\Controllers\Api\FiscalProfile\EmployeeFiscalProfileAssignmentController;
+use App\Http\Controllers\Api\FiscalProfile\HeadOfFamilyOverrideController;
+use App\Http\Controllers\Api\FiscalProfile\AiChatController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +74,10 @@ Route::prefix('account-requests')->group(function () {
     Route::get('/validate-token/{token}', [AccountRequestController::class, 'validateToken']);
     Route::post('/set-password', [AccountRequestController::class, 'setPassword']);
 });
+
+// AI Service endpoint (no auth required - IP whitelisted in production)
+Route::get('/payroll/fiscal-profile/employees/fiscal-search', [EmployeeFiscalProfileAssignmentController::class, 'search']);
+Route::get('/payroll/fiscal-profile/groups/search', [FiscalProfileGroupController::class, 'search']);
 
 // Protected routes
 Route::middleware('jwt.auth')->group(function () {
@@ -387,6 +403,144 @@ Route::middleware('jwt.auth')->group(function () {
             // Training (status must be before {model} to avoid wildcard match)
             Route::get('/train/status', [AIController::class, 'trainingStatus']);
             Route::post('/train/{model}', [AIController::class, 'train']);
+        });
+    });
+
+    // ─── Payroll Routes (RH only) ───────────────────────────────
+    Route::prefix('payroll')->middleware('role:rh')->group(function () {
+        // Fiscal Rule Management
+        Route::prefix('fiscal-rules')->group(function () {
+            Route::get('/', [FiscalRuleManagementController::class, 'index']);
+            Route::get('/active', [FiscalRuleManagementController::class, 'getActive']);
+            Route::post('/', [FiscalRuleManagementController::class, 'createDraft']);
+            Route::put('/{id}/draft', [FiscalRuleManagementController::class, 'updateDraft']);
+            Route::post('/{id}/confirm', [FiscalRuleManagementController::class, 'confirm']);
+            Route::post('/{id}/supersede', [FiscalRuleManagementController::class, 'supersede']);
+            Route::delete('/{id}', [FiscalRuleManagementController::class, 'deleteDraft']);
+            Route::get('/{id}', [FiscalRuleManagementController::class, 'show']);
+
+            // IRPP Brackets
+            Route::post('/{ruleSetId}/brackets', [FiscalRuleManagementController::class, 'addIrppBracket']);
+            Route::put('/brackets/{bracketId}', [FiscalRuleManagementController::class, 'updateIrppBracket']);
+            Route::delete('/brackets/{bracketId}', [FiscalRuleManagementController::class, 'deleteIrppBracket']);
+
+            // Family Deductions
+            Route::post('/{ruleSetId}/deductions', [FiscalRuleManagementController::class, 'addFamilyDeduction']);
+            Route::put('/deductions/{deductionId}', [FiscalRuleManagementController::class, 'updateFamilyDeduction']);
+            Route::delete('/deductions/{deductionId}', [FiscalRuleManagementController::class, 'deleteFamilyDeduction']);
+        });
+
+        // Payslip Generation
+        Route::prefix('payslips')->group(function () {
+            Route::get('/', [PayslipGenerationController::class, 'index']);
+            Route::post('/single', [PayslipGenerationController::class, 'generateSingle']);
+            Route::post('/batch', [PayslipGenerationController::class, 'generateBatch']);
+            Route::get('/period', [PayslipGenerationController::class, 'getByPeriod']);
+            Route::get('/employee/{employeeId}', [PayslipGenerationController::class, 'getByEmployee']);
+            Route::post('/{id}/validate', [PayslipGenerationController::class, 'validatePayslip']);
+            Route::post('/{id}/lock', [PayslipGenerationController::class, 'lock']);
+            Route::delete('/{id}', [PayslipGenerationController::class, 'deleteDraft']);
+            Route::get('/{id}', [PayslipGenerationController::class, 'show']);
+        });
+
+        // Payment Tracking
+        Route::prefix('payments')->group(function () {
+            Route::get('/statistics', [PaymentTrackingController::class, 'statistics']);
+            Route::get('/', [PaymentTrackingController::class, 'index']);
+            Route::post('/', [PaymentTrackingController::class, 'record']);
+            Route::get('/payslip/{payslipId}', [PaymentTrackingController::class, 'getByPayslip']);
+            Route::get('/employee/{employeeId}', [PaymentTrackingController::class, 'getByEmployee']);
+            Route::get('/{id}', [PaymentTrackingController::class, 'show']);
+            Route::put('/{id}', [PaymentTrackingController::class, 'update']);
+            Route::delete('/{id}', [PaymentTrackingController::class, 'delete']);
+        });
+
+        // Payslip Correction
+        Route::prefix('corrections')->group(function () {
+            Route::post('/{originalPayslipId}', [PayslipCorrectionController::class, 'createCorrection']);
+            Route::get('/history/{payslipId}', [PayslipCorrectionController::class, 'getHistory']);
+            Route::post('/compare', [PayslipCorrectionController::class, 'compare']);
+            Route::post('/{currentPayslipId}/revert', [PayslipCorrectionController::class, 'revert']);
+        });
+
+        // Year-End Regularization
+        Route::prefix('regularization')->group(function () {
+            Route::post('/calculate/{employeeId}', [YearEndRegularizationController::class, 'calculateRegularization']);
+            Route::post('/create/{employeeId}', [YearEndRegularizationController::class, 'createRegularizationPayslip']);
+            Route::post('/batch-calculate', [YearEndRegularizationController::class, 'batchCalculate']);
+            Route::get('/summary/{employeeId}', [YearEndRegularizationController::class, 'getYearlySummary']);
+            Route::get('/employees', [YearEndRegularizationController::class, 'getEmployeesWithRegularizations']);
+        });
+
+        // Rule Import
+        Route::prefix('rule-import')->group(function () {
+            Route::post('/upload', [RuleImportController::class, 'uploadPdf']);
+            Route::post('/{importLogId}/confirm', [RuleImportController::class, 'reviewAndConfirm']);
+            Route::post('/{importLogId}/reject', [RuleImportController::class, 'reject']);
+            Route::get('/pending', [RuleImportController::class, 'getPending']);
+            Route::get('/history', [RuleImportController::class, 'getHistory']);
+            Route::get('/{importLogId}', [RuleImportController::class, 'show']);
+        });
+
+        // Audit Log
+        Route::prefix('audit')->group(function () {
+            Route::get('/statistics', [AuditLogController::class, 'getStatistics']);
+            Route::get('/trail', [AuditLogController::class, 'getAuditTrail']);
+            Route::get('/action', [AuditLogController::class, 'getActionLogs']);
+            Route::get('/actor/{actorId}', [AuditLogController::class, 'getActorLogs']);
+            Route::post('/', [AuditLogController::class, 'logAction']);
+            Route::get('/', [AuditLogController::class, 'getAllLogs']);
+        });
+
+        // ─── Fiscal Profile Module ─────────────────────────────────
+        Route::prefix('fiscal-profile')->group(function () {
+            // Change Requests
+            Route::prefix('change-requests')->group(function () {
+                Route::get('/', [PersonalInfoChangeRequestController::class, 'index']);
+                Route::post('/', [PersonalInfoChangeRequestController::class, 'submit']);
+                Route::get('/{id}', [PersonalInfoChangeRequestController::class, 'show'])->where('id', '[0-9a-f-]+');
+                Route::post('/{id}/documents', [PersonalInfoChangeRequestController::class, 'uploadDocument'])->where('id', '[0-9a-f-]+');
+                Route::patch('/{id}/documents/{docId}/verify', [PersonalInfoChangeRequestController::class, 'verifyDocument'])->where('id', '[0-9a-f-]+')->where('docId', '[0-9a-f-]+');
+                Route::post('/{id}/approve', [PersonalInfoChangeRequestController::class, 'approve'])->where('id', '[0-9a-f-]+');
+                Route::post('/{id}/reject', [PersonalInfoChangeRequestController::class, 'reject'])->where('id', '[0-9a-f-]+');
+            });
+
+            // Fiscal Profile Groups
+            Route::prefix('groups')->group(function () {
+                Route::get('/', [FiscalProfileGroupController::class, 'index']);
+                Route::post('/', [FiscalProfileGroupController::class, 'store']);
+                Route::get('/{id}', [FiscalProfileGroupController::class, 'show'])->where('id', '[0-9a-f-]+');
+                Route::get('/{id}/employees', [FiscalProfileGroupController::class, 'employees'])->where('id', '[0-9a-f-]+');
+                Route::get('/match', [FiscalProfileGroupController::class, 'match']);
+                Route::put('/{id}', [FiscalProfileGroupController::class, 'update'])->where('id', '[0-9a-f-]+');
+                Route::delete('/{id}', [FiscalProfileGroupController::class, 'destroy'])->where('id', '[0-9a-f-]+');
+            });
+
+            // Employee Fiscal Profile Assignments
+            Route::prefix('employees')->group(function () {
+                Route::get('/{employeeId}/fiscal-profile-history', [EmployeeFiscalProfileAssignmentController::class, 'history'])->where('employeeId', '[0-9]+');
+                Route::get('/{employeeId}/fiscal-profile', [EmployeeFiscalProfileAssignmentController::class, 'current'])->where('employeeId', '[0-9]+');
+                Route::post('/{employeeId}/fiscal-profile-assign', [EmployeeFiscalProfileAssignmentController::class, 'assign'])->where('employeeId', '[0-9]+');
+                Route::post('/{employeeId}/fiscal-profile-reassign', [EmployeeFiscalProfileAssignmentController::class, 'reassign'])->where('employeeId', '[0-9]+');
+            });
+
+            Route::prefix('groups')->group(function () {
+                Route::post('/{groupId}/bulk-assign', [EmployeeFiscalProfileAssignmentController::class, 'bulkAssign'])->where('groupId', '[0-9a-f-]+');
+            });
+
+            // Head of Family Overrides
+            Route::prefix('employees')->group(function () {
+                Route::get('/{employeeId}/fiscal-profile-overrides', [HeadOfFamilyOverrideController::class, 'index'])->where('employeeId', '[0-9]+');
+                Route::get('/{employeeId}/fiscal-profile-overrides/active', [HeadOfFamilyOverrideController::class, 'active'])->where('employeeId', '[0-9]+');
+                Route::post('/{employeeId}/fiscal-profile-overrides', [HeadOfFamilyOverrideController::class, 'store'])->where('employeeId', '[0-9]+');
+            });
+
+            // AI Chatbot
+            Route::prefix('ai-chat')->group(function () {
+                Route::post('/message', [AiChatController::class, 'sendMessage']);
+                Route::get('/session/{id}', [AiChatController::class, 'getSession'])->where('id', '[0-9a-f-]+');
+                Route::get('/sessions', [AiChatController::class, 'getSessions']);
+            });
         });
     });
 });

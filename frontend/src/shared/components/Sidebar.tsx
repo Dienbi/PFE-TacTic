@@ -55,7 +55,6 @@ const Sidebar: React.FC = () => {
             path: "/attendance",
           },
           { icon: FileText, label: "Leave", path: "/manager/leave" },
-          { icon: DollarSign, label: "Salary", path: "/manager/salary" },
           {
             icon: FilePlus,
             label: "Request Job",
@@ -81,7 +80,6 @@ const Sidebar: React.FC = () => {
             path: "/attendance",
           },
           { icon: FileText, label: "Leave", path: "/employee/leave" },
-          { icon: DollarSign, label: "Salary", path: "/employee/salary" },
           { icon: Search, label: "Job Board", path: "/employee/jobs" },
           {
             icon: ClipboardList,

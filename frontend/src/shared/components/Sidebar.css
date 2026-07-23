@@ -88,6 +88,24 @@
     margin-right: 12px;
 }
 
+.submenu {
+    margin-left: 2rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.submenu-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    margin-left: 0;
+}
+
+.submenu-item:hover {
+    transform: translateX(2px);
+}
+
 .sidebar-footer {
     margin-top: auto;
     border-top: 1px solid rgba(255, 255, 255, 0.1);

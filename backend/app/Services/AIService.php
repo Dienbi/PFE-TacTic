@@ -207,6 +207,18 @@ class AIService
         ]);
     }
 
+    // ─── Fiscal Rules Extraction ────────────────────────────────
+
+    /**
+     * Extract fiscal rules from PDF file using AI service.
+     */
+    public function extractFiscalRules(string $filePath): array
+    {
+        return $this->post('/api/fiscal/extract', [
+            'file_path' => $filePath,
+        ]);
+    }
+
     // ─── Training ────────────────────────────────────────────────
 
     /**

@@ -1,0 +1,243 @@
+/* Payroll Tour Custom Styles */
+
+.payroll-tour-content {
+  font-family: inherit;
+}
+
+.payroll-tour-title {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.payroll-tour-description {
+  color: #4b5563;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+/* Spotlight overlay */
+.payroll-tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  pointer-events: none;
+}
+
+/* Highlighted element */
+.payroll-tour-highlight {
+  position: absolute;
+  border: 3px solid #2563eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+  z-index: 9999;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+/* Tooltip */
+.payroll-tour-tooltip {
+  position: fixed;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  max-width: 350px;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payroll-tour-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.payroll-tour-close:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.payroll-tour-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.payroll-tour-progress {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.payroll-tour-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.payroll-tour-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.payroll-tour-button-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.payroll-tour-button-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.payroll-tour-button-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.payroll-tour-button-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+.payroll-tour-button-skip {
+  background-color: transparent;
+  color: #6b7280;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.payroll-tour-button-skip:hover {
+  color: #374151;
+  background-color: #f9fafb;
+}
+
+/* Guide Button Dropdown */
+.guide-dropdown {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+}
+
+.guide-dropdown-item {
+  transition: background-color 0.2s;
+}
+
+.guide-dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+/* Progress bar animation */
+.guide-progress-bar {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .payroll-tour-tooltip {
+    max-width: 280px;
+    padding: 1rem;
+  }
+  
+  .payroll-tour-title {
+    font-size: 0.875rem;
+  }
+  
+  .payroll-tour-description {
+    font-size: 0.8125rem;
+  }
+
+  .payroll-tour-buttons {
+    flex-direction: column;
+  }
+
+  .payroll-tour-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+  .payroll-tour-tooltip {
+    background-color: #1f2937;
+  }
+  
+  .payroll-tour-title {
+    color: #f9fafb;
+  }
+  
+  .payroll-tour-description {
+    color: #d1d5db;
+  }
+  
+  .payroll-tour-footer {
+    border-top-color: #374151;
+  }
+  
+  .payroll-tour-progress {
+    color: #9ca3af;
+  }
+
+  .payroll-tour-close {
+    color: #9ca3af;
+  }
+
+  .payroll-tour-close:hover {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+
+  .payroll-tour-button-secondary {
+    background-color: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+
+  .payroll-tour-button-secondary:hover {
+    background-color: #4b5563;
+  }
+
+  .payroll-tour-button-skip {
+    color: #9ca3af;
+  }
+
+  .payroll-tour-button-skip:hover {
+    color: #d1d5db;
+    background-color: #374151;
+  }
+}

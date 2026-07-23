@@ -49,6 +49,20 @@ class FullDataSeeder extends Seeder
         'Oussama', 'Aziz',
     ];
 
+    // Gender mapping for first names (male = true, female = false)
+    private array $genderMap = [
+        'Mohamed' => true, 'Ahmed' => true, 'Youssef' => true, 'Ali' => true, 'Omar' => true,
+        'Khalil' => true, 'Amine' => true, 'Hamza' => true, 'Sami' => true, 'Rami' => true,
+        'Nabil' => true, 'Karim' => true, 'Fares' => true, 'Bilel' => true, 'Sofiane' => true,
+        'Riadh' => true, 'Fatma' => false, 'Amira' => false, 'Sara' => false, 'Ines' => false,
+        'Mariem' => false, 'Hiba' => false, 'Nour' => false, 'Yasmine' => false, 'Salma' => false,
+        'Rim' => false, 'Emna' => false, 'Asma' => false, 'Donia' => false, 'Chaima' => false,
+        'Nesrine' => false, 'Olfa' => false, 'Wael' => true, 'Zied' => true, 'Hatem' => true,
+        'Slim' => true, 'Aymen' => true, 'Tarek' => true, 'Mehdi' => true, 'Wassim' => true,
+        'Rahma' => false, 'Sana' => false, 'Houda' => false, 'Manel' => false, 'Amel' => false,
+        'Sirine' => false, 'Ghada' => false, 'Nadia' => false, 'Oussama' => true, 'Aziz' => true,
+    ];
+
     private array $lastNames = [
         'Ben Ali', 'Trabelsi', 'Bouazizi', 'Gharbi', 'Hamdi', 'Jebali', 'Khelifi',
         'Mansouri', 'Nasri', 'Othman', 'Riahi', 'Saidi', 'Talbi', 'Zouari',
@@ -77,9 +91,43 @@ class FullDataSeeder extends Seeder
         // 1. Create Employees (47 new ones + 3 existing = 50 total)
         // ────────────────────────────────────────────────────────────
         $this->command->info('👥 Creating employees...');
-        $existingCount = Utilisateur::count();
-        $toCreate = 50 - $existingCount;
-
+        
+        // Preserve existing users: RH Admin (id=1), Equipe Chef (id=2), Test Employee (id=3)
+        $preservedEmails = ['admin@tactic.com', 'chef@tactic.com', 'employe@tactic.com'];
+        
+        // Update preserved users with gender
+        $rhUser = Utilisateur::where('email', 'admin@tactic.com')->first();
+        if ($rhUser && !$rhUser->gender) {
+            $rhUser->update(['gender' => 'male']);
+        }
+        
+        $chefUser = Utilisateur::where('email', 'chef@tactic.com')->first();
+        if ($chefUser && !$chefUser->gender) {
+            $chefUser->update(['gender' => 'male']);
+        }
+        
+        $testUser = Utilisateur::where('email', 'employe@tactic.com')->first();
+        if ($testUser && !$testUser->gender) {
+            $testUser->update(['gender' => 'male']);
+        }
+        
+        // Delete all other existing users (except the 3 preserved ones)
+        // Use withTrashed() to also delete soft-deleted records
+        $deletedCount = Utilisateur::withTrashed()->whereNotIn('email', $preservedEmails)->forceDelete();
+        $this->command->info("  Deleted {$deletedCount} existing users (including soft-deleted)");
+        
+        // Clear related data for preserved users to avoid conflicts
+        $preservedUserIds = Utilisateur::whereIn('email', $preservedEmails)->pluck('id');
+        DB::table('pointages')->whereIn('utilisateur_id', $preservedUserIds)->delete();
+        DB::table('conges')->whereIn('utilisateur_id', $preservedUserIds)->delete();
+        DB::table('paies')->whereIn('utilisateur_id', $preservedUserIds)->delete();
+        DB::table('affectations')->whereIn('utilisateur_id', $preservedUserIds)->delete();
+        DB::table('utilisateur_competence')->whereIn('utilisateur_id', $preservedUserIds)->delete();
+        $this->command->info("  Cleared related data for preserved users");
+        
+        // Start matricule from 4 (after the 3 preserved users)
+        $nextMatricule = 4;
+        
         $employees = Utilisateur::all();
         $newEmployees = collect();
 
@@ -100,8 +148,8 @@ class FullDataSeeder extends Seeder
             }
         }
 
-        for ($i = 0; $i < $toCreate; $i++) {
-            $matricule = sprintf('EMP%05d', $existingCount + $i + 1);
+        for ($i = 0; $i < 47; $i++) {
+            $matricule = sprintf('EMP%05d', $nextMatricule + $i);
             $firstName = $this->firstNames[$i % count($this->firstNames)];
             $lastName = $this->lastNames[$i % count($this->lastNames)];
             $yearsAgo = rand(1, 5);
@@ -113,7 +161,10 @@ class FullDataSeeder extends Seeder
             $contractTypes = [TypeContrat::CDI, TypeContrat::CDI, TypeContrat::CDI, TypeContrat::CDD, TypeContrat::STAGE];
             $salary = $isChef ? rand(3500, 5000) : rand(1500, 4000);
 
-            $equipe = $equipes[($i + $existingCount) % $equipes->count()];
+            $equipe = $equipes[($i + 3) % $equipes->count()];
+
+            // Determine gender based on first name
+            $gender = $this->genderMap[$firstName] ? 'male' : 'female';
 
             $user = Utilisateur::create([
                 'matricule' => $matricule,
@@ -131,6 +182,7 @@ class FullDataSeeder extends Seeder
                 'actif' => true,
                 'solde_conge' => 30,
                 'equipe_id' => $equipe->id,
+                'gender' => $gender,
             ]);
 
             // Assign chef to equipe if slot available

@@ -8,6 +8,9 @@ interface ModalProps {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showCloseButton?: boolean;
+  headerClassName?: string;
+  titleClassName?: string;
+  containerClassName?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -17,6 +20,9 @@ const Modal: React.FC<ModalProps> = ({
   children,
   size = 'md',
   showCloseButton = true,
+  headerClassName = '',
+  titleClassName = '',
+  containerClassName = '',
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -48,12 +54,12 @@ const Modal: React.FC<ModalProps> = ({
       />
       
       {/* Modal */}
-      <div className={`relative bg-white rounded-lg shadow-xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-y-auto`}>
+      <div className={`relative bg-white rounded-lg shadow-xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-y-auto ${containerClassName}`}>
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className={`flex items-center justify-between p-6 border-b border-gray-200 ${headerClassName}`}>
             {title && (
-              <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+              <h2 className={`text-xl font-semibold ${titleClassName}`}>{title}</h2>
             )}
             {showCloseButton && (
               <button

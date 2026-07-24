@@ -106,6 +106,7 @@ const TunisianPayrollDashboard: React.FC = () => {
     purple: 'bg-purple-100 text-purple-600',
     orange: 'bg-orange-100 text-orange-600',
     indigo: 'bg-indigo-100 text-indigo-600',
+    babyblue: 'bg-blue-50 text-blue-500',
   };
 
   const iconBgClasses = {
@@ -115,6 +116,7 @@ const TunisianPayrollDashboard: React.FC = () => {
     purple: 'bg-purple-50',
     orange: 'bg-orange-50',
     indigo: 'bg-indigo-50',
+    babyblue: 'bg-blue-100',
   };
 
   return (
@@ -123,10 +125,12 @@ const TunisianPayrollDashboard: React.FC = () => {
       <div className="flex-1 ml-[260px]">
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
         <div className="p-6 max-w-7xl mx-auto">
-          <div className="flex justify-between items-start mb-6" data-tour="dashboard-welcome">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Tunisian Payroll</h1>
-              <p className="text-sm text-gray-600 mt-1">Manage payroll, tax rules, and payments</p>
+          <div className="flex justify-between items-center mb-6" data-tour="dashboard-welcome">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-start text-left">
+                <h1 className="text-2xl font-semibold text-gray-900 text-left">Tunisian Payroll</h1>
+                <p className="text-sm text-gray-600 text-left">Manage payroll, tax rules, and payments</p>
+              </div>
             </div>
             <PayrollGuideButton />
           </div>
@@ -134,13 +138,17 @@ const TunisianPayrollDashboard: React.FC = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-tour="dashboard-kpis">
             {stats.map((stat) => (
-              <Card key={stat.title} hover>
+              <Card 
+                key={stat.title} 
+                hover
+                className="border-2 border-blue-200 shadow-[0_-2px_4px_rgba(0,0,0,0.05),-2px_0_4px_rgba(0,0,0,0.05),2px_0_4px_rgba(0,0,0,0.05)] hover:shadow-[0_-4px_8px_rgba(0,0,0,0.08),-4px_0_8px_rgba(0,0,0,0.08),4px_0_8px_rgba(0,0,0,0.08)] transition-shadow"
+              >
                 <CardBody>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                      <p className="text-xs text-gray-500 mt-1">{stat.change}</p>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-600 text-left">{stat.title}</p>
+                      <p className="text-2xl font-bold text-gray-900 mt-1 text-left">{stat.value}</p>
+                      <p className="text-xs text-gray-500 mt-1 text-left">{stat.change}</p>
                     </div>
                     <div className={`p-3 rounded-lg ${iconBgClasses[stat.color as keyof typeof iconBgClasses]}`}>
                       <div className={colorClasses[stat.color as keyof typeof colorClasses]}>
@@ -155,7 +163,7 @@ const TunisianPayrollDashboard: React.FC = () => {
 
           {/* Quick Actions */}
           <div className="mb-6" data-tour="dashboard-quick-actions">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {quickActions.map((action) => (
                 <div 
@@ -163,15 +171,20 @@ const TunisianPayrollDashboard: React.FC = () => {
                   className="cursor-pointer"
                   onClick={action.onClick}
                 >
-                  <Card hover>
+                  <Card 
+                    hover
+                    className="border-2 border-blue-200 shadow-md hover:shadow-lg hover:border-blue-400 transition-all"
+                  >
                     <CardBody>
-                      <div className={`p-3 rounded-lg w-fit mb-3 ${iconBgClasses[action.color as keyof typeof iconBgClasses]}`}>
-                        <div className={colorClasses[action.color as keyof typeof colorClasses]}>
-                          {action.icon}
+                      <div className="text-left">
+                        <div className={`p-3 rounded-lg w-fit mb-3 ${iconBgClasses[action.color as keyof typeof iconBgClasses]}`}>
+                          <div className={colorClasses[action.color as keyof typeof colorClasses]}>
+                            {action.icon}
+                          </div>
                         </div>
+                        <h3 className="font-semibold text-gray-900 text-left">{action.title}</h3>
+                        <p className="text-sm text-gray-600 mt-1 text-left">{action.description}</p>
                       </div>
-                      <h3 className="font-semibold text-gray-900">{action.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{action.description}</p>
                     </CardBody>
                   </Card>
                 </div>
@@ -184,7 +197,7 @@ const TunisianPayrollDashboard: React.FC = () => {
             <Card data-tour="dashboard-recent-activity">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 text-left">Recent Activity</h2>
                   <Button variant="ghost" size="sm" onClick={() => navigate('/payroll/audit-logs')}>
                     View All
                   </Button>
@@ -193,13 +206,13 @@ const TunisianPayrollDashboard: React.FC = () => {
               <CardBody>
                 <div className="space-y-4">
                   {auditLoading ? (
-                    <div className="text-center py-4 text-gray-500">Loading...</div>
+                    <div className="text-left py-4 text-gray-500">Loading...</div>
                   ) : recentActivity.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500">No recent activity</div>
+                    <div className="text-left py-4 text-gray-500">No recent activity</div>
                   ) : (
                     recentActivity.map((activity: any) => (
-                      <div key={activity.id} className="flex items-start gap-3">
-                        <div className={`p-2 rounded-full ${
+                      <div key={activity.id} className="flex items-start gap-3 text-left">
+                        <div className={`p-2 rounded-full shrink-0 ${
                           activity.status === 'completed' ? 'bg-green-100' : 'bg-yellow-100'
                         }`}>
                           {activity.status === 'completed' ? (
@@ -208,10 +221,10 @@ const TunisianPayrollDashboard: React.FC = () => {
                             <Clock className="w-4 h-4 text-yellow-600" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                          <p className="text-xs text-gray-600">{activity.description}</p>
-                          <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-medium text-gray-900 text-left">{activity.action}</p>
+                          <p className="text-xs text-gray-600 mt-1 text-left">{activity.description}</p>
+                          <p className="text-xs text-blue-500 mt-1 text-left">{activity.time}</p>
                         </div>
                       </div>
                     ))
@@ -221,75 +234,110 @@ const TunisianPayrollDashboard: React.FC = () => {
             </Card>
 
             {/* Navigation */}
-            <Card data-tour="dashboard-modules-list">
+            <Card data-tour="dashboard-modules-list" className="border-2 border-blue-200 shadow-md">
               <CardHeader>
-                <h2 className="text-lg font-semibold text-gray-900">Payroll Modules</h2>
+                <h2 className="text-lg font-semibold text-gray-900 text-left">Payroll Modules</h2>
               </CardHeader>
               <CardBody>
                 <div className="space-y-2">
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/payslips')}
-                    leftIcon={<Calculator className="w-4 h-4" />}
                   >
-                    Payslip Generation
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <Calculator className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Payslip Generation</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">Create single or batch payslips</p>
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/payments')}
-                    leftIcon={<CreditCard className="w-4 h-4" />}
                   >
-                    Payment Tracking
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Payment Tracking</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">Track payments against payslips</p>
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/corrections')}
-                    leftIcon={<History className="w-4 h-4" />}
                   >
-                Payslip Corrections
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <History className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Payslip Corrections</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">Manage payslip corrections</p>
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/regularization')}
-                    leftIcon={<Calendar className="w-4 h-4" />}
                   >
-                Year-End Regularization
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Year-End Regularization</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">Annual tax regularization</p>
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/fiscal-rules')}
-                    leftIcon={<FileText className="w-4 h-4" />}
                   >
-                Fiscal Rules Management
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <FileText className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Fiscal Rules Management</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">Configure tax rules and brackets</p>
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/rule-import')}
-                    leftIcon={<Upload className="w-4 h-4" />}
                   >
-                Rule Import (AI)
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    className="justify-start"
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <Upload className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Rule Import (AI)</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">Import rules from PDF documents</p>
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 hover:shadow-md cursor-pointer transition-all border border-transparent hover:border-blue-300 text-left"
                     onClick={() => navigate('/payroll/audit-logs')}
-                    leftIcon={<List className="w-4 h-4" />}
                   >
-                Audit Logs
-                  </Button>
+                    <div className={`p-2 rounded-lg shrink-0 ${iconBgClasses.babyblue}`}>
+                      <div className={colorClasses.babyblue}>
+                        <List className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-gray-900 text-left">Audit Logs</h3>
+                      <p className="text-sm text-gray-600 mt-1 text-left">View system activity logs</p>
+                    </div>
+                  </div>
                 </div>
               </CardBody>
             </Card>

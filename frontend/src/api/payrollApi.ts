@@ -71,6 +71,13 @@ export interface Payslip {
   generated_at: string;
   generated_by: string;
   payslip_pay_items: PayslipPayItem[];
+  employee?: {
+    id: string;
+    nom: string;
+    prenom: string;
+    matricule: string;
+  };
+  created_at?: string;
 }
 
 export interface PayslipPayItem {

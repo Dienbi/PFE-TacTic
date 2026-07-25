@@ -15,6 +15,7 @@ import { PayrollGuideProvider } from "./guide/PayrollGuideProvider";
 const Login = lazy(() => import("./auth/Login"));
 const Register = lazy(() => import("./auth/Register"));
 const SetPassword = lazy(() => import("./auth/SetPassword"));
+const Welcome = lazy(() => import("./auth/Welcome"));
 const RHDashboard = lazy(() => import("./dashboard/rh/RHDashboard"));
 const ManagerDashboard = lazy(() => import("./dashboard/manager/ManagerDashboard"));
 const MyTeam = lazy(() => import("./dashboard/manager/my-team/MyTeam"));
@@ -72,6 +73,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/set-password" element={<SetPassword />} />
+            <Route path="/welcome" element={<Welcome />} />
 
             <Route
               path="/dashboard/rh"

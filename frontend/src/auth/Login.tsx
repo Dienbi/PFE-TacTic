@@ -35,8 +35,8 @@ const Login: React.FC = () => {
       const { access_token, user } = response.data;
 
       dispatch(login({ token: access_token, user }));
-
-      navigate(getDefaultDashboard(user.role));
+      setIsLoading(false);
+      navigate("/welcome");
     } catch (err: unknown) {
       console.error("Login error:", err);
       const apiMessage =
@@ -45,14 +45,12 @@ const Login: React.FC = () => {
       setError(
         apiMessage || "Login failed. Please check your credentials.",
       );
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
     <div className="login-page">
-      {isLoading && <Loader fullScreen={true} />}
       <div className="shape-left-curve"></div>
       <div className="shape-top-right-stripes"></div>
       <div className="shape-bottom-right-triangles">
@@ -69,7 +67,7 @@ const Login: React.FC = () => {
           />
         </div>
 
-        <h1 className="page-title">login</h1>
+        <h1 className="page-title">Login</h1>
 
         {error && (
           <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
@@ -99,12 +97,12 @@ const Login: React.FC = () => {
           </div>
 
           <button type="submit" className="btn-login" disabled={isLoading}>
-            {isLoading ? "Connexion..." : "Se connecter"}
+            {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         <p className="signup-link">
-          Pas encore de compte ? <Link to="/signup">S'inscrire</Link>
+          Don't have an account? <Link to="/signup">Sign up</Link>
         </p>
       </div>
     </div>

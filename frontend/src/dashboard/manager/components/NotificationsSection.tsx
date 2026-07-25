@@ -98,12 +98,12 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         });
       })
       .listen(".SalaryPaid", (data: any) => {
-        showToast("success", "Salaire Versé", data.message);
+        showToast("success", "Salary Paid", data.message);
 
         const newNotification: Notification = {
           id: Date.now().toString(),
           type: "success",
-          title: "Salaire Versé",
+          title: "Salary Paid",
           message: data.message,
           timestamp: new Date().toISOString(),
         };

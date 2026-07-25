@@ -21,19 +21,19 @@ const LeaveHistory: React.FC = () => {
       case "APPROUVE":
         return (
           <span className="status-badge approved">
-            <CheckCircle size={14} /> Approuvé
+            <CheckCircle size={14} /> Approved
           </span>
         );
       case "REFUSE":
         return (
           <span className="status-badge rejected">
-            <XCircle size={14} /> Refusé
+            <XCircle size={14} /> Rejected
           </span>
         );
       default:
         return (
           <span className="status-badge pending">
-            <Clock size={14} /> En attente
+            <Clock size={14} /> Pending
           </span>
         );
     }
@@ -44,9 +44,9 @@ const LeaveHistory: React.FC = () => {
   return (
     <div className="leave-history-card">
       <div className="card-header">
-        <h3>Historique des Congés</h3>
+        <h3>Leave History</h3>
         <Link to="/employee/leave" className="view-all-link">
-          Voir tout
+          View all
         </Link>
       </div>
 
@@ -59,7 +59,7 @@ const LeaveHistory: React.FC = () => {
       ) : recentLeaves.length === 0 ? (
         <div className="empty-state">
           <Calendar size={32} className="empty-icon" />
-          <p>Aucun congé enregistré</p>
+          <p>No leave recorded</p>
         </div>
       ) : (
         <div className="leave-list">
@@ -71,12 +71,12 @@ const LeaveHistory: React.FC = () => {
               <div className="leave-content">
                 <div className="leave-type">{leave.type}</div>
                 <div className="leave-dates">
-                  {new Date(leave.start_date).toLocaleDateString("fr-FR", {
+                  {new Date(leave.start_date).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                   })}{" "}
                   –{" "}
-                  {new Date(leave.end_date).toLocaleDateString("fr-FR", {
+                  {new Date(leave.end_date).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                   })}

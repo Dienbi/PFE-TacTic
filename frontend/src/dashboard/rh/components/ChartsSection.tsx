@@ -45,7 +45,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
     return (
       <div className="charts-grid">
         <div className="chart-card">
-          <h3>Tendance de Présence (6 mois)</h3>
+          <h3>Attendance Trend (6 months)</h3>
           <div
             style={{
               width: "100%",
@@ -55,11 +55,11 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
               justifyContent: "center",
             }}
           >
-            <p>Chargement...</p>
+            <p>Loading...</p>
           </div>
         </div>
         <div className="chart-card">
-          <h3>Distribution des Absences</h3>
+          <h3>Absence Distribution</h3>
           <div
             style={{
               width: "100%",
@@ -69,7 +69,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
               justifyContent: "center",
             }}
           >
-            <p>Chargement...</p>
+            <p>Loading...</p>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   return (
     <div className="charts-grid">
       <div className="chart-card">
-        <h3>Tendance de Présence (6 mois)</h3>
+        <h3>Attendance Trend (6 months)</h3>
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer>
             <LineChart data={trendData}>
@@ -114,7 +114,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
       </div>
 
       <div className="chart-card">
-        <h3>Distribution des Absences</h3>
+        <h3>Absence Distribution</h3>
         <div style={{ width: "100%", height: 300 }}>
           {absenceData.length === 0 || absenceTotal === 0 ? (
             <div
@@ -127,7 +127,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                 fontWeight: 600,
               }}
             >
-              Aucune donnée d'absence
+              No absence data
             </div>
           ) : (
             <ResponsiveContainer>

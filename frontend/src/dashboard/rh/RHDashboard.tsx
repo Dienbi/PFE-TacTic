@@ -45,7 +45,7 @@ const RHDashboard: React.FC = () => {
         <div className="dashboard-content">
           <div className="page-title-row">
             <h1>Dashboard</h1>
-            <span className="page-sub">Vue d'ensemble RH</span>
+            <span className="page-sub">HR Overview</span>
           </div>
 
           <section className="kpi-panel">

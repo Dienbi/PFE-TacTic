@@ -7,11 +7,23 @@ import { ChangeRequestReview } from '../../../components/fiscal-profile/ChangeRe
 import { FiscalProfileGroups } from '../../../components/fiscal-profile/FiscalProfileGroups';
 import { AiChatbot } from '../../../components/fiscal-profile/AiChatbot';
 import Button from '../../../shared/components/ui/Button';
+import PayrollGuideButton from '../../../guide/PayrollGuideButton';
+import { FileText, Layers, Bot, Plus } from 'lucide-react';
+
+const NAVY = '#1E2258';
+
+type ProfileTab = 'requests' | 'groups' | 'chatbot';
 
 export default function FiscalProfilePage() {
   const { user, displayName } = useAuth();
-  const [activeTab, setActiveTab] = useState<'requests' | 'groups' | 'chatbot'>('requests');
+  const [activeTab, setActiveTab] = useState<ProfileTab>('requests');
   const [showRequestForm, setShowRequestForm] = useState(false);
+
+  const tabItems: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'requests', label: 'Change Requests', icon: <FileText className="w-4 h-4" /> },
+    { id: 'groups', label: 'Fiscal Profile Groups', icon: <Layers className="w-4 h-4" /> },
+    { id: 'chatbot', label: 'AI Assistant', icon: <Bot className="w-4 h-4" /> },
+  ];
 
   return (
     <div className="flex">
@@ -19,48 +31,52 @@ export default function FiscalProfilePage() {
       <div className="flex-1 ml-[260px]">
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
         <div className="p-6 max-w-7xl mx-auto">
-          <div className="mb-6 flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Fiscal Profile Management</h1>
-            <p className="text-sm text-gray-600 mt-1">Manage employee fiscal profiles, change requests, and AI-assisted operations</p>
-            <Button onClick={() => setShowRequestForm(true)}>
-              + Submit Change Request
-            </Button>
+          {/* Header */}
+          <div className="flex justify-between items-start mb-6" data-tour="fiscal-profile-overview">
+            <div className="flex flex-col items-start text-left">
+              <h1 className="text-2xl font-semibold text-gray-900 text-left">Fiscal Profile Management</h1>
+              <p className="text-sm text-gray-600 mt-1 text-left">
+                Manage employee fiscal profiles, change requests, and AI-assisted operations
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <PayrollGuideButton />
+              <Button
+                onClick={() => {
+                  setActiveTab('requests');
+                  setShowRequestForm(true);
+                }}
+                leftIcon={<Plus className="w-4 h-4" />}
+                className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
+              >
+                Submit Change Request
+              </Button>
+            </div>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8">
-              <button
-                onClick={() => setActiveTab('requests')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'requests'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Change Requests
-              </button>
-              <button
-                onClick={() => setActiveTab('groups')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'groups'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Fiscal Profile Groups
-              </button>
-              <button
-                onClick={() => setActiveTab('chatbot')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'chatbot'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                AI Assistant
-              </button>
-            </nav>
+          {/* Agenda-style tab bar (matches FiscalRulesManagement) */}
+          <div
+            className="flex items-center gap-2 p-1.5 rounded-xl mb-6 w-fit"
+            style={{ backgroundColor: `${NAVY}0D`, border: `1px solid ${NAVY}20` }}
+          >
+            {tabItems.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  style={
+                    isActive
+                      ? { backgroundColor: NAVY, color: '#fff', boxShadow: '0 1px 3px rgba(30,34,88,0.35)' }
+                      : { backgroundColor: 'transparent', color: NAVY }
+                  }
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab Content */}
@@ -74,11 +90,15 @@ export default function FiscalProfilePage() {
               )}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <h3 className="text-lg font-medium mb-3">Pending Requests</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-left" style={{ color: NAVY }}>
+                    Pending Requests
+                  </h3>
                   <ChangeRequestReview status="pending" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-3">Approved Requests</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-left" style={{ color: NAVY }}>
+                    Approved Requests
+                  </h3>
                   <ChangeRequestReview status="approved" />
                 </div>
               </div>

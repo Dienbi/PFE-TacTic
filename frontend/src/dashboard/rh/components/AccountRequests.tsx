@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { UserPlus, Check, X, Clock, Mail, Bell } from "lucide-react";
+import Swal from "sweetalert2";
 import client from "../../../api/client";
 import echoService from "../../../shared/services/echoService";
 import "./AccountRequests.css";
@@ -97,9 +98,15 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
       fetchPendingRequests();
       setShowApproveModal(false);
       setSelectedRequest(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error approving request:", error);
-      alert("Erreur lors de l'approbation de la demande.");
+      const errorMessage = error.response?.data?.message || "Failed to approve the request.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonColor: "#d33",
+      });
     } finally {
       setProcessing(false);
     }
@@ -116,9 +123,15 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
       setShowRejectModal(false);
       setSelectedRequest(null);
       setRejectReason("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error rejecting request:", error);
-      alert("Erreur lors du refus de la demande.");
+      const errorMessage = error.response?.data?.message || "Failed to reject the request.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonColor: "#d33",
+      });
     } finally {
       setProcessing(false);
     }
@@ -159,7 +172,7 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
 
       <div className="card-header">
         <div className="header-left">
-          <h3>Demandes de compte</h3>
+          <h3>Account Requests</h3>
           {requests.length > 0 && (
             <span className="badge">{requests.length}</span>
           )}
@@ -169,9 +182,9 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
 
       <div className="requests-list">
         {isLoading ? (
-          <p className="no-requests">Chargement...</p>
+          <p className="no-requests">Loading...</p>
         ) : requests.length === 0 ? (
-          <p className="no-requests">Aucune demande en attente</p>
+          <p className="no-requests">No pending requests</p>
         ) : (
           requests.map((request) => (
             <div key={request.id} className="request-item">
@@ -196,14 +209,14 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
                 <button
                   className="action-btn approve"
                   onClick={() => openApproveModal(request)}
-                  title="Approuver"
+                  title="Approve"
                 >
                   <Check size={16} />
                 </button>
                 <button
                   className="action-btn reject"
                   onClick={() => openRejectModal(request)}
-                  title="Refuser"
+                  title="Reject"
                 >
                   <X size={16} />
                 </button>
@@ -217,22 +230,22 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
       {showApproveModal && selectedRequest && (
         <div className="modal-overlay">
           <div className="modal-content small">
-            <h4>Approuver la demande</h4>
+            <h4>Approve Request</h4>
             <p>
-              Vous êtes sur le point de créer un compte pour{" "}
+              You are about to create an account for{" "}
               <strong>
                 {selectedRequest.prenom} {selectedRequest.nom}
               </strong>
             </p>
             <div className="form-group">
-              <label>Rôle attribué</label>
+              <label>Assigned Role</label>
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
               >
-                <option value="EMPLOYE">Employé</option>
-                <option value="CHEF_EQUIPE">Chef d'équipe</option>
-                <option value="RH">RH</option>
+                <option value="EMPLOYE">Employee</option>
+                <option value="CHEF_EQUIPE">Team Lead</option>
+                <option value="RH">HR</option>
               </select>
             </div>
             <div className="modal-actions">
@@ -241,14 +254,14 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
                 onClick={() => setShowApproveModal(false)}
                 disabled={processing}
               >
-                Annuler
+                Cancel
               </button>
               <button
                 className="btn-approve"
                 onClick={handleApprove}
                 disabled={processing}
               >
-                {processing ? "En cours..." : "Approuver"}
+                {processing ? "Processing..." : "Approve"}
               </button>
             </div>
           </div>
@@ -259,20 +272,20 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
       {showRejectModal && selectedRequest && (
         <div className="modal-overlay">
           <div className="modal-content small">
-            <h4>Refuser la demande</h4>
+            <h4>Reject Request</h4>
             <p>
-              Refuser la demande de{" "}
+              Reject the request from{" "}
               <strong>
                 {selectedRequest.prenom} {selectedRequest.nom}
               </strong>{" "}
               ?
             </p>
             <div className="form-group">
-              <label>Motif du refus (optionnel)</label>
+              <label>Rejection reason (optional)</label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Indiquez la raison du refus..."
+                placeholder="Indicate the reason for rejection..."
                 rows={3}
               />
             </div>
@@ -282,14 +295,14 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
                 onClick={() => setShowRejectModal(false)}
                 disabled={processing}
               >
-                Annuler
+                Cancel
               </button>
               <button
                 className="btn-reject"
                 onClick={handleReject}
                 disabled={processing}
               >
-                {processing ? "En cours..." : "Refuser"}
+                {processing ? "Processing..." : "Reject"}
               </button>
             </div>
           </div>

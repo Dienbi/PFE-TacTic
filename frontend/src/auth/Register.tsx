@@ -27,9 +27,9 @@ const Register: React.FC = () => {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.data?.errors?.personal_email) {
-        setError("Cette adresse email a déjà été utilisée pour une demande.");
+        setError("This email address has already been used for a request.");
       } else {
-        setError("Une erreur est survenue. Veuillez réessayer.");
+        setError("An error occurred. Please try again.");
       }
     } finally {
       setIsLoading(false);
@@ -57,13 +57,13 @@ const Register: React.FC = () => {
 
           <div className="success-message">
             <div className="success-icon">✓</div>
-            <h2>Demande envoyée !</h2>
+            <h2>Request sent!</h2>
             <p>
-              Votre demande de création de compte a été soumise avec succès.
+              Your account creation request has been submitted successfully.
             </p>
             <p>
-              Vous recevrez un email à <strong>{email}</strong> lorsque votre
-              compte sera activé.
+              You will receive an email at <strong>{email}</strong> when your
+              account is activated.
             </p>
             <Link
               to="/login"
@@ -74,7 +74,7 @@ const Register: React.FC = () => {
                 textDecoration: "none",
               }}
             >
-              Retour à la connexion
+              Back to login
             </Link>
           </div>
         </div>
@@ -101,60 +101,60 @@ const Register: React.FC = () => {
           />
         </div>
 
-        <h1 className="page-title">Demande de compte</h1>
+        <h1 className="page-title">Account Request</h1>
         <p className="page-subtitle">
-          Remplissez vos informations pour demander un compte
+          Fill in your information to request an account
         </p>
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="input-group">
-            <label htmlFor="prenom">Prénom</label>
+            <label htmlFor="prenom">First Name</label>
             <input
               type="text"
               id="prenom"
               value={prenom}
               onChange={(e) => setPrenom(e.target.value)}
               required
-              placeholder="Votre prénom"
+              placeholder="Your first name"
             />
           </div>
 
           <div className="input-group">
-            <label htmlFor="nom">Nom</label>
+            <label htmlFor="nom">Last Name</label>
             <input
               type="text"
               id="nom"
               value={nom}
               onChange={(e) => setNom(e.target.value)}
               required
-              placeholder="Votre nom"
+              placeholder="Your last name"
             />
           </div>
 
           <div className="input-group">
-            <label htmlFor="email">Email personnel</label>
+            <label htmlFor="email">Personal Email</label>
             <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="votre.email@exemple.com"
+              placeholder="your.email@example.com"
             />
             <small className="input-hint">
-              Vous recevrez les informations de connexion sur cet email
+              You will receive login information on this email
             </small>
           </div>
 
           <button type="submit" className="btn-login" disabled={isLoading}>
-            {isLoading ? "Envoi en cours..." : "Soumettre ma demande"}
+            {isLoading ? "Sending..." : "Submit Request"}
           </button>
 
           <div className="form-footer">
             <div className="signup-link">
-              Déjà un compte ? <Link to="/login">Se connecter</Link>
+              Already have an account? <Link to="/login">Sign in</Link>
             </div>
           </div>
         </form>

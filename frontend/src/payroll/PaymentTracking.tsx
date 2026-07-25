@@ -12,6 +12,7 @@ import UserSelect from '../shared/components/ui/UserSelect';
 import PayrollGuideButton from '../guide/PayrollGuideButton';
 import PayrollTourTooltip from '../guide/PayrollTourTooltip';
 import { CreditCard, TrendingUp, Calendar, Filter } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const PaymentTracking: React.FC = () => {
   const { user, displayName } = useAuth();
@@ -65,7 +66,18 @@ const PaymentTracking: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this payment?')) {
+    const result = await Swal.fire({
+      title: 'Delete Payment',
+      text: 'Are you sure you want to delete this payment?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1E2258',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
       await deletePayment.mutateAsync(id);
       refetch();
       refetchStats();

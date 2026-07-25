@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Eye,
 } from "lucide-react";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
@@ -241,12 +242,35 @@ const Employees: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to archive this user?")) {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to archive this user?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, archive it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
       try {
         await archiveEmployee.mutateAsync(id);
         refreshUsers();
+        Swal.fire({
+          icon: "success",
+          title: "Archived!",
+          text: "User has been archived.",
+          confirmButtonColor: "#3085d6",
+        });
       } catch (error) {
         console.error("Error archiving user:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to archive user.",
+          confirmButtonColor: "#d33",
+        });
       }
     }
   };
@@ -287,6 +311,15 @@ const Employees: React.FC = () => {
       default:
         return "status-inactive";
     }
+  };
+
+  const translateStatus = (status: string): string => {
+    const statusTranslations: Record<string, string> = {
+      "DISPONIBLE": "Available",
+      "AFFECTE": "Assigned",
+      "EN_CONGE": "On Leave",
+    };
+    return statusTranslations[status] || status;
   };
 
   const filteredUsers = (viewMode === "active" ? displayUsers : archivedUsers as User[]).filter(
@@ -402,7 +435,7 @@ const Employees: React.FC = () => {
                   className={`filter-btn filter-disponible ${statusFilter === "DISPONIBLE" ? "active" : ""}`}
                   onClick={() => setStatusFilter("DISPONIBLE")}
                 >
-                  Disponible{" "}
+                  Available{" "}
                   <span className="filter-count">
                     {statusCounts.DISPONIBLE}
                   </span>
@@ -411,14 +444,14 @@ const Employees: React.FC = () => {
                   className={`filter-btn filter-affecte ${statusFilter === "AFFECTE" ? "active" : ""}`}
                   onClick={() => setStatusFilter("AFFECTE")}
                 >
-                  Affecté{" "}
+                  Assigned{" "}
                   <span className="filter-count">{statusCounts.AFFECTE}</span>
                 </button>
                 <button
                   className={`filter-btn filter-conge ${statusFilter === "EN_CONGE" ? "active" : ""}`}
                   onClick={() => setStatusFilter("EN_CONGE")}
                 >
-                  En Congé{" "}
+                  On Leave{" "}
                   <span className="filter-count">{statusCounts.EN_CONGE}</span>
                 </button>
               </div>
@@ -489,7 +522,7 @@ const Employees: React.FC = () => {
                             <div
                               className={`status-dot ${getStatusClass(user.status)}`}
                             ></div>
-                            {user.status}
+                            {translateStatus(user.status)}
                           </div>
                         ) : (
                           <span className="archived-date">
@@ -665,9 +698,9 @@ const Employees: React.FC = () => {
                   value={formData.status}
                   onChange={handleInputChange}
                 >
-                  <option value="DISPONIBLE">Disponible</option>
-                  <option value="AFFECTE">Affecté</option>
-                  <option value="EN_CONGE">En Congé</option>
+                  <option value="DISPONIBLE">Available</option>
+                  <option value="AFFECTE">Assigned</option>
+                  <option value="EN_CONGE">On Leave</option>
                 </select>
               </div>
               <div className="form-group">
@@ -751,17 +784,16 @@ const Employees: React.FC = () => {
             <div className="delete-modal-icon">
               <AlertTriangle size={48} />
             </div>
-            <h3>Supprimer définitivement ?</h3>
+            <h3>Delete permanently?</h3>
             <p>
-              Vous êtes sur le point de supprimer définitivement l'utilisateur{" "}
+              You are about to permanently delete the user{" "}
               <strong>
                 {userToDelete.prenom} {userToDelete.nom}
               </strong>
               .
             </p>
             <p className="warning-text">
-              Cette action est irréversible. Toutes les données associées seront
-              perdues.
+              This action is irreversible. All associated data will be lost.
             </p>
             <div className="modal-actions">
               <button
@@ -771,10 +803,10 @@ const Employees: React.FC = () => {
                   setUserToDelete(null);
                 }}
               >
-                Annuler
+                Cancel
               </button>
               <button className="danger-btn" onClick={handleForceDelete}>
-                Supprimer définitivement
+                Delete permanently
               </button>
             </div>
           </div>

@@ -36,10 +36,10 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
             <div key={i} className="kpi-card">
               <div className="kpi-header">
                 <div className="kpi-icon-pill" />
-                <span className="kpi-title">Chargement...</span>
+                <span className="kpi-title">Loading...</span>
               </div>
               <div className="kpi-value">—</div>
-              <div className="kpi-change text-gray-500">En cours</div>
+              <div className="kpi-change text-gray-500">In progress</div>
             </div>
           ))}
         </div>
@@ -49,13 +49,13 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
 
   const kpis = [
     {
-      title: "Employés",
+      title: "Employees",
       value: stats.total_employees.toString(),
       change:
         stats.employee_change > 0
-          ? `+${stats.employee_change} vs. mois dernier`
+          ? `+${stats.employee_change} vs. last month`
           : stats.employee_change < 0
-            ? `${stats.employee_change} vs. mois dernier`
+            ? `${stats.employee_change} vs. last month`
             : "Stable",
       icon: Users,
       color:
@@ -66,7 +66,7 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
             : "text-gray-500",
     },
     {
-      title: "Taux de Présence",
+      title: "Attendance Rate",
       value: `${stats.attendance_rate}%`,
       change:
         stats.attendance_change > 0
@@ -83,16 +83,16 @@ const KPISection: React.FC<KPISectionProps> = ({ stats, loading }) => {
             : "text-gray-500",
     },
     {
-      title: "Heures Sup",
+      title: "Overtime Hours",
       value: `${stats.overtime_ratio}%`,
-      change: "Ratio moyen",
+      change: "Average ratio",
       icon: TrendingUp,
       color: "text-blue-500",
     },
     {
-      title: "Masse Salariale",
+      title: "Payroll",
       value: formatCurrency(stats.monthly_payroll),
-      change: "Budget mensuel",
+      change: "Monthly budget",
       icon: DollarSign,
       color: "text-gray-500",
     },

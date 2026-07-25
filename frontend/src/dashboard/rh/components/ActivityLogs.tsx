@@ -73,12 +73,12 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "À l'instant";
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours}h`;
-    if (diffDays < 7) return `Il y a ${diffDays}j`;
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
 
-    return date.toLocaleDateString("fr-FR", {
+    return date.toLocaleDateString("en-US", {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
@@ -126,35 +126,35 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
   const getActionLabel = (action: string) => {
     switch (action) {
       case "LOGIN":
-        return "Connexion";
+        return "Login";
       case "PAYROLL_PAID":
-        return "Salaire Payé";
+        return "Payroll Paid";
       case "LOGOUT":
-        return "Déconnexion";
+        return "Logout";
       case "USER_CREATED":
-        return "Création";
+        return "Created";
       case "USER_UPDATED":
-        return "Modification";
+        return "Updated";
       case "USER_ARCHIVED":
-        return "Archivé";
+        return "Archived";
       case "USER_RESTORED":
-        return "Restauré";
+        return "Restored";
       case "USER_DELETED":
-        return "Supprimé";
+        return "Deleted";
       case "TEAM_ASSIGNED":
-        return "Affectation";
+        return "Assigned";
       case "TEAM_REMOVED":
-        return "Désaffectation";
+        return "Unassigned";
       case "ASSIGN_TEAM":
-        return "Affectation";
+        return "Assigned";
       case "CHECK_IN":
-        return "Pointage Entrée";
+        return "Check-in";
       case "CHECK_OUT":
-        return "Pointage Sortie";
+        return "Check-out";
       case "AUTO_CHECK_OUT":
-        return "Checkout Auto";
+        return "Auto Checkout";
       case "USER_REJECTED":
-        return "Refusé";
+        return "Rejected";
       default:
         return action;
     }
@@ -163,7 +163,7 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
   return (
     <div className="activity-logs-card">
       <div className="card-header">
-        <h3>Activité récente</h3>
+        <h3>Recent Activity</h3>
         <button
           className="refresh-btn"
           onClick={fetchLogs}
@@ -175,9 +175,9 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
 
       <div className="logs-list">
         {isLoading && logs.length === 0 ? (
-          <p className="no-logs">Chargement...</p>
+          <p className="no-logs">Loading...</p>
         ) : logs.length === 0 ? (
-          <p className="no-logs">Aucune activité récente.</p>
+          <p className="no-logs">No recent activity.</p>
         ) : (
           logs.map((log) => (
             <div key={log.id} className="log-item">
@@ -189,7 +189,7 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
                   <span className="log-user">
                     {log.user
                       ? `${log.user.prenom} ${log.user.nom}`
-                      : "Système"}
+                      : "System"}
                   </span>
                   <span
                     className="log-action"
@@ -201,7 +201,7 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ initialData, loading }) => 
                     {getActionLabel(log.action)}
                   </span>
                 </div>
-                <p className="log-desc">{log.description || "Aucun détail"}</p>
+                <p className="log-desc">{log.description || "No details"}</p>
               </div>
               <div className="log-time">
                 <Clock size={12} />

@@ -87,7 +87,7 @@ const LeaveRequest: React.FC = () => {
 
     // Validate medical file for sick leave
     if (formData.type === "MALADIE" && !medicalFile) {
-      setError("Un certificat médical est requis pour les congés maladie.");
+      setError("A medical certificate is required for sick leave.");
       return;
     }
 
@@ -110,7 +110,7 @@ const LeaveRequest: React.FC = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      setSuccess("Votre demande de congé a été soumise avec succès!");
+      setSuccess("Your leave request has been submitted successfully!");
       setShowForm(false);
       setFormData({
         type: "ANNUEL",
@@ -124,7 +124,7 @@ const LeaveRequest: React.FC = () => {
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
-          "Erreur lors de la soumission de la demande.",
+          "Error submitting the request.",
       );
     } finally {
       setIsSubmitting(false);
@@ -132,16 +132,16 @@ const LeaveRequest: React.FC = () => {
   };
 
   const handleCancel = async (id: number) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir annuler cette demande?")) {
+    if (!window.confirm("Are you sure you want to cancel this request?")) {
       return;
     }
 
     try {
       await client.delete(`/conges/${id}/annuler`);
-      setSuccess("Demande annulée avec succès.");
+      setSuccess("Request cancelled successfully.");
       refetch();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Erreur lors de l'annulation.");
+      setError(err.response?.data?.message || "Error cancelling the request.");
     }
   };
 
@@ -150,19 +150,19 @@ const LeaveRequest: React.FC = () => {
       case "APPROUVE":
         return (
           <span className="status-badge status-approved">
-            <CheckCircle size={14} /> Approuvé
+            <CheckCircle size={14} /> Approved
           </span>
         );
       case "REFUSE":
         return (
           <span className="status-badge status-rejected">
-            <XCircle size={14} /> Refusé
+            <XCircle size={14} /> Rejected
           </span>
         );
       default:
         return (
           <span className="status-badge status-pending">
-            <Clock size={14} /> En attente
+            <Clock size={14} /> Pending
           </span>
         );
     }
@@ -171,18 +171,18 @@ const LeaveRequest: React.FC = () => {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "ANNUEL":
-        return "Congé annuel";
+        return "Annual leave";
       case "MALADIE":
-        return "Congé maladie";
+        return "Sick leave";
       case "SANS_SOLDE":
-        return "Sans solde";
+        return "Unpaid";
       default:
         return type;
     }
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString("en-US", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -206,15 +206,15 @@ const LeaveRequest: React.FC = () => {
       <Sidebar />
       <div className="main-content">
         <Navbar
-          userName={user ? `${user.prenom} ${user.nom}` : "Utilisateur"}
+          userName={user ? `${user.prenom} ${user.nom}` : "User"}
           userRole={user?.role || "EMPLOYE"}
         />
 
         <div className="dashboard-content leave-request-page">
           <div className="leave-header-centered">
-            <h1>Mes Congés</h1>
+            <h1>My Leaves</h1>
             <p className="subtitle">
-              Gérez vos demandes de congé et consultez votre solde
+              Manage your leave requests and check your balance
             </p>
           </div>
 
@@ -223,14 +223,14 @@ const LeaveRequest: React.FC = () => {
             <div className="solde-info">
               <Calendar size={24} />
               <div>
-                <span className="solde-label">Solde de congé disponible</span>
+                <span className="solde-label">Available leave balance</span>
                 <span className="solde-value">
-                  {user?.solde_conge || 0} jours
+                  {user?.solde_conge || 0} days
                 </span>
               </div>
             </div>
             <p className="solde-note">
-              Vous accumulez 2 jours de congé par mois travaillé.
+              You accumulate 2 days of leave per month worked.
             </p>
           </div>
 
@@ -242,7 +242,7 @@ const LeaveRequest: React.FC = () => {
             >
               <Calendar />
               <div className="text">
-                {showForm ? "Annuler" : "Nouvelle demande"}
+                {showForm ? "Cancel" : "New Request"}
               </div>
             </button>
           </div>
@@ -264,11 +264,11 @@ const LeaveRequest: React.FC = () => {
           {/* Leave Request Form */}
           {showForm && (
             <div className="leave-form-card">
-              <h2>Nouvelle demande de congé</h2>
+              <h2>New Leave Request</h2>
               <form onSubmit={handleSubmit}>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Type de congé</label>
+                    <label>Leave Type</label>
                     <select
                       value={formData.type}
                       onChange={(e) =>
@@ -276,16 +276,16 @@ const LeaveRequest: React.FC = () => {
                       }
                       required
                     >
-                      <option value="ANNUEL">Congé annuel</option>
-                      <option value="MALADIE">Congé maladie</option>
-                      <option value="SANS_SOLDE">Sans solde</option>
+                      <option value="ANNUEL">Annual leave</option>
+                      <option value="MALADIE">Sick leave</option>
+                      <option value="SANS_SOLDE">Unpaid</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Date de début</label>
+                    <label>Start Date</label>
                     <input
                       type="date"
                       value={formData.date_debut}
@@ -297,7 +297,7 @@ const LeaveRequest: React.FC = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Date de fin</label>
+                    <label>End Date</label>
                     <input
                       type="date"
                       value={formData.date_fin}
@@ -316,22 +316,22 @@ const LeaveRequest: React.FC = () => {
                 {calculateDays() > 0 && (
                   <div className="days-preview">
                     <Clock size={16} />
-                    <span>Durée: {calculateDays()} jour(s)</span>
+                    <span>Duration: {calculateDays()} day(s)</span>
                     {formData.type !== "SANS_SOLDE" &&
                       calculateDays() > (user?.solde_conge || 0) && (
-                        <span className="warning">(Solde insuffisant!)</span>
+                        <span className="warning">(Insufficient balance!)</span>
                       )}
                   </div>
                 )}
 
                 <div className="form-group">
-                  <label>Motif (optionnel)</label>
+                  <label>Reason (optional)</label>
                   <textarea
                     value={formData.motif}
                     onChange={(e) =>
                       setFormData({ ...formData, motif: e.target.value })
                     }
-                    placeholder="Décrivez la raison de votre demande..."
+                    placeholder="Describe the reason for your request..."
                     rows={3}
                   />
                 </div>
@@ -339,8 +339,8 @@ const LeaveRequest: React.FC = () => {
                 {formData.type === "MALADIE" && (
                   <div className="form-group">
                     <label>
-                      Certificat médical *{" "}
-                      <span className="required-badge">Requis</span>
+                      Medical Certificate *{" "}
+                      <span className="required-badge">Required</span>
                     </label>
                     <input
                       type="file"
@@ -351,7 +351,7 @@ const LeaveRequest: React.FC = () => {
                           // Check file size (max 5MB)
                           if (file.size > 5 * 1024 * 1024) {
                             setError(
-                              "La taille du fichier ne doit pas dépasser 5 MB.",
+                              "File size must not exceed 5 MB.",
                             );
                             e.target.value = "";
                             return;
@@ -377,7 +377,7 @@ const LeaveRequest: React.FC = () => {
                       </div>
                     )}
                     <small className="help-text">
-                      Formats acceptés: PDF, JPG, PNG (max 5 MB)
+                      Accepted formats: PDF, JPG, PNG (max 5 MB)
                     </small>
                   </div>
                 )}
@@ -388,7 +388,7 @@ const LeaveRequest: React.FC = () => {
                     className="btn btn-secondary"
                     onClick={() => setShowForm(false)}
                   >
-                    Annuler
+                    Cancel
                   </button>
                   <button
                     type="submit"
@@ -396,7 +396,7 @@ const LeaveRequest: React.FC = () => {
                     disabled={isSubmitting}
                   >
                     <Send size={16} />
-                    {isSubmitting ? "Envoi..." : "Soumettre la demande"}
+                    {isSubmitting ? "Sending..." : "Submit Request"}
                   </button>
                 </div>
               </form>
@@ -405,13 +405,13 @@ const LeaveRequest: React.FC = () => {
 
           {/* Leave History */}
           <div className="leave-history">
-            <h2>Historique des demandes</h2>
+            <h2>Request History</h2>
             {isLoading ? (
               <DashboardSkeleton type="employee-leave" />
             ) : leaves.length === 0 ? (
               <div className="empty-state">
                 <FileText size={48} />
-                <p>Aucune demande de congé</p>
+                <p>No leave requests</p>
               </div>
             ) : (
               <div className="leaves-table-wrapper">
@@ -419,10 +419,10 @@ const LeaveRequest: React.FC = () => {
                   <thead>
                     <tr>
                       <th>Type</th>
-                      <th>Période</th>
-                      <th>Durée</th>
-                      <th>Motif</th>
-                      <th>Statut</th>
+                      <th>Period</th>
+                      <th>Duration</th>
+                      <th>Reason</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -434,7 +434,7 @@ const LeaveRequest: React.FC = () => {
                           {formatDate(leave.date_debut)} -{" "}
                           {formatDate(leave.date_fin)}
                         </td>
-                        <td>{leave.nombre_jours} jour(s)</td>
+                        <td>{leave.nombre_jours} day(s)</td>
                         <td className="motif-cell">
                           {leave.motif || <span className="text-muted">-</span>}
                         </td>
@@ -450,7 +450,7 @@ const LeaveRequest: React.FC = () => {
                                 maxWidth: "200px",
                               }}
                             >
-                              <span style={{ fontWeight: 600 }}>Raison:</span>{" "}
+                              <span style={{ fontWeight: 600 }}>Reason:</span>{" "}
                               {leave.motif_refus}
                             </div>
                           )}
@@ -460,7 +460,7 @@ const LeaveRequest: React.FC = () => {
                             <button
                               className="btn-icon btn-danger"
                               onClick={() => handleCancel(leave.id)}
-                              title="Annuler"
+                              title="Cancel"
                             >
                               <Trash2 size={16} />
                             </button>

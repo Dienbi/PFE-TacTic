@@ -36,44 +36,44 @@ const KPISection: React.FC = () => {
     <div className="kpi-grid">
       <div className="kpi-card">
         <div className="kpi-top-row">
-          <span className="kpi-label">Statut Actuel</span>
+          <span className="kpi-label">Current Status</span>
           <User size={18} className="kpi-icon-mini" />
         </div>
-        <div className="kpi-main-value">Actif</div>
-        <div className="kpi-sub-text">Employé à temps plein</div>
+        <div className="kpi-main-value">Active</div>
+        <div className="kpi-sub-text">Full-time employee</div>
       </div>
 
       <div className="kpi-card">
         <div className="kpi-top-row">
-          <span className="kpi-label">Heures ce mois</span>
+          <span className="kpi-label">Hours this month</span>
           <Calendar size={18} className="kpi-icon-mini" />
         </div>
         <div className="kpi-main-value">{monthlyStats?.total_hours || 0}h</div>
-        <div className="kpi-sub-text">{monthlyStats?.total_days || 0} jours travaillés</div>
+        <div className="kpi-sub-text">{monthlyStats?.total_days || 0} days worked</div>
       </div>
 
       <div className="kpi-card">
         <div className="kpi-top-row">
-          <span className="kpi-label">Dernier Salaire Net</span>
+          <span className="kpi-label">Last Net Salary</span>
           <DollarSign size={18} className="kpi-icon-mini" />
         </div>
         <div className="kpi-main-value">
           {latestPayslip ? formatCurrency(latestPayslip.salaire_net) : "N/A"}
         </div>
         <div className="kpi-sub-text">
-          {latestPayslip ? "Statut: Traité" : "En attente"}
+          {latestPayslip ? "Status: Processed" : "Pending"}
         </div>
       </div>
 
       <div className="kpi-card">
         <div className="kpi-top-row">
-          <span className="kpi-label">Salaire Base</span>
+          <span className="kpi-label">Base Salary</span>
           <TrendingUp size={18} className="kpi-icon-mini" />
         </div>
         <div className="kpi-main-value">
           {user?.salaire_base ? formatCurrency(user.salaire_base) : "N/A"}
         </div>
-        <div className="kpi-sub-text success">Mensuel</div>
+        <div className="kpi-sub-text success">Monthly</div>
       </div>
     </div>
   );

@@ -10,15 +10,15 @@ interface PerformanceIndicator {
 
 const PerformanceSection: React.FC = () => {
   const performanceIndicators: PerformanceIndicator[] = [
-    { id: 1, label: "Taux de Présence", value: 98, target: 95 },
+    { id: 1, label: "Attendance Rate", value: 98, target: 95 },
     { id: 2, label: "Performance", value: 88, target: 80 },
-    { id: 3, label: "Formations Complétées", value: 75, target: 70 },
-    { id: 4, label: "Objectifs Atteints", value: 92, target: 90 },
+    { id: 3, label: "Trainings Completed", value: 75, target: 70 },
+    { id: 4, label: "Goals Achieved", value: 92, target: 90 },
   ];
 
   return (
     <div className="performance-section">
-      <h3 className="section-title">Mes Indicateurs de Performance</h3>
+      <h3 className="section-title">My Performance Indicators</h3>
       <div className="performance-list">
         {performanceIndicators.map((indicator) => (
           <div key={indicator.id} className="performance-item">
@@ -35,8 +35,8 @@ const PerformanceSection: React.FC = () => {
               />
             </div>
             <div className="performance-subtext">
-              Objectif: {indicator.target}%{" "}
-              <span className="check-icon">✓</span> Atteint
+              Target: {indicator.target}%{" "}
+              <span className="check-icon">✓</span> Achieved
             </div>
           </div>
         ))}

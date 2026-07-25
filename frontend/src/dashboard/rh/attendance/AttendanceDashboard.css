@@ -93,7 +93,9 @@
 .attendance-lists {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1.5rem;
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
@@ -107,6 +109,9 @@
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px !important;
 }
 
 .list-header {
@@ -135,6 +140,7 @@
 .user-list {
   max-height: 400px;
   overflow-y: auto;
+  flex: 1;
 }
 
 .user-item {

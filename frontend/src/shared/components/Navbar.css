@@ -1,14 +1,17 @@
 .navbar {
-    height: 60px;
+    height: 70px;
     background-color: #1E2258;
     padding: 0 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 40;
+    left: 260px;
+    right: 0;
+    width: calc(100% - 260px);
+    z-index: 1000;
 }
 
 

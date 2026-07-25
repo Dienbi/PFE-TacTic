@@ -12,6 +12,8 @@ import PayrollGuideButton from '../guide/PayrollGuideButton';
 import PayrollTourTooltip from '../guide/PayrollTourTooltip';
 import { Upload, FileText, CheckCircle, XCircle, Clock, AlertTriangle, ArrowRight, Edit2 } from 'lucide-react';
 
+const BRAND = '#1E2258';
+
 const RuleImport: React.FC = () => {
   const { user, displayName } = useAuth();
   const [selectedImport, setSelectedImport] = useState<string | null>(null);
@@ -25,20 +27,20 @@ const RuleImport: React.FC = () => {
   const { data: history, refetch: refetchHistory } = useRuleImportHistory();
   const { data: selectedImportData } = useRuleImportById(selectedImport || '');
   const { data: existingRules } = useFiscalRules();
-  
+
   const { uploadPdf, reviewAndConfirm, reject } = useRuleImportMutations();
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-    
+
     const pdfFile = formData.get('pdf_file') as File;
     if (!pdfFile) {
       alert('Please select a PDF file');
       return;
     }
-    
+
     try {
       await uploadPdf.mutateAsync(formData);
       setIsUploadModalOpen(false);
@@ -74,9 +76,18 @@ const RuleImport: React.FC = () => {
     const editedValue = editedData?.[field] !== undefined ? editedData[field] : newValue;
     const isEdited = editedData?.[field] !== undefined;
     const isEditing = editingField === field;
-    
+
     return (
-      <div className={`flex items-center justify-between py-3 border-b ${hasChanged && !isEdited ? 'border-yellow-200 bg-yellow-50' : isEdited ? 'border-blue-200 bg-blue-50' : 'border-gray-100'}`}>
+      <div
+        className="flex items-center justify-between py-3 border-b"
+        style={
+          hasChanged && !isEdited
+            ? { borderColor: '#FDE68A', backgroundColor: '#FFFBEB' }
+            : isEdited
+            ? { borderColor: `${BRAND}40`, backgroundColor: `${BRAND}0D` }
+            : { borderColor: '#F3F4F6' }
+        }
+      >
         <span className="text-sm font-medium text-gray-700 w-1/3">{label}</span>
         <div className="flex items-center gap-4 flex-1">
           <div className="flex-1">
@@ -95,7 +106,8 @@ const RuleImport: React.FC = () => {
                   max={field.includes('rate') ? '1' : undefined}
                   value={editedValue !== null && editedValue !== undefined ? String(editedValue) : ''}
                   onChange={(e) => handleEditField(field, Number(e.target.value))}
-                  className="w-full px-2 py-1 text-sm border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50"
+                  className="w-full px-2 py-1 text-sm rounded focus:outline-none focus:ring-2"
+                  style={{ border: `1px solid ${BRAND}`, backgroundColor: `${BRAND}0D` }}
                   autoFocus
                 />
                 <Button
@@ -115,8 +127,9 @@ const RuleImport: React.FC = () => {
                   size="sm"
                   variant="ghost"
                   onClick={() => setEditingField(field)}
-                  leftIcon={<Edit2 className="w-3 h-3" />}
+                  title="Edit"
                 >
+                  <Edit2 className="w-3 h-3" />
                 </Button>
               </div>
             )}
@@ -128,12 +141,12 @@ const RuleImport: React.FC = () => {
 
   const handleConfirm = async () => {
     if (!selectedImport) return;
-    
+
     await reviewAndConfirm.mutateAsync({
       importLogId: selectedImport,
       reviewDecisions: editedData || {},
     });
-    
+
     setIsReviewModalOpen(false);
     refetchPending();
     refetchHistory();
@@ -141,12 +154,12 @@ const RuleImport: React.FC = () => {
 
   const handleReject = async () => {
     if (!selectedImport || !rejectReason) return;
-    
+
     await reject.mutateAsync({
       importLogId: selectedImport,
       reason: rejectReason,
     });
-    
+
     setIsRejectModalOpen(false);
     setRejectReason('');
     refetchPending();
@@ -178,18 +191,21 @@ const RuleImport: React.FC = () => {
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
         <div className="p-6 max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6" data-tour="import-overview">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Rule Import (AI)</h1>
-              <p className="text-sm text-gray-600 mt-1">Upload PDF for AI extraction and review fiscal rule changes</p>
+            <div className="flex flex-col items-start text-left">
+              <h1 className="text-2xl font-semibold text-gray-900 text-left">Rule Import (AI)</h1>
+              <p className="text-sm text-gray-600 mt-1 text-left">Upload PDF for AI extraction and review fiscal rule changes</p>
             </div>
-            <PayrollGuideButton />
-          </div>
-
-          {/* Quick Actions */}
-          <div className="flex gap-4 mb-6">
-            <Button onClick={() => setIsUploadModalOpen(true)} leftIcon={<Upload className="w-4 h-4" />} data-tour="import-upload">
-              Upload PDF
-            </Button>
+            <div className="flex items-center gap-3">
+              <PayrollGuideButton />
+              <Button
+                onClick={() => setIsUploadModalOpen(true)}
+                leftIcon={<Upload className="w-4 h-4" />}
+                data-tour="import-upload"
+                className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
+              >
+                Upload PDF
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -224,6 +240,7 @@ const RuleImport: React.FC = () => {
                                 variant="secondary"
                                 onClick={() => handleReview(importLog.id)}
                                 data-tour="import-review"
+                                style={{ color: BRAND, borderColor: BRAND }}
                               >
                                 Review
                               </Button>
@@ -255,7 +272,7 @@ const RuleImport: React.FC = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className={`p-2 rounded-lg ${
-                                importLog.status === 'confirmed' ? 'bg-green-50' : 
+                                importLog.status === 'confirmed' ? 'bg-green-50' :
                                 importLog.status === 'rejected' ? 'bg-red-50' : 'bg-yellow-50'
                               }`}>
                                 {getStatusIcon(importLog.status)}
@@ -301,7 +318,8 @@ const RuleImport: React.FC = () => {
                   name="pdf_file"
                   required
                   accept=".pdf"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+                  style={{ ['--tw-ring-color' as any]: BRAND }}
                 />
                 <p className="text-xs text-gray-500 mt-1">Select a PDF file containing fiscal rules</p>
               </div>
@@ -314,14 +332,19 @@ const RuleImport: React.FC = () => {
                   min="2020"
                   max="2100"
                   defaultValue={new Date().getFullYear()}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+                  style={{ ['--tw-ring-color' as any]: BRAND }}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="secondary" onClick={() => setIsUploadModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" isLoading={uploadPdf.isPending}>
+                <Button
+                  type="submit"
+                  isLoading={uploadPdf.isPending}
+                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
+                >
                   Upload & Extract
                 </Button>
               </div>
@@ -346,7 +369,7 @@ const RuleImport: React.FC = () => {
                         {(() => {
                           const existingRule = getExistingRuleForYear(selectedImportData.proposed_changes_json?.year);
                           const extracted = selectedImportData.proposed_changes_json || {};
-                          
+
                           return (
                             <div className="space-y-0">
                               {renderComparisonRow('CNSS Employee Rate', existingRule?.cnss_employee_rate, extracted.cnss_employee_rate, 'cnss_employee_rate', '')}
@@ -430,6 +453,7 @@ const RuleImport: React.FC = () => {
                     onClick={handleConfirm}
                     isLoading={reviewAndConfirm.isPending}
                     leftIcon={<CheckCircle className="w-4 h-4" />}
+                    className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
                   >
                     Confirm & Apply
                   </Button>
@@ -454,7 +478,8 @@ const RuleImport: React.FC = () => {
                   required
                   rows={3}
                   placeholder="Explain why you're rejecting this import"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+                  style={{ ['--tw-ring-color' as any]: BRAND }}
                 />
               </div>
               <div className="flex justify-end gap-2">

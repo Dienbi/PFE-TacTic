@@ -11,6 +11,7 @@ import Modal from '../shared/components/ui/Modal';
 import PayrollGuideButton from '../guide/PayrollGuideButton';
 import PayrollTourTooltip from '../guide/PayrollTourTooltip';
 import { History, GitCompare, RotateCcw, FileText, Search, Calendar } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const PayslipCorrections: React.FC = () => {
   const { user, displayName } = useAuth();
@@ -51,7 +52,13 @@ const PayslipCorrections: React.FC = () => {
       setComparePayslip2(sortedVersions[1].id);
       setIsCompareModalOpen(true);
     } else {
-      alert('Need at least 2 versions to compare');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cannot Compare',
+        text: 'Need at least 2 versions to compare',
+        confirmButtonColor: '#1E2258',
+        confirmButtonText: 'OK'
+      });
     }
   };
 

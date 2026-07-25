@@ -15,7 +15,7 @@ const AIReportsHeader: React.FC<AIReportsHeaderProps> = ({
   isRefreshing,
 }) => {
   const formattedDate = generatedAt
-    ? new Date(generatedAt).toLocaleString("fr-FR", {
+    ? new Date(generatedAt).toLocaleString("en-US", {
         dateStyle: "medium",
         timeStyle: "short",
       })
@@ -26,10 +26,10 @@ const AIReportsHeader: React.FC<AIReportsHeaderProps> = ({
       <div>
         <div className="flex items-center gap-2">
           <Brain className="w-7 h-7 text-violet-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Rapports IA</h1>
+          <h1 className="text-2xl font-bold text-gray-900">AI Reports</h1>
         </div>
         <p className="text-sm text-gray-500 mt-1">
-          Analyses d&apos;assiduité, scores de performance et alertes préventives
+          Attendance analysis, performance scores and preventive alerts
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -43,11 +43,11 @@ const AIReportsHeader: React.FC<AIReportsHeaderProps> = ({
           <span
             className={`w-2 h-2 rounded-full ${aiAvailable ? "bg-emerald-500" : "bg-gray-400"}`}
           />
-          {aiAvailable ? "Service IA actif" : "Service IA indisponible"}
+          {aiAvailable ? "AI service active" : "AI service unavailable"}
         </span>
         {formattedDate && (
           <span className="text-xs text-gray-400 hidden md:inline">
-            Mis à jour : {formattedDate}
+            Updated : {formattedDate}
           </span>
         )}
         <button
@@ -57,7 +57,7 @@ const AIReportsHeader: React.FC<AIReportsHeaderProps> = ({
           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-50 rounded-lg hover:bg-violet-100 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-          Actualiser
+          Refresh
         </button>
       </div>
     </div>

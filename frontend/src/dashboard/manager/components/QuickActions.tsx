@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { ClipboardCheck, Briefcase, CalendarDays } from "lucide-react";
 import "./QuickActions.css";
 
@@ -17,33 +18,54 @@ const defaultActions: QuickAction[] = [
   {
     icon: ClipboardCheck,
     title: "Daily Check-In",
-    description: "Enregistrer la présence quotidienne",
+    description: "Record daily attendance",
   },
   {
     icon: Briefcase,
-    title: "Demander un Poste",
-    description: "Nouvelle affectation de projet",
+    title: "Request Assignment",
+    description: "New project assignment",
   },
   {
     icon: CalendarDays,
-    title: "Demander un Congé",
-    description: "Soumettre une demande de congé",
+    title: "Request Leave",
+    description: "Submit leave request",
   },
 ];
 
 const QuickActions: React.FC<QuickActionsProps> = ({
   actions = defaultActions,
 }) => {
+  const navigate = useNavigate();
+
+  const handleActionClick = (title: string) => {
+    console.log("Quick action clicked:", title);
+    switch (title) {
+      case "Daily Check-In":
+        // Already on dashboard, scroll to attendance section
+        document.querySelector(".attendance-section-full")?.scrollIntoView({ behavior: "smooth" });
+        break;
+      case "Request Assignment":
+        navigate("/manager/request-job");
+        break;
+      case "Request Leave":
+        navigate("/manager/leave");
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="quick-actions-section">
-      <h3 className="section-title">Actions Rapides</h3>
+      <h3 className="section-title">Quick Actions</h3>
       <div className="quick-actions-grid">
         {actions.map((action, index) => (
           <div
             key={index}
             className="quick-action-card"
-            onClick={action.onClick}
-            role={action.onClick ? "button" : undefined}
+            onClick={() => handleActionClick(action.title)}
+            role="button"
+            tabIndex={0}
           >
             <action.icon size={24} className="action-icon" />
             <h4>{action.title}</h4>

@@ -25,8 +25,40 @@ interface UserInfo {
 }
 
 const FLAG_LABELS: Record<string, string> = {
-  frequent_late: "Retards fréquents",
-  heavy_absence: "Absences élevées",
+  frequent_late: "Frequent lateness",
+  heavy_absence: "High absences",
+};
+
+// Translation function for French poste field
+const translatePoste = (poste: string): string => {
+  const posteTranslations: Record<string, string> = {
+    "Employé": "Employee",
+    "Chef d'équipe": "Team Lead",
+    "RH": "HR",
+    "Développeur": "Developer",
+    "Ingénieur": "Engineer",
+    "Manager": "Manager",
+    "Analyste": "Analyst",
+    "Comptable": "Accountant",
+    "Technicien": "Technician",
+  };
+  return posteTranslations[poste] || poste;
+};
+
+// Translation function for French role_label field
+const translateRoleLabel = (roleLabel: string): string => {
+  const roleTranslations: Record<string, string> = {
+    "Employé": "Employee",
+    "Chef d'équipe": "Team Lead",
+    "RH": "HR",
+    "Développeur": "Developer",
+    "Ingénieur": "Engineer",
+    "Manager": "Manager",
+    "Analyste": "Analyst",
+    "Comptable": "Accountant",
+    "Technicien": "Technician",
+  };
+  return roleTranslations[roleLabel] || roleLabel;
 };
 
 const AttendanceDashboard: React.FC = () => {
@@ -60,7 +92,7 @@ const AttendanceDashboard: React.FC = () => {
           {user.prenom} {user.nom}
         </span>
         <span className="user-meta">
-          {user.poste || "Employé"} • {user.matricule}
+          {translatePoste(user.poste || "") || "Employee"} • {user.matricule}
         </span>
       </div>
       {ShowTime && user.heure_entree && (
@@ -84,7 +116,7 @@ const AttendanceDashboard: React.FC = () => {
           {anomaly.prenom} {anomaly.nom}
         </span>
         <span className="user-meta">
-          {anomaly.role_label} • {anomaly.matricule}
+          {translateRoleLabel(anomaly.role_label)} • {anomaly.matricule}
         </span>
         <div className="anomaly-tags">
           {anomaly.flags.map((flag) => (
@@ -96,11 +128,11 @@ const AttendanceDashboard: React.FC = () => {
       </div>
       <div className="anomaly-stats">
         {anomaly.late_count > 0 && (
-          <span className="anomaly-stat late-stat">{anomaly.late_count} ret.</span>
+          <span className="anomaly-stat late-stat">{anomaly.late_count} late</span>
         )}
         {anomaly.absence_count > 0 && (
           <span className="anomaly-stat absence-stat">
-            {anomaly.absence_count} abs.
+            {anomaly.absence_count} abs
           </span>
         )}
       </div>

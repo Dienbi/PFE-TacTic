@@ -132,11 +132,12 @@ body {
 
 .page-title {
     font-family: 'Blanquotey', 'Poppins', sans-serif; /* Use custom font here */
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 600;
     color: var(--dark-blue);
-    margin: 0 0 40px 0;
+    margin: 0 0 20px 0;
     letter-spacing: 3px;
+    white-space: nowrap;
 }
 
 /* --- Form --- */
@@ -149,7 +150,7 @@ body {
 
 .input-group {
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     text-align: left;
 }
 
@@ -256,7 +257,7 @@ body {
 /* Page Subtitle */
 .page-subtitle {
     color: #666;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     font-size: 0.9rem;
 }
 

@@ -5,13 +5,15 @@ interface BadgeProps {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
   size?: 'sm' | 'md';
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const Badge: React.FC<BadgeProps> = ({ 
   children, 
   variant = 'default', 
   size = 'md', 
-  className = '' 
+  className = '',
+  style 
 }) => {
   const variantStyles = {
     default: 'bg-gray-100 text-gray-800',
@@ -27,7 +29,7 @@ const Badge: React.FC<BadgeProps> = ({
   };
   
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}>
+    <span className={`inline-flex items-center rounded-full font-medium ${variantStyles[variant]} ${sizeStyles[size]} ${className}`} style={style}>
       {children}
     </span>
   );

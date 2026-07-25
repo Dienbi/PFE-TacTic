@@ -26,7 +26,7 @@ const KPISection: React.FC<KPISectionProps> = ({
         </div>
         <div className="kpi-content">
           <div className="kpi-value">{teamSize}</div>
-          <div className="kpi-label">Membres actifs</div>
+          <div className="kpi-label">Active Members</div>
         </div>
       </div>
 
@@ -37,7 +37,7 @@ const KPISection: React.FC<KPISectionProps> = ({
         <div className="kpi-content">
           <div className="kpi-value">{available}</div>
           <div className="kpi-label success">
-            ↑ {availabilityPercent}% disponibilité
+            ↑ {availabilityPercent}% availability
           </div>
         </div>
       </div>
@@ -48,7 +48,7 @@ const KPISection: React.FC<KPISectionProps> = ({
         </div>
         <div className="kpi-content">
           <div className="kpi-value">{onLeave}</div>
-          <div className="kpi-label">En congé cette semaine</div>
+          <div className="kpi-label">On Leave This Week</div>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ const KPISection: React.FC<KPISectionProps> = ({
         </div>
         <div className="kpi-content">
           <div className="kpi-value">{alerts}</div>
-          <div className="kpi-label warning">↓ Nécessite attention</div>
+          <div className="kpi-label warning">↓ Requires Attention</div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Sidebar from '../shared/components/Sidebar';
 import Navbar from '../shared/components/Navbar';
 import { useAuth } from '../hooks/useAuth';
@@ -8,22 +8,34 @@ import { Card, CardHeader, CardBody, CardFooter } from '../shared/components/ui/
 import Button from '../shared/components/ui/Button';
 import Badge from '../shared/components/ui/Badge';
 import Modal from '../shared/components/ui/Modal';
-import Tabs from '../shared/components/ui/Tabs';
 import PayrollGuideButton from '../guide/PayrollGuideButton';
 import PayrollTourTooltip from '../guide/PayrollTourTooltip';
-import { Plus, Edit, Trash2, Check, X, FileText, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, X, FileText, Settings, Layers, Users2, ChevronLeft, ChevronRight } from 'lucide-react';
+import Swal from 'sweetalert2';
+
+type FiscalTab = 'rule-sets' | 'brackets' | 'deductions';
+
+const NAVY = '#1E2258';
 
 const FiscalRulesManagement: React.FC = () => {
   const { user, displayName } = useAuth();
   const { data: fiscalRules, isLoading, refetch } = useFiscalRules();
   const [selectedRuleSet, setSelectedRuleSet] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('rule-sets');
+  const [activeTab, setActiveTab] = useState<FiscalTab>('rule-sets');
   const { data: selectedRuleSetData, refetch: refetchRuleSet } = useFiscalRuleById(selectedRuleSet || '');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isBracketModalOpen, setIsBracketModalOpen] = useState(false);
   const [isDeductionModalOpen, setIsDeductionModalOpen] = useState(false);
-  
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPageBrackets, setCurrentPageBrackets] = useState(1);
+  const [itemsPerPageBrackets, setItemsPerPageBrackets] = useState(10);
+  const [currentPageDeductions, setCurrentPageDeductions] = useState(1);
+  const [itemsPerPageDeductions, setItemsPerPageDeductions] = useState(10);
+
   const {
     createDraft,
     updateDraft,
@@ -38,11 +50,143 @@ const FiscalRulesManagement: React.FC = () => {
     deleteFamilyDeduction,
   } = useFiscalRulesMutations();
 
+  // Pagination logic
+  const rulesList = fiscalRules || [];
+  const totalItems = rulesList.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+  // Reset to page 1 whenever the data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [fiscalRules]);
+
+  // Clamp currentPage if data shrinks
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const paginatedRules = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return rulesList.slice(start, start + itemsPerPage);
+  }, [rulesList, currentPage, itemsPerPage]);
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  // Generate page numbers with ellipsis for large sets
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const delta = 1;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= currentPage - delta && i <= currentPage + delta)
+      ) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+    return pages;
+  };
+
+  // Pagination for IRPP brackets
+  const bracketsList = selectedRuleSetData?.brackets || [];
+  const totalBrackets = bracketsList.length;
+  const totalPagesBrackets = Math.max(1, Math.ceil(totalBrackets / itemsPerPageBrackets));
+
+  useEffect(() => {
+    setCurrentPageBrackets(1);
+  }, [selectedRuleSetData?.brackets]);
+
+  useEffect(() => {
+    if (currentPageBrackets > totalPagesBrackets) {
+      setCurrentPageBrackets(totalPagesBrackets);
+    }
+  }, [totalPagesBrackets, currentPageBrackets]);
+
+  const paginatedBrackets = useMemo(() => {
+    const start = (currentPageBrackets - 1) * itemsPerPageBrackets;
+    return bracketsList.slice(start, start + itemsPerPageBrackets);
+  }, [bracketsList, currentPageBrackets, itemsPerPageBrackets]);
+
+  const goToPageBrackets = (page: number) => {
+    if (page < 1 || page > totalPagesBrackets) return;
+    setCurrentPageBrackets(page);
+  };
+
+  const getPageNumbersBrackets = () => {
+    const pages: (number | string)[] = [];
+    const delta = 1;
+
+    for (let i = 1; i <= totalPagesBrackets; i++) {
+      if (
+        i === 1 ||
+        i === totalPagesBrackets ||
+        (i >= currentPageBrackets - delta && i <= currentPageBrackets + delta)
+      ) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+    return pages;
+  };
+
+  // Pagination for family deductions
+  const deductionsList = selectedRuleSetData?.deductions || [];
+  const totalDeductions = deductionsList.length;
+  const totalPagesDeductions = Math.max(1, Math.ceil(totalDeductions / itemsPerPageDeductions));
+
+  useEffect(() => {
+    setCurrentPageDeductions(1);
+  }, [selectedRuleSetData?.deductions]);
+
+  useEffect(() => {
+    if (currentPageDeductions > totalPagesDeductions) {
+      setCurrentPageDeductions(totalPagesDeductions);
+    }
+  }, [totalPagesDeductions, currentPageDeductions]);
+
+  const paginatedDeductions = useMemo(() => {
+    const start = (currentPageDeductions - 1) * itemsPerPageDeductions;
+    return deductionsList.slice(start, start + itemsPerPageDeductions);
+  }, [deductionsList, currentPageDeductions, itemsPerPageDeductions]);
+
+  const goToPageDeductions = (page: number) => {
+    if (page < 1 || page > totalPagesDeductions) return;
+    setCurrentPageDeductions(page);
+  };
+
+  const getPageNumbersDeductions = () => {
+    const pages: (number | string)[] = [];
+    const delta = 1;
+
+    for (let i = 1; i <= totalPagesDeductions; i++) {
+      if (
+        i === 1 ||
+        i === totalPagesDeductions ||
+        (i >= currentPageDeductions - delta && i <= currentPageDeductions + delta)
+      ) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+    return pages;
+  };
+
   const handleCreateDraft = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-    
+
     await createDraft.mutateAsync({
       year: Number(formData.get('year')),
       effective_from: formData.get('effective_from') as string,
@@ -56,7 +200,7 @@ const FiscalRulesManagement: React.FC = () => {
       prof_expense_annual_cap: Number(formData.get('prof_expense_annual_cap')),
       min_annual_tax: Number(formData.get('min_annual_tax')),
     });
-    
+
     setIsCreateModalOpen(false);
     refetch();
   };
@@ -64,7 +208,12 @@ const FiscalRulesManagement: React.FC = () => {
   const handleConfirm = async (id: string) => {
     const ruleSet = fiscalRules?.find((r: any) => r.id === id);
     if (!ruleSet?.irpp_brackets || ruleSet.irpp_brackets.length === 0) {
-      alert('Rule set must have at least one IRPP bracket before confirmation');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cannot Confirm',
+        text: 'Rule set must have at least one IRPP bracket before confirmation',
+        confirmButtonColor: '#1E2258',
+      });
       return;
     }
     await confirm.mutateAsync(id);
@@ -72,11 +221,28 @@ const FiscalRulesManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this draft rule set?')) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'You want to delete this draft rule set?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1E2258',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    });
+    if (result.isConfirmed) {
       await deleteDraft.mutateAsync(id);
       refetch();
     }
   };
+
+  const tabItems: { id: FiscalTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'rule-sets', label: 'Rule Sets', icon: <Settings className="w-4 h-4" /> },
+    { id: 'brackets', label: 'IRPP Brackets', icon: <Layers className="w-4 h-4" /> },
+    { id: 'deductions', label: 'Family Deductions', icon: <Users2 className="w-4 h-4" /> },
+  ];
+
+  const currentRuleSetStatus = fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status;
 
   if (isLoading) {
     return (
@@ -97,315 +263,596 @@ const FiscalRulesManagement: React.FC = () => {
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
         <div className="p-6 max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6" data-tour="fiscal-overview">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Fiscal Rules Management</h1>
-              <p className="text-sm text-gray-600 mt-1">Manage Tunisian tax rules, IRPP brackets, and family deductions</p>
+            <div className="flex flex-col items-start text-left">
+              <h1 className="text-2xl font-semibold text-gray-900 text-left">Fiscal Rules Management</h1>
+              <p className="text-sm text-gray-600 mt-1 text-left">Manage Tunisian tax rules, IRPP brackets, and family deductions</p>
             </div>
             <PayrollGuideButton />
           </div>
 
-          <Tabs
-            defaultTab="rule-sets"
-            onTabChange={setActiveTab}
-            tabs={[
-              {
-                id: 'rule-sets',
-                label: 'Rule Sets',
-                icon: <Settings className="w-4 h-4" />,
-                content: (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-gray-900">Fiscal Rule Sets</h2>
-                      <Button onClick={() => setIsCreateModalOpen(true)} leftIcon={<Plus className="w-4 h-4" />} data-tour="fiscal-create">
-                        Create Draft
-                      </Button>
+          {/* Agenda-style tab bar */}
+          <div
+            className="flex items-center gap-2 p-1.5 rounded-xl mb-6 w-fit"
+            style={{ backgroundColor: `${NAVY}0D`, border: `1px solid ${NAVY}20` }}
+          >
+            {tabItems.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  style={
+                    isActive
+                      ? { backgroundColor: NAVY, color: '#fff', boxShadow: '0 1px 3px rgba(30,34,88,0.35)' }
+                      : { backgroundColor: 'transparent', color: NAVY }
+                  }
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Rule Sets Tab */}
+          {activeTab === 'rule-sets' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-gray-900">Fiscal Rule Sets</h2>
+                <div className="flex items-center gap-3">
+                  {totalItems > 0 && (
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-[#1E2258]">Rows per page</label>
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="px-2 py-1 text-sm rounded-lg focus:outline-none focus:ring-2"
+                        style={{ border: '1px solid #1E2258', color: '#1E2258' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                      </select>
                     </div>
-                    
-                    <div className="grid gap-4">
-                      {fiscalRules?.map((ruleSet: any) => (
-                        <Card key={ruleSet.id} hover>
-                          <CardHeader>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h3 className="text-lg font-semibold text-gray-900">{ruleSet.year} Fiscal Rules</h3>
-                                  <Badge variant={ruleSet.is_confirmed ? 'success' : 'warning'}>
-                                    {ruleSet.is_confirmed ? 'Confirmed' : 'Draft'}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  Effective: {new Date(ruleSet.effective_from).toLocaleDateString()} - 
-                                  {ruleSet.effective_to ? new Date(ruleSet.effective_to).toLocaleDateString() : 'Present'}
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
+                  )}
+                  <Button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    leftIcon={<Plus className="w-4 h-4" />}
+                    data-tour="fiscal-create"
+                    variant="primary"
+                    className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258]"
+                  >
+                    Create Draft
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                {paginatedRules.map((ruleSet: any) => (
+                  <Card
+                    key={ruleSet.id}
+                    hover
+                    className="shadow-md border border-gray-200 hover:shadow-xl hover:border-[#1E225830] transition-all duration-300 bg-gradient-to-br from-white to-gray-50"
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold" style={{ color: NAVY }}>{ruleSet.year} Fiscal Rules</h3>
+                            <Badge variant={ruleSet.is_confirmed ? 'success' : 'warning'}>
+                              {ruleSet.is_confirmed ? 'Confirmed' : 'Draft'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Effective: {new Date(ruleSet.effective_from).toLocaleDateString()} -{' '}
+                            {ruleSet.effective_to ? new Date(ruleSet.effective_to).toLocaleDateString() : 'Present'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedRuleSet(ruleSet.id);
+                              setActiveTab('brackets');
+                            }}
+                            style={{ color: NAVY }}
+                            title="View brackets"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                          {ruleSet.status === 'draft' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => handleConfirm(ruleSet.id)}
+                                leftIcon={<Check className="w-4 h-4" />}
+                                data-tour="fiscal-apply"
+                                style={{ borderColor: NAVY, color: NAVY }}
+                              >
+                                Confirm
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                onClick={() => handleDelete(ruleSet.id)}
+                                leftIcon={<Trash2 className="w-4 h-4" />}
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardBody data-tour="fiscal-variables">
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500">CNSS Employee Rate</p>
+                          <p className="font-semibold text-gray-900">{(Number(ruleSet.cnss_employee_rate || 0) * 100).toFixed(2)}%</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">CNSS Employer Rate</p>
+                          <p className="font-semibold text-gray-900">{(Number(ruleSet.cnss_employer_rate || 0) * 100).toFixed(2)}%</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">CSS Rate</p>
+                          <p className="font-semibold text-gray-900">{(Number(ruleSet.css_rate || 0) * 100).toFixed(2)}%</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">IRPP Brackets</p>
+                          <p className="font-semibold text-gray-900">{ruleSet.irpp_brackets?.length || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Family Deductions</p>
+                          <p className="font-semibold text-gray-900">{ruleSet.family_deductions?.length || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Min Annual Tax</p>
+                          <p className="font-semibold text-gray-900">{Number(ruleSet.min_annual_tax || 0).toFixed(2)} TND</p>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+
+              {(!fiscalRules || fiscalRules.length === 0) && (
+                <Card className="shadow-sm">
+                  <CardBody>
+                    <div className="text-center py-12 text-gray-500">No fiscal rule sets found. Create one to get started.</div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* Pagination controls */}
+              {totalItems > 0 && (
+                <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: '1px solid #1E225820' }}>
+                  <p className="text-sm text-[#1E2258]">
+                    Showing {(currentPage - 1) * itemsPerPage + 1}
+                    {' '}-{' '}
+                    {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border border-[#1E2258] text-[#1E2258] hover:bg-[#1E2258] hover:text-white transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {getPageNumbers().map((page, idx) => (
+                      page === '...' ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-sm" style={{ color: '#1E225880' }}>
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => goToPage(page as number)}
+                          className={`min-w-[2.25rem] h-9 px-2 rounded-lg text-sm font-medium border border-[#1E2258] transition-colors ${currentPage === page ? 'bg-[#1E2258] text-white' : 'text-[#1E2258] hover:bg-[#1E2258] hover:text-white'}`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    ))}
+
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border border-[#1E2258] text-[#1E2258] hover:bg-[#1E2258] hover:text-white transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* IRPP Brackets Tab */}
+          {activeTab === 'brackets' && (
+            <div className="space-y-4" data-tour="fiscal-irpp">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  IRPP Brackets {selectedRuleSetData && `- ${selectedRuleSetData.year}`}
+                </h2>
+                <div className="flex items-center gap-3">
+                  {totalBrackets > 0 && (
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-[#1E2258]">Rows per page</label>
+                      <select
+                        value={itemsPerPageBrackets}
+                        onChange={(e) => {
+                          setItemsPerPageBrackets(Number(e.target.value));
+                          setCurrentPageBrackets(1);
+                        }}
+                        className="px-2 py-1 text-sm rounded-lg focus:outline-none focus:ring-2"
+                        style={{ border: '1px solid #1E2258', color: '#1E2258' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                      </select>
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => {
+                      const ruleSet = fiscalRules?.find((r: any) => r.id === selectedRuleSet);
+                      if (ruleSet?.status !== 'draft') {
+                        Swal.fire({
+                          icon: 'warning',
+                          title: 'Cannot Add Bracket',
+                          text: 'IRPP brackets can only be added to draft rule sets',
+                          confirmButtonColor: '#1E2258',
+                        });
+                        return;
+                      }
+                      setIsBracketModalOpen(true);
+                    }}
+                    leftIcon={<Plus className="w-4 h-4" />}
+                    disabled={!selectedRuleSet || fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status !== 'draft'}
+                    variant="primary"
+                    className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] disabled:opacity-40"
+                  >
+                    Add Bracket
+                  </Button>
+                </div>
+              </div>
+
+              <Card className="shadow-md border border-gray-200 bg-gradient-to-br from-white to-gray-50">
+                <CardBody>
+                  <p className="text-sm font-medium mb-2 text-[#1E2258]">
+                    Select a rule set to manage IRPP brackets
+                  </p>
+                  <select
+                    value={selectedRuleSet || ''}
+                    onChange={(e) => setSelectedRuleSet(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                    style={{ borderColor: `${NAVY}40` }}
+                  >
+                    <option value="">Select a rule set</option>
+                    {fiscalRules?.map((ruleSet: any) => (
+                      <option key={ruleSet.id} value={ruleSet.id}>
+                        {ruleSet.year} Fiscal Rules ({ruleSet.status}) {ruleSet.status !== 'draft' && '- Cannot add brackets'}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedRuleSet && (
+                    <div className="mt-2">
+                      {currentRuleSetStatus !== 'draft' ? (
+                        <p className="text-sm text-red-600">
+                          This rule set is {currentRuleSetStatus}. Only draft rule sets can have brackets added.
+                        </p>
+                      ) : (
+                        <p className="text-sm" style={{ color: '#16A34A' }}>
+                          Draft rule set selected. You can add brackets.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardBody>
+                  {paginatedBrackets.length > 0 ? (
+                    <>
+                    <table className="w-full table-fixed">
+                      <colgroup>
+                        <col className="w-[14%]" />
+                        <col className="w-[24%]" />
+                        <col className="w-[24%]" />
+                        <col className="w-[18%]" />
+                        <col className="w-[20%]" />
+                      </colgroup>
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Order</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Min Amount</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Max Amount</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Rate</th>
+                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-700 truncate">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedBrackets.map((bracket: any) => (
+                          <tr key={bracket.id} className="border-b border-gray-100">
+                            <td className="py-3 px-4 text-sm text-left truncate">
+                              <Badge variant="default">#{bracket.bracket_order}</Badge>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-left truncate">{Number(bracket.min_annual_amount || 0).toFixed(2)} TND</td>
+                            <td className="py-3 px-4 text-sm text-left truncate">
+                              {bracket.max_annual_amount ? Number(bracket.max_annual_amount).toFixed(2) + ' TND' : '∞'}
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium text-left truncate">{(Number(bracket.rate || 0) * 100).toFixed(2)}%</td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex justify-end">
                                 <Button
                                   size="sm"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setSelectedRuleSet(ruleSet.id);
-                                    setActiveTab('brackets');
-                                  }}
+                                  variant="danger"
+                                  onClick={() => deleteIrppBracket.mutateAsync(bracket.id)}
+                                  leftIcon={<Trash2 className="w-4 h-4" />}
+                                  disabled={currentRuleSetStatus !== 'draft'}
                                 >
-                                  <FileText className="w-4 h-4" />
+                                  Delete
                                 </Button>
-                                {ruleSet.status === 'draft' && (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      onClick={() => handleConfirm(ruleSet.id)}
-                                      leftIcon={<Check className="w-4 h-4" />}
-                                      data-tour="fiscal-apply"
-                                    >
-                                      Confirm
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="danger"
-                                      onClick={() => handleDelete(ruleSet.id)}
-                                      leftIcon={<Trash2 className="w-4 h-4" />}
-                                    >
-                                      Delete
-                                    </Button>
-                                  </>
-                                )}
                               </div>
-                            </div>
-                          </CardHeader>
-                          <CardBody data-tour="fiscal-variables">
-                            <div className="grid grid-cols-3 gap-4 text-sm">
-                              <div>
-                                <p className="text-gray-600">CNSS Employee Rate</p>
-                                <p className="font-medium">{(Number(ruleSet.cnss_employee_rate || 0) * 100).toFixed(2)}%</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">CNSS Employer Rate</p>
-                                <p className="font-medium">{(Number(ruleSet.cnss_employer_rate || 0) * 100).toFixed(2)}%</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">CSS Rate</p>
-                                <p className="font-medium">{(Number(ruleSet.css_rate || 0) * 100).toFixed(2)}%</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">IRPP Brackets</p>
-                                <p className="font-medium">{ruleSet.irpp_brackets?.length || 0}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">Family Deductions</p>
-                                <p className="font-medium">{ruleSet.family_deductions?.length || 0}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">Min Annual Tax</p>
-                                <p className="font-medium">{Number(ruleSet.min_annual_tax || 0).toFixed(2)} TND</p>
-                              </div>
-                            </div>
-                          </CardBody>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                id: 'brackets',
-                label: 'IRPP Brackets',
-                icon: <FileText className="w-4 h-4" />,
-                content: (
-                  <div className="space-y-4" data-tour="fiscal-irpp">
-                    <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        IRPP Brackets {selectedRuleSetData && `- ${selectedRuleSetData.year}`}
-                      </h2>
-                      <Button 
-                        onClick={() => {
-                          const ruleSet = fiscalRules?.find((r: any) => r.id === selectedRuleSet);
-                          if (ruleSet?.status !== 'draft') {
-                            alert('IRPP brackets can only be added to draft rule sets');
-                            return;
-                          }
-                          setIsBracketModalOpen(true);
-                        }} 
-                        leftIcon={<Plus className="w-4 h-4" />}
-                        disabled={!selectedRuleSet || fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status !== 'draft'}
-                      >
-                        Add Bracket
-                      </Button>
-                    </div>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-yellow-800">
-                        Select a rule set below to manage IRPP brackets:
-                      </p>
-                      <select
-                        value={selectedRuleSet || ''}
-                        onChange={(e) => {
-                          setSelectedRuleSet(e.target.value);
-                        }}
-                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select a rule set</option>
-                        {fiscalRules?.map((ruleSet: any) => (
-                          <option key={ruleSet.id} value={ruleSet.id}>
-                            {ruleSet.year} Fiscal Rules ({ruleSet.status}) {ruleSet.status !== 'draft' && '- Cannot add brackets'}
-                          </option>
+                            </td>
+                          </tr>
                         ))}
-                      </select>
-                      {selectedRuleSet && (
-                        <div className="mt-2">
-                          {fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status !== 'draft' ? (
-                            <p className="text-sm text-red-600">
-                              This rule set is {fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status}. Only draft rule sets can have brackets added.
-                            </p>
-                          ) : (
-                            <p className="text-sm text-green-600">
-                              Draft rule set selected. You can add brackets.
-                            </p>
-                          )}
+                      </tbody>
+                    </table>
+
+                    {/* Pagination controls */}
+                    {totalBrackets > 0 && (
+                      <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: '1px solid #1E225820' }}>
+                        <p className="text-sm text-[#1E2258]">
+                          Showing {(currentPageBrackets - 1) * itemsPerPageBrackets + 1}
+                          {' '}-{' '}
+                          {Math.min(currentPageBrackets * itemsPerPageBrackets, totalBrackets)} of {totalBrackets}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => goToPageBrackets(currentPageBrackets - 1)}
+                            disabled={currentPageBrackets === 1}
+                            className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border border-[#1E2258] text-[#1E2258] hover:bg-[#1E2258] hover:text-white transition-colors"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+
+                          {getPageNumbersBrackets().map((page, idx) => (
+                            page === '...' ? (
+                              <span key={`ellipsis-${idx}`} className="px-2 text-sm" style={{ color: '#1E225880' }}>
+                                ...
+                              </span>
+                            ) : (
+                              <button
+                                key={page}
+                                onClick={() => goToPageBrackets(page as number)}
+                                className={`min-w-[2.25rem] h-9 px-2 rounded-lg text-sm font-medium border border-[#1E2258] transition-colors ${currentPageBrackets === page ? 'bg-[#1E2258] text-white' : 'text-[#1E2258] hover:bg-[#1E2258] hover:text-white'}`}
+                              >
+                                {page}
+                              </button>
+                            )
+                          ))}
+
+                          <button
+                            onClick={() => goToPageBrackets(currentPageBrackets + 1)}
+                            disabled={currentPageBrackets === totalPagesBrackets}
+                            className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border border-[#1E2258] text-[#1E2258] hover:bg-[#1E2258] hover:text-white transition-colors"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
                         </div>
+                      </div>
+                    )}
+                    </>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      {selectedRuleSet ? 'No IRPP brackets found for this rule set.' : 'Select a rule set above to view its brackets.'}
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+            </div>
+          )}
+
+          {/* Family Deductions Tab */}
+          {activeTab === 'deductions' && (
+            <div className="space-y-4" data-tour="fiscal-family">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Family Deductions {selectedRuleSetData && `- ${selectedRuleSetData.year}`}
+                </h2>
+                <div className="flex items-center gap-3">
+                  {totalDeductions > 0 && (
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-[#1E2258]">Rows per page</label>
+                      <select
+                        value={itemsPerPageDeductions}
+                        onChange={(e) => {
+                          setItemsPerPageDeductions(Number(e.target.value));
+                          setCurrentPageDeductions(1);
+                        }}
+                        className="px-2 py-1 text-sm rounded-lg focus:outline-none focus:ring-2"
+                        style={{ border: '1px solid #1E2258', color: '#1E2258' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                      </select>
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => {
+                      const ruleSet = fiscalRules?.find((r: any) => r.id === selectedRuleSet);
+                      if (ruleSet?.status !== 'draft') {
+                        Swal.fire({
+                          icon: 'warning',
+                          title: 'Cannot Add Deduction',
+                          text: 'Family deductions can only be added to draft rule sets',
+                          confirmButtonColor: '#1E2258',
+                        });
+                        return;
+                      }
+                      setIsDeductionModalOpen(true);
+                    }}
+                    leftIcon={<Plus className="w-4 h-4" />}
+                    disabled={!selectedRuleSet || fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status !== 'draft'}
+                    variant="primary"
+                    className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] disabled:opacity-40"
+                  >
+                    Add Deduction
+                  </Button>
+                </div>
+              </div>
+
+              <Card className="shadow-md border border-gray-200 bg-gradient-to-br from-white to-gray-50">
+                <CardBody>
+                  <p className="text-sm font-medium mb-2 text-[#1E2258]">
+                    Select a rule set to manage family deductions
+                  </p>
+                  <select
+                    value={selectedRuleSet || ''}
+                    onChange={(e) => setSelectedRuleSet(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                    style={{ borderColor: `${NAVY}40` }}
+                  >
+                    <option value="">Select a rule set</option>
+                    {fiscalRules?.map((ruleSet: any) => (
+                      <option key={ruleSet.id} value={ruleSet.id}>
+                        {ruleSet.year} Fiscal Rules ({ruleSet.status}) {ruleSet.status !== 'draft' && '- Cannot add deductions'}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedRuleSet && (
+                    <div className="mt-2">
+                      {currentRuleSetStatus !== 'draft' ? (
+                        <p className="text-sm text-red-600">
+                          This rule set is {currentRuleSetStatus}. Only draft rule sets can have deductions added.
+                        </p>
+                      ) : (
+                        <p className="text-sm" style={{ color: '#16A34A' }}>
+                          Draft rule set selected. You can add deductions.
+                        </p>
                       )}
                     </div>
-                    
-                    <Card>
-                      <CardBody>
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gray-200">
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Order</th>
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Min Amount</th>
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Max Amount</th>
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Rate</th>
-                              <th className="text-right py-2 px-4 text-sm font-medium text-gray-700">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedRuleSetData?.brackets?.map((bracket: any) => (
-                              <tr key={bracket.id} className="border-b border-gray-100">
-                                <td className="py-3 px-4 text-sm">{bracket.bracket_order}</td>
-                                <td className="py-3 px-4 text-sm">{Number(bracket.min_annual_amount || 0).toFixed(2)} TND</td>
-                                <td className="py-3 px-4 text-sm">
-                                  {bracket.max_annual_amount ? Number(bracket.max_annual_amount).toFixed(2) + ' TND' : '∞'}
-                                </td>
-                                <td className="py-3 px-4 text-sm">{(Number(bracket.rate || 0) * 100).toFixed(2)}%</td>
-                                <td className="py-3 px-4 text-right">
-                                  <Button
-                                    size="sm"
-                                    variant="danger"
-                                    onClick={() => deleteIrppBracket.mutateAsync(bracket.id)}
-                                    leftIcon={<Trash2 className="w-4 h-4" />}
-                                  >
-                                    Delete
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </CardBody>
-                    </Card>
-                  </div>
-                ),
-              },
-              {
-                id: 'deductions',
-                label: 'Family Deductions',
-                icon: <FileText className="w-4 h-4" />,
-                content: (
-                  <div className="space-y-4" data-tour="fiscal-family">
-                    <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        Family Deductions {selectedRuleSetData && `- ${selectedRuleSetData.year}`}
-                      </h2>
-                      <Button 
-                        onClick={() => {
-                          const ruleSet = fiscalRules?.find((r: any) => r.id === selectedRuleSet);
-                          if (ruleSet?.status !== 'draft') {
-                            alert('Family deductions can only be added to draft rule sets');
-                            return;
-                          }
-                          setIsDeductionModalOpen(true);
-                        }} 
-                        leftIcon={<Plus className="w-4 h-4" />}
-                        disabled={!selectedRuleSet || fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status !== 'draft'}
-                      >
-                        Add Deduction
-                      </Button>
-                    </div>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-yellow-800">
-                        Select a rule set below to manage family deductions:
-                      </p>
-                      <select
-                        value={selectedRuleSet || ''}
-                        onChange={(e) => {
-                          setSelectedRuleSet(e.target.value);
-                        }}
-                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select a rule set</option>
-                        {fiscalRules?.map((ruleSet: any) => (
-                          <option key={ruleSet.id} value={ruleSet.id}>
-                            {ruleSet.year} Fiscal Rules ({ruleSet.status}) {ruleSet.status !== 'draft' && '- Cannot add deductions'}
-                          </option>
+                  )}
+                </CardBody>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardBody>
+                  {paginatedDeductions.length > 0 ? (
+                    <>
+                    <table className="w-full table-fixed">
+                      <colgroup>
+                        <col className="w-[36%]" />
+                        <col className="w-[28%]" />
+                        <col className="w-[18%]" />
+                        <col className="w-[18%]" />
+                      </colgroup>
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Type</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Annual Amount</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 truncate">Max Count</th>
+                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-700 truncate">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedDeductions.map((deduction: any) => (
+                          <tr key={deduction.id} className="border-b border-gray-100">
+                            <td className="py-3 px-4 text-sm text-left truncate capitalize">{deduction.deduction_type.replace(/_/g, ' ')}</td>
+                            <td className="py-3 px-4 text-sm font-medium text-left truncate">{Number(deduction.annual_amount || 0).toFixed(2)} TND</td>
+                            <td className="py-3 px-4 text-sm text-left truncate">{deduction.max_count || 'Unlimited'}</td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex justify-end">
+                                <Button
+                                  size="sm"
+                                  variant="danger"
+                                  onClick={() => deleteFamilyDeduction.mutateAsync(deduction.id)}
+                                  leftIcon={<Trash2 className="w-4 h-4" />}
+                                  disabled={currentRuleSetStatus !== 'draft'}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
                         ))}
-                      </select>
-                      {selectedRuleSet && (
-                        <div className="mt-2">
-                          {fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status !== 'draft' ? (
-                            <p className="text-sm text-red-600">
-                              This rule set is {fiscalRules?.find((r: any) => r.id === selectedRuleSet)?.status}. Only draft rule sets can have deductions added.
-                            </p>
-                          ) : (
-                            <p className="text-sm text-green-600">
-                              Draft rule set selected. You can add deductions.
-                            </p>
-                          )}
+                      </tbody>
+                    </table>
+
+                    {/* Pagination controls */}
+                    {totalDeductions > 0 && (
+                      <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: '1px solid #1E225820' }}>
+                        <p className="text-sm text-[#1E2258]">
+                          Showing {(currentPageDeductions - 1) * itemsPerPageDeductions + 1}
+                          {' '}-{' '}
+                          {Math.min(currentPageDeductions * itemsPerPageDeductions, totalDeductions)} of {totalDeductions}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => goToPageDeductions(currentPageDeductions - 1)}
+                            disabled={currentPageDeductions === 1}
+                            className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border border-[#1E2258] text-[#1E2258] hover:bg-[#1E2258] hover:text-white transition-colors"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+
+                          {getPageNumbersDeductions().map((page, idx) => (
+                            page === '...' ? (
+                              <span key={`ellipsis-${idx}`} className="px-2 text-sm" style={{ color: '#1E225880' }}>
+                                ...
+                              </span>
+                            ) : (
+                              <button
+                                key={page}
+                                onClick={() => goToPageDeductions(page as number)}
+                                className={`min-w-[2.25rem] h-9 px-2 rounded-lg text-sm font-medium border border-[#1E2258] transition-colors ${currentPageDeductions === page ? 'bg-[#1E2258] text-white' : 'text-[#1E2258] hover:bg-[#1E2258] hover:text-white'}`}
+                              >
+                                {page}
+                              </button>
+                            )
+                          ))}
+
+                          <button
+                            onClick={() => goToPageDeductions(currentPageDeductions + 1)}
+                            disabled={currentPageDeductions === totalPagesDeductions}
+                            className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border border-[#1E2258] text-[#1E2258] hover:bg-[#1E2258] hover:text-white transition-colors"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
                         </div>
-                      )}
+                      </div>
+                    )}
+                    </>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      {selectedRuleSet ? 'No family deductions found for this rule set.' : 'Select a rule set above to view its deductions.'}
                     </div>
-                    
-                    <Card>
-                      <CardBody>
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gray-200">
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Type</th>
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Annual Amount</th>
-                              <th className="text-left py-2 px-4 text-sm font-medium text-gray-700">Max Count</th>
-                              <th className="text-right py-2 px-4 text-sm font-medium text-gray-700">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedRuleSetData?.deductions?.map((deduction: any) => (
-                              <tr key={deduction.id} className="border-b border-gray-100">
-                                <td className="py-3 px-4 text-sm capitalize">{deduction.deduction_type.replace(/_/g, ' ')}</td>
-                                <td className="py-3 px-4 text-sm">{Number(deduction.annual_amount || 0).toFixed(2)} TND</td>
-                                <td className="py-3 px-4 text-sm">{deduction.max_count || 'Unlimited'}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <Button
-                                    size="sm"
-                                    variant="danger"
-                                    onClick={() => deleteFamilyDeduction.mutateAsync(deduction.id)}
-                                    leftIcon={<Trash2 className="w-4 h-4" />}
-                                  >
-                                    Delete
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </CardBody>
-                    </Card>
-                  </div>
-                ),
-              },
-            ]}
-          />
+                  )}
+                </CardBody>
+              </Card>
+            </div>
+          )}
+
           {/* Create Draft Modal */}
           <Modal
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
-            title="Create Draft Rule Set"
+            title={<span style={{ color: NAVY }}>Create Draft Rule Set</span>}
             size="lg"
           >
             <form onSubmit={handleCreateDraft} className="space-y-4">
@@ -542,7 +989,12 @@ const FiscalRulesManagement: React.FC = () => {
                 <Button variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" isLoading={createDraft.isPending}>
+                <Button
+                  type="submit"
+                  isLoading={createDraft.isPending}
+                  variant="ghost"
+                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
+                >
                   Create Draft
                 </Button>
               </div>
@@ -553,7 +1005,7 @@ const FiscalRulesManagement: React.FC = () => {
           <Modal
             isOpen={isBracketModalOpen}
             onClose={() => setIsBracketModalOpen(false)}
-            title="Add IRPP Bracket"
+            title={<span style={{ color: NAVY }}>Add IRPP Bracket</span>}
             size="md"
           >
             <form onSubmit={async (e) => {
@@ -579,7 +1031,12 @@ const FiscalRulesManagement: React.FC = () => {
                 refetchRuleSet();
               } catch (error) {
                 console.error('Error adding bracket:', error);
-                alert('Failed to add bracket. Please try again.');
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Failed to add bracket. Please try again.',
+                  confirmButtonColor: '#1E2258',
+                });
               }
             }} className="space-y-4">
               <div>
@@ -629,7 +1086,12 @@ const FiscalRulesManagement: React.FC = () => {
                 <Button variant="secondary" onClick={() => setIsBracketModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" isLoading={addIrppBracket.isPending}>
+                <Button
+                  type="submit"
+                  isLoading={addIrppBracket.isPending}
+                  variant="ghost"
+                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
+                >
                   Add Bracket
                 </Button>
               </div>
@@ -640,7 +1102,7 @@ const FiscalRulesManagement: React.FC = () => {
           <Modal
             isOpen={isDeductionModalOpen}
             onClose={() => setIsDeductionModalOpen(false)}
-            title="Add Family Deduction"
+            title={<span style={{ color: NAVY }}>Add Family Deduction</span>}
             size="md"
           >
             <form onSubmit={async (e) => {
@@ -661,7 +1123,12 @@ const FiscalRulesManagement: React.FC = () => {
                 refetchRuleSet();
               } catch (error) {
                 console.error('Error adding deduction:', error);
-                alert('Failed to add deduction. Please try again.');
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Failed to add deduction. Please try again.',
+                  confirmButtonColor: '#1E2258',
+                });
               }
             }} className="space-y-4">
               <div>
@@ -702,7 +1169,12 @@ const FiscalRulesManagement: React.FC = () => {
                 <Button variant="secondary" onClick={() => setIsDeductionModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" isLoading={addFamilyDeduction.isPending}>
+                <Button
+                  type="submit"
+                  isLoading={addFamilyDeduction.isPending}
+                  variant="ghost"
+                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
+                >
                   Add Deduction
                 </Button>
               </div>

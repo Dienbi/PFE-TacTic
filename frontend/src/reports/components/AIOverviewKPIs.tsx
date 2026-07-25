@@ -14,38 +14,38 @@ const AIOverviewKPIs: React.FC<AIOverviewKPIsProps> = ({ aiKpis, loading }) => {
   const cards = [
     {
       icon: TrendingUp,
-      label: "Score performance moyen",
+      label: "Average performance score",
       value: performance ? `${performance.avg_performance.toFixed(1)}/100` : "—",
-      sub: performance ? `Min ${performance.min_performance} — Max ${performance.max_performance}` : "Indisponible",
+      sub: performance ? `Min ${performance.min_performance} — Max ${performance.max_performance}` : "Unavailable",
       color: "violet",
     },
     {
       icon: ShieldAlert,
-      label: "Employés à risque",
+      label: "At-risk employees",
       value: attendance
         ? String(attendance.high_risk_employees + attendance.medium_risk_employees)
         : "—",
       sub: attendance
-        ? `${attendance.employees_with_alerts ?? 0} avec alertes · ${attendance.predicted_absence_rate.toFixed(1)}% taux prédit`
-        : "Indisponible",
+        ? `${attendance.employees_with_alerts ?? 0} with alerts · ${attendance.predicted_absence_rate.toFixed(1)}% predicted rate`
+        : "Unavailable",
       color: "amber",
     },
     {
       icon: Users,
-      label: "Employés analysés",
+      label: "Employees analyzed",
       value: String(attendance?.total_analyzed ?? performance?.total_scored ?? "—"),
-      sub: "Données des 6 derniers mois",
+      sub: "Last 6 months data",
       color: "blue",
     },
     {
       icon: Award,
-      label: "Distribution des notes",
+      label: "Grade distribution",
       value: performance?.grade_distribution
         ? `A:${performance.grade_distribution.A ?? 0} B:${performance.grade_distribution.B ?? 0}`
         : "—",
       sub: performance?.grade_distribution
         ? `C:${performance.grade_distribution.C ?? 0} D:${performance.grade_distribution.D ?? 0} F:${performance.grade_distribution.F ?? 0}`
-        : "Indisponible",
+        : "Unavailable",
       color: "emerald",
     },
   ];

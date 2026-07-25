@@ -51,8 +51,8 @@ const ReportsPage: React.FC = () => {
               {!data?.ai_available && (
                 <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                   {isError
-                    ? "Le service IA est momentanément indisponible. Vérifiez que le service Python est démarré."
-                    : "Aucune donnée IA disponible pour le moment."}
+                    ? "AI service is temporarily unavailable. Please check that the Python service is running."
+                    : "No AI data available at this time."}
                 </div>
               )}
 

@@ -43,7 +43,7 @@ const AttendanceHistory: React.FC = () => {
     }
   }, []);
 
-  const userName = user ? `${user.prenom} ${user.nom}` : "Utilisateur";
+  const userName = user ? `${user.prenom} ${user.nom}` : "User";
   const userRole = user ? user.role : "";
 
   // Format time
@@ -54,7 +54,7 @@ const AttendanceHistory: React.FC = () => {
     }
     const date = new Date(timeStr);
     if (isNaN(date.getTime())) return "--:--";
-    return date.toLocaleTimeString("fr-FR", {
+    return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -73,15 +73,15 @@ const AttendanceHistory: React.FC = () => {
     pointage: Pointage,
   ): { label: string; className: string } => {
     if (!pointage.heure_entree && pointage.absence_justifiee) {
-      return { label: "Absence justifiée", className: "status-justified" };
+      return { label: "Justified absence", className: "status-justified" };
     }
     if (!pointage.heure_entree) {
       return { label: "Absent", className: "status-absent" };
     }
     if (!pointage.heure_sortie) {
-      return { label: "En cours", className: "status-active" };
+      return { label: "In progress", className: "status-active" };
     }
-    return { label: "Complet", className: "status-complete" };
+    return { label: "Complete", className: "status-complete" };
   };
 
   // Filter pointages by current month
@@ -114,7 +114,7 @@ const AttendanceHistory: React.FC = () => {
     );
   };
 
-  const monthYearLabel = currentMonth.toLocaleDateString("fr-FR", {
+  const monthYearLabel = currentMonth.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
@@ -127,8 +127,8 @@ const AttendanceHistory: React.FC = () => {
 
         <div className="attendance-history-content">
           <div className="page-header">
-            <h1>Historique de Présence</h1>
-            <p>Consultez votre historique de pointage et statistiques</p>
+            <h1>Attendance History</h1>
+            <p>View your attendance history and statistics</p>
           </div>
 
           {/* Stats Cards */}
@@ -180,7 +180,7 @@ const AttendanceHistory: React.FC = () => {
                   </div>
                   <div className="stat-info">
                     <span className="stat-value">{stats?.total_jours || 0}</span>
-                    <span className="stat-label">Jours Travaillés</span>
+                    <span className="stat-label">Days Worked</span>
                   </div>
                 </div>
                 <div className="stat-card">
@@ -191,7 +191,7 @@ const AttendanceHistory: React.FC = () => {
                     <span className="stat-value">
                       {formatHours(stats?.total_heures)}
                     </span>
-                    <span className="stat-label">Heures Ce Mois</span>
+                    <span className="stat-label">Hours This Month</span>
                   </div>
                 </div>
                 <div className="stat-card">
@@ -211,7 +211,7 @@ const AttendanceHistory: React.FC = () => {
                     <span className="stat-value">
                       {stats?.absences_justifiees || 0}
                     </span>
-                    <span className="stat-label">Absences Justifiées</span>
+                    <span className="stat-label">Justified Absences</span>
                   </div>
                 </div>
               </>
@@ -237,15 +237,15 @@ const AttendanceHistory: React.FC = () => {
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                 >
-                  <option value="all">Tous</option>
-                  <option value="present">Présent</option>
+                  <option value="all">All</option>
+                  <option value="present">Present</option>
                   <option value="absent">Absent</option>
-                  <option value="active">En cours</option>
+                  <option value="active">In Progress</option>
                 </select>
               </div>
               <button className="export-btn">
                 <Download size={16} />
-                Exporter
+                Export
               </button>
             </div>
           </div>
@@ -253,21 +253,21 @@ const AttendanceHistory: React.FC = () => {
           {/* History Table */}
           <div className="history-table-container">
             {isLoading ? (
-              <div className="loading-state">Chargement...</div>
+              <div className="loading-state">Loading...</div>
             ) : filteredPointages.length === 0 ? (
               <div className="empty-state">
                 <Calendar size={48} />
-                <p>Aucun pointage trouvé pour cette période</p>
+                <p>No attendance records found for this period</p>
               </div>
             ) : (
               <table className="history-table">
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Entrée</th>
-                    <th>Sortie</th>
-                    <th>Durée</th>
-                    <th>Statut</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>Duration</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -278,7 +278,7 @@ const AttendanceHistory: React.FC = () => {
                         <td className="date-cell">
                           <span className="date-day">
                             {new Date(pointage.date).toLocaleDateString(
-                              "fr-FR",
+                              "en-US",
                               {
                                 weekday: "short",
                               },
@@ -286,7 +286,7 @@ const AttendanceHistory: React.FC = () => {
                           </span>
                           <span className="date-full">
                             {new Date(pointage.date).toLocaleDateString(
-                              "fr-FR",
+                              "en-US",
                               {
                                 day: "numeric",
                                 month: "short",

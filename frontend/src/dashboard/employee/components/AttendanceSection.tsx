@@ -65,7 +65,7 @@ const AttendanceSection: React.FC = () => {
     const date = new Date(timeStr);
     if (isNaN(date.getTime())) return "--:--";
 
-    return date.toLocaleTimeString("fr-FR", {
+    return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -182,7 +182,7 @@ const AttendanceSection: React.FC = () => {
       // Background refetch will happen automatically via query invalidation
     } catch (error) {
       console.error("Error checking in:", error);
-      alert("Erreur lors du pointage d'entrée");
+      alert("Error checking in");
     } finally {
       setActionLoading(false);
     }
@@ -197,7 +197,7 @@ const AttendanceSection: React.FC = () => {
       await Promise.all([refetchPointage(), refetchStats()]);
     } catch (error) {
       console.error("Error checking out:", error);
-      alert("Erreur lors du pointage de sortie");
+      alert("Error checking out");
     } finally {
       setActionLoading(false);
     }
@@ -218,8 +218,8 @@ const AttendanceSection: React.FC = () => {
   if (isLoading) {
     return (
       <div className="attendance-section-full">
-        <h3 className="section-title">Présence Aujourd'hui</h3>
-        <div className="attendance-loading">Chargement...</div>
+        <h3 className="section-title">Today's Attendance</h3>
+        <div className="attendance-loading">Loading...</div>
       </div>
     );
   }
@@ -232,20 +232,20 @@ const AttendanceSection: React.FC = () => {
             <div className="modal-icon">
               <AlertTriangle size={48} color="#f59e0b" />
             </div>
-            <h3>Checkout Automatique</h3>
+            <h3>Automatic Checkout</h3>
             <p>
-              Le système effectuera un checkout automatique à{" "}
-              <strong>17:00</strong>. Voulez-vous continuer à travailler ?
+              The system will automatically check out at{" "}
+              <strong>17:00</strong>. Do you want to continue working?
             </p>
             <div className="modal-actions">
               <button
                 className="btn-cancel-auto"
                 onClick={handleCancelAutoCheckout}
               >
-                Continuer à travailler
+                Continue Working
               </button>
               <button className="btn-checkout-now" onClick={handleCheckOut}>
-                Checkout maintenant
+                Check Out Now
               </button>
             </div>
             <button
@@ -258,13 +258,13 @@ const AttendanceSection: React.FC = () => {
         </div>
       )}
 
-      <h3 className="section-title">Présence Aujourd'hui</h3>
+      <h3 className="section-title">Today's Attendance</h3>
 
       <div className="attendance-content">
         <div className="attendance-header">
           <div className="last-action-info">
             <span className="action-label">
-              {isCheckedIn ? "Connecté depuis" : "Dernière Action"}
+              {isCheckedIn ? "Connected since" : "Last Action"}
             </span>
             <div className="action-value">
               {isCheckedIn ? (
@@ -275,14 +275,14 @@ const AttendanceSection: React.FC = () => {
               ) : todayPointage?.heure_entree ? (
                 `Check-Out: ${formatTime(todayPointage?.heure_sortie)}`
               ) : (
-                "Pas encore pointé"
+                "Not yet checked in"
               )}
             </div>
           </div>
 
           {isCheckedIn && (
             <div className="live-timer">
-              <div className="timer-label">Temps de travail</div>
+              <div className="timer-label">Work Time</div>
               <div className="timer-value">{elapsedTime}</div>
             </div>
           )}
@@ -307,7 +307,7 @@ const AttendanceSection: React.FC = () => {
 
         <div className="attendance-stats-row">
           <div className="stat-box blue-box">
-            <span className="box-label">Heures Aujourd'hui</span>
+            <span className="box-label">Hours Today</span>
             <span className="box-value">
               {todayPointage?.heure_sortie
                 ? formatHours(todayPointage?.duree_travail)
@@ -317,14 +317,14 @@ const AttendanceSection: React.FC = () => {
             </span>
           </div>
           <div className="stat-box purple-box">
-            <span className="box-label">Ce Mois</span>
+            <span className="box-label">This Month</span>
             <span className="box-value">
               {formatHours(stats?.total_heures)}
             </span>
           </div>
           <div className="stat-box orange-box">
-            <span className="box-label">Jours Travaillés</span>
-            <span className="box-value">{stats?.total_jours || 0}j</span>
+            <span className="box-label">Days Worked</span>
+            <span className="box-value">{stats?.total_jours || 0}d</span>
           </div>
         </div>
       </div>

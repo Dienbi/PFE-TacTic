@@ -12,9 +12,9 @@ interface BottomActionsProps {
 }
 
 const defaultActions: ActionButton[] = [
-  { label: "Check-In d'Équipe", variant: "primary" },
-  { label: "Voir les Rapports", variant: "secondary" },
-  { label: "Historique de Présence", variant: "secondary" },
+  { label: "Team Check-In", variant: "primary" },
+  { label: "View Reports", variant: "secondary" },
+  { label: "Attendance History", variant: "secondary" },
 ];
 
 const BottomActions: React.FC<BottomActionsProps> = ({

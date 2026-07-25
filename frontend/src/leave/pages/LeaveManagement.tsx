@@ -70,12 +70,12 @@ const LeaveManagement: React.FC = () => {
     setMessage(null);
     try {
       await approveLeave.mutateAsync(id);
-      setMessage({ type: "success", text: "Demande approuvée avec succès!" });
+      setMessage({ type: "success", text: "Request approved successfully!" });
       await refetch();
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Erreur lors de l'approbation.",
+        text: error.response?.data?.message || "Error during approval.",
       });
     } finally {
       setProcessing(null);
@@ -83,19 +83,19 @@ const LeaveManagement: React.FC = () => {
   };
 
   const handleReject = async (id: number) => {
-    const reason = window.prompt("Motif du refus (optionnel):");
+    const reason = window.prompt("Rejection reason (optional):");
     if (reason === null) return;
 
     setProcessing(id);
     setMessage(null);
     try {
       await rejectLeave.mutateAsync({ id, motif: reason });
-      setMessage({ type: "success", text: "Demande refusée." });
+      setMessage({ type: "success", text: "Request rejected." });
       await refetch();
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Erreur lors du refus.",
+        text: error.response?.data?.message || "Error during rejection.",
       });
     } finally {
       setProcessing(null);
@@ -120,7 +120,7 @@ const LeaveManagement: React.FC = () => {
     } catch (error) {
       setMessage({
         type: "error",
-        text: "Erreur lors du téléchargement du fichier.",
+        text: "Error downloading file.",
       });
     }
   };
@@ -128,29 +128,29 @@ const LeaveManagement: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "APPROUVE":
-        return <span className="status-badge status-approved">Approuvé</span>;
+        return <span className="status-badge status-approved">Approved</span>;
       case "REFUSE":
-        return <span className="status-badge status-rejected">Refusé</span>;
+        return <span className="status-badge status-rejected">Rejected</span>;
       default:
-        return <span className="status-badge status-pending">En attente</span>;
+        return <span className="status-badge status-pending">Pending</span>;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "ANNUEL":
-        return "Congé annuel";
+        return "Annual leave";
       case "MALADIE":
-        return "Congé maladie";
+        return "Sick leave";
       case "SANS_SOLDE":
-        return "Sans solde";
+        return "Unpaid leave";
       default:
         return type;
     }
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString("en-US", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -212,9 +212,9 @@ const LeaveManagement: React.FC = () => {
               <>
                 <div className="page-header">
                   <div>
-                    <h1>Gestion des Congés</h1>
+                    <h1>Leave Management</h1>
                     <p className="subtitle">
-                      Gérez les demandes de congé des employés
+                      Manage employee leave requests
                     </p>
                   </div>
                 </div>
@@ -226,7 +226,7 @@ const LeaveManagement: React.FC = () => {
                       <Clock size={20} />
                       <div>
                         <span className="stat-value">{pending.length}</span>
-                        <span className="stat-label">En attente</span>
+                        <span className="stat-label">Pending</span>
                       </div>
                     </div>
                   </div>
@@ -237,7 +237,7 @@ const LeaveManagement: React.FC = () => {
                         <span className="stat-value">
                           {leaves.filter((l) => l.statut === "APPROUVE").length}
                         </span>
-                        <span className="stat-label">Approuvés</span>
+                        <span className="stat-label">Approved</span>
                       </div>
                     </div>
                   </div>
@@ -248,7 +248,7 @@ const LeaveManagement: React.FC = () => {
                         <span className="stat-value">
                           {leaves.filter((l) => l.statut === "REFUSE").length}
                         </span>
-                        <span className="stat-label">Refusés</span>
+                        <span className="stat-label">Rejected</span>
                       </div>
                     </div>
                   </div>
@@ -282,13 +282,13 @@ const LeaveManagement: React.FC = () => {
                       className={`tab ${activeTab === "pending" ? "active" : ""}`}
                       onClick={() => setActiveTab("pending")}
                     >
-                      En attente ({pending.length})
+                      Pending ({pending.length})
                     </button>
                     <button
                       className={`tab ${activeTab === "all" ? "active" : ""}`}
                       onClick={() => setActiveTab("all")}
                     >
-                      Toutes les demandes
+                      All Requests
                     </button>
                   </div>
 
@@ -297,7 +297,7 @@ const LeaveManagement: React.FC = () => {
                       <Search size={18} />
                       <input
                         type="text"
-                        placeholder="Rechercher un employé..."
+                        placeholder="Search employee..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
@@ -322,7 +322,7 @@ const LeaveManagement: React.FC = () => {
                       }}
                     >
                       <Clock size={16} />
-                      {sortOrder === "asc" ? "Ancien → Récent" : "Récent → Ancien"}
+                      {sortOrder === "asc" ? "Oldest → Newest" : "Newest → Oldest"}
                     </button>
 
                     {activeTab === "all" && (
@@ -332,10 +332,10 @@ const LeaveManagement: React.FC = () => {
                           value={statusFilter}
                           onChange={(e) => setStatusFilter(e.target.value)}
                         >
-                          <option value="ALL">Tous les statuts</option>
-                          <option value="EN_ATTENTE">En attente</option>
-                          <option value="APPROUVE">Approuvé</option>
-                          <option value="REFUSE">Refusé</option>
+                          <option value="ALL">All Statuses</option>
+                          <option value="EN_ATTENTE">Pending</option>
+                          <option value="APPROUVE">Approved</option>
+                          <option value="REFUSE">Rejected</option>
                         </select>
                       </div>
                     )}
@@ -347,20 +347,20 @@ const LeaveManagement: React.FC = () => {
                   {filteredLeaves.length === 0 ? (
                     <div className="empty-state">
                       <Calendar size={48} />
-                      <p>Aucune demande de congé</p>
+                      <p>No leave requests</p>
                     </div>
                   ) : (
                     <div className="leaves-table-wrapper">
                       <table className="leaves-table">
                         <thead>
                           <tr>
-                            <th>Employé</th>
+                            <th>Employee</th>
                             <th>Type</th>
-                            <th>Période</th>
-                            <th>Durée</th>
-                            <th>Motif</th>
-                            <th>Certificat</th>
-                            <th>Statut</th>
+                            <th>Period</th>
+                            <th>Duration</th>
+                            <th>Reason</th>
+                            <th>Certificate</th>
+                            <th>Status</th>
                             <th>Actions</th>
                           </tr>
                         </thead>
@@ -389,7 +389,7 @@ const LeaveManagement: React.FC = () => {
                                 {formatDate(leave.date_debut)} -{" "}
                                 {formatDate(leave.date_fin)}
                               </td>
-                              <td>{leave.nombre_jours} jour(s)</td>
+                              <td>{leave.nombre_jours} day(s)</td>
                               <td className="motif-cell">
                                 {leave.motif || <span className="text-muted">-</span>}
                               </td>
@@ -403,10 +403,10 @@ const LeaveManagement: React.FC = () => {
                                         leave.medical_file!,
                                       )
                                     }
-                                    title="Télécharger le certificat médical"
+                                    title="Download medical certificate"
                                   >
                                     <Download size={16} />
-                                    Voir
+                                    View
                                   </button>
                                 ) : (
                                   <span className="text-muted">-</span>
@@ -430,7 +430,7 @@ const LeaveManagement: React.FC = () => {
                                     className="btn btn-view"
                                     onClick={() => setSelectedLeave(leave)}
                                   >
-                                    <Eye size={16} /> Voir détails
+                                    <Eye size={16} /> View Details
                                   </button>
                                   {activeTab === "pending" && (
                                     <>
@@ -440,7 +440,7 @@ const LeaveManagement: React.FC = () => {
                                         disabled={processing === leave.id}
                                       >
                                         <CheckCircle size={16} />
-                                        {processing === leave.id ? "..." : "Approuver"}
+                                        {processing === leave.id ? "..." : "Approve"}
                                       </button>
                                       <button
                                         className="btn btn-reject"
@@ -448,7 +448,7 @@ const LeaveManagement: React.FC = () => {
                                         disabled={processing === leave.id}
                                       >
                                         <XCircle size={16} />
-                                        Refuser
+                                        Reject
                                       </button>
                                     </>
                                   )}
@@ -472,7 +472,7 @@ const LeaveManagement: React.FC = () => {
         <div className="modal-overlay" onClick={() => setSelectedLeave(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Détails de la demande</h2>
+              <h2>Request Details</h2>
               <button 
                 className="btn-close" 
                 onClick={() => setSelectedLeave(null)}
@@ -484,34 +484,34 @@ const LeaveManagement: React.FC = () => {
             <div className="modal-body">
               <div className="details-grid">
                 <div className="detail-item">
-                  <label>Employé</label>
+                  <label>Employee</label>
                   <p className="detail-value">{selectedLeave.utilisateur.prenom} {selectedLeave.utilisateur.nom} <span className="text-muted">({selectedLeave.utilisateur.matricule})</span></p>
                 </div>
                 
                 <div className="detail-item">
-                  <label>Période</label>
+                  <label>Period</label>
                   <p className="detail-value">{formatDate(selectedLeave.date_debut)} - {formatDate(selectedLeave.date_fin)}</p>
                 </div>
 
                 <div className="detail-item">
-                  <label>Durée</label>
+                  <label>Duration</label>
                   <p className="detail-value">{selectedLeave.nombre_jours} jour(s)</p>
                 </div>
                 
                 <div className="detail-item">
-                  <label>Type & Motif</label>
+                  <label>Type & Reason</label>
                   <p className="detail-value">{getTypeLabel(selectedLeave.type)}{selectedLeave.motif ? ` - ${selectedLeave.motif}` : ''}</p>
                 </div>
 
                 <div className="detail-item full-width">
-                  <label>Statut</label>
+                  <label>Status</label>
                   <div>{getStatusBadge(selectedLeave.statut)}</div>
                 </div>
               </div>
 
               {selectedLeave.conflicts && selectedLeave.conflicts.length > 0 && (
                 <div className="conflicts-section">
-                  <label>Avertissements & Conflits :</label>
+                  <label>Warnings & Conflicts:</label>
                   <div className="modal-conflicts-list">
                     {selectedLeave.conflicts.map((conflict, idx) => (
                       <div
@@ -529,7 +529,7 @@ const LeaveManagement: React.FC = () => {
 
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setSelectedLeave(null)}>
-                Fermer
+                Close
               </button>
               {activeTab === "pending" && selectedLeave.statut === "EN_ATTENTE" && (
                 <div className="modal-actions">
@@ -540,7 +540,7 @@ const LeaveManagement: React.FC = () => {
                       setSelectedLeave(null);
                     }}
                   >
-                    <CheckCircle size={16} /> Approuver
+                    <CheckCircle size={16} /> Approve
                   </button>
                   <button
                     className="btn btn-reject"
@@ -549,7 +549,7 @@ const LeaveManagement: React.FC = () => {
                       setSelectedLeave(null);
                     }}
                   >
-                    <XCircle size={16} /> Refuser
+                    <XCircle size={16} /> Reject
                   </button>
                 </div>
               )}

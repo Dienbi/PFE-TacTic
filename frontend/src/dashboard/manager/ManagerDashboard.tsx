@@ -5,7 +5,6 @@ import KPISection from "./components/KPISection";
 import TeamSection from "./components/TeamSection";
 import NotificationsSection from "./components/NotificationsSection";
 import QuickActions from "./components/QuickActions";
-import BottomActions from "./components/BottomActions";
 import AttendanceSection from "../employee/components/AttendanceSection";
 import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useAuth } from "../../hooks/useAuth";
@@ -38,7 +37,7 @@ const ManagerDashboard: React.FC = () => {
         <div className="main-content">
           <Navbar userName={userName} userRole={userRole} />
           <div className="dashboard-content">
-            <div className="error-state">Erreur de chargement des données</div>
+            <div className="error-state">Error loading data</div>
           </div>
         </div>
       </div>
@@ -72,7 +71,6 @@ const ManagerDashboard: React.FC = () => {
           </div>
 
           <QuickActions />
-          <BottomActions />
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fiscalProfileApi } from '../../api/fiscalProfile';
 import Button from '../../shared/components/ui/Button';
@@ -83,6 +83,27 @@ const Icon = {
   Chevron: () => (
     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+    </svg>
+  ),
+  Search: () => (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth={2}>
+      <circle cx="11" cy="11" r="7" strokeLinecap="round" strokeLinejoin="round" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35" />
+    </svg>
+  ),
+  X: () => (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  ),
+  ChevronUp: () => (
+    <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l-6-6-6 6" />
+    </svg>
+  ),
+  ChevronDown: () => (
+    <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
     </svg>
   ),
 };
@@ -193,6 +214,12 @@ export const AiChatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // -- Search-in-conversation state --------------------------------------
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeMatch, setActiveMatch] = useState(0);
+  const messageRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
   const formatGroupLabel = (criteria: any) => {
     const parts: string[] = [];
 
@@ -283,6 +310,60 @@ export const AiChatbot: React.FC = () => {
   const applySuggestion = (text: string) => {
     setInputMessage(text);
     inputRef.current?.focus();
+  };
+
+  // -- Search-in-conversation logic ---------------------------------------
+  const matchIndices = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return messages.reduce<number[]>((acc, m, i) => {
+      if ((m.content || '').toLowerCase().includes(q)) acc.push(i);
+      return acc;
+    }, []);
+  }, [searchQuery, messages]);
+
+  useEffect(() => {
+    setActiveMatch(0);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (matchIndices.length === 0) return;
+    const idx = matchIndices[activeMatch];
+    messageRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [activeMatch, matchIndices]);
+
+  const goToMatch = (dir: 1 | -1) => {
+    if (matchIndices.length === 0) return;
+    setActiveMatch((prev) => (prev + dir + matchIndices.length) % matchIndices.length);
+  };
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+  };
+
+  /** Splits a message's text around the search query and wraps matches in <mark>. */
+  const highlightContent = (content: string, messageIndex: number) => {
+    if (!searchQuery.trim()) return content;
+    const q = searchQuery.trim();
+    const isActiveMessage = matchIndices[activeMatch] === messageIndex;
+    const parts = content.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+    return parts.map((part, i) =>
+      part.toLowerCase() === q.toLowerCase() ? (
+        <mark
+          key={i}
+          className="rounded px-0.5"
+          style={{
+            background: isActiveMessage ? T.gold : T.goldTint,
+            color: isActiveMessage ? '#fff' : T.goldDark,
+          }}
+        >
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
   };
 
   const handleConfirmAction = async (action: any) => {
@@ -642,16 +723,76 @@ export const AiChatbot: React.FC = () => {
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#c8974a] ring-1 ring-white/15">
               <Icon.Spark />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h2 className="text-[15px] font-semibold tracking-tight text-white">Fiscal Profile Assistant</h2>
               <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-white/60">
                 <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: T.gold }} />
                 Payroll · profiles &amp; assignments
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setSearchOpen((v) => !v)}
+              aria-label="Search in conversation"
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10"
+            >
+              <Icon.Search />
+            </button>
           </div>
         </div>
       </CardHeader>
+
+      {searchOpen && (
+        <div className="border-b border-[#e6e8f2] bg-white px-4 py-2.5">
+          <div className="flex items-center gap-2 rounded-full border border-[#e6e8f2] bg-[#f6f7fb] pl-3.5 pr-1.5 py-1.5 focus-within:border-[#1e2258]/30 focus-within:bg-white transition-colors">
+            <Icon.Search />
+            <input
+              type="text"
+              autoFocus
+              className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-[#9698ad]"
+              style={{ color: T.text }}
+              placeholder="Search in this conversation…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') goToMatch(e.shiftKey ? -1 : 1);
+                if (e.key === 'Escape') closeSearch();
+              }}
+            />
+            {searchQuery && (
+              <span className="flex-shrink-0 text-[11px] font-medium" style={{ color: T.muted }}>
+                {matchIndices.length > 0 ? `${activeMatch + 1}/${matchIndices.length}` : '0/0'}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => goToMatch(-1)}
+              disabled={matchIndices.length === 0}
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#eef0fb] disabled:opacity-30"
+              style={{ color: T.ink }}
+            >
+              <Icon.ChevronUp />
+            </button>
+            <button
+              type="button"
+              onClick={() => goToMatch(1)}
+              disabled={matchIndices.length === 0}
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#eef0fb] disabled:opacity-30"
+              style={{ color: T.ink }}
+            >
+              <Icon.ChevronDown />
+            </button>
+            <button
+              type="button"
+              onClick={closeSearch}
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#eef0fb]"
+              style={{ color: T.muted }}
+            >
+              <Icon.X />
+            </button>
+          </div>
+        </div>
+      )}
 
       <CardBody className="flex min-h-0 flex-1 flex-col !p-0">
         <div className="flex h-full flex-col" style={{ background: T.paper }}>
@@ -686,7 +827,13 @@ export const AiChatbot: React.FC = () => {
           {messages.map((msg, index) => {
             const isUser = msg.role === 'user';
             return (
-              <div key={index} className={`flex items-end gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
+              <div
+                key={index}
+                ref={(el) => {
+                  messageRefs.current[index] = el;
+                }}
+                className={`flex items-end gap-2 ${isUser ? 'flex-row-reverse' : ''}`}
+              >
                 {!isUser && (
                   <div
                     className="mb-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[#c8974a] ring-1 ring-[#1e2258]/10"
@@ -704,7 +851,7 @@ export const AiChatbot: React.FC = () => {
                     }`}
                     style={isUser ? { background: T.ink } : { color: T.text }}
                   >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <p className="whitespace-pre-wrap">{highlightContent(msg.content, index)}</p>
                   </div>
                   {msg.proposed_action_json && <div className="w-full">{renderProposedAction(msg.proposed_action_json)}</div>}
                 </div>

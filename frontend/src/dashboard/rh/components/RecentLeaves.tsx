@@ -45,11 +45,11 @@ const RecentLeaves = ({ initialData, loading }: { initialData?: LeaveRequest[], 
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "ANNUEL":
-        return "Congé annuel";
+        return "Annual leave";
       case "MALADIE":
-        return "Maladie";
+        return "Sick leave";
       case "SANS_SOLDE":
-        return "Sans solde";
+        return "Unpaid leave";
       default:
         return type;
     }
@@ -94,27 +94,27 @@ const RecentLeaves = ({ initialData, loading }: { initialData?: LeaveRequest[], 
   return (
     <div className="content-card">
       <div className="card-header">
-        <h3>Demandes de Congés Récentes</h3>
+        <h3>Recent Leave Requests</h3>
         <button className="btn-text" onClick={() => navigate("/leave")}>
-          Tout Voir
+          View All
         </button>
       </div>
       {isLoading ? (
         <div style={{ padding: "2rem", textAlign: "center", color: "#6b7280" }}>
-          Chargement...
+          Loading...
         </div>
       ) : leaves.length === 0 ? (
         <div style={{ padding: "2rem", textAlign: "center", color: "#6b7280" }}>
-          Aucune demande en attente
+          No pending requests
         </div>
       ) : (
         <table className="leaves-table">
           <thead>
             <tr>
-              <th>Employé</th>
+              <th>Employee</th>
               <th>Type</th>
               <th>Dates</th>
-              <th>Statut</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>

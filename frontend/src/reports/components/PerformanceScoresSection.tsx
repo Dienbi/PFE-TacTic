@@ -21,6 +21,23 @@ const FACTOR_STATUS_COLORS: Record<string, string> = {
   poor: "bg-red-400",
 };
 
+// Translation function for French AI summaries
+const translateSummary = (summary: string): string => {
+  if (summary.includes("Excellente assiduité globale")) {
+    return summary.replace(/Excellente assiduité globale/g, "Excellent overall attendance");
+  }
+  if (summary.includes("Point fort")) {
+    return summary.replace(/Point fort/g, "Strength");
+  }
+  if (summary.includes("absences")) {
+    return summary.replace(/absences/g, "absences");
+  }
+  if (summary.includes("ponctualité")) {
+    return summary.replace(/ponctualité/g, "punctuality");
+  }
+  return summary;
+};
+
 const PerformanceScoresSection: React.FC<PerformanceScoresSectionProps> = ({
   data,
   loading,
@@ -47,13 +64,13 @@ const PerformanceScoresSection: React.FC<PerformanceScoresSectionProps> = ({
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
         <TrendingUp className="w-5 h-5 text-violet-600" />
-        <h2 className="text-lg font-semibold text-gray-900">Scores de performance</h2>
-        <span className="ml-auto text-xs text-gray-500">Basé sur l&apos;assiduité</span>
+        <h2 className="text-lg font-semibold text-gray-900">Performance Scores</h2>
+        <span className="ml-auto text-xs text-gray-500">Based on attendance</span>
       </div>
 
       {data.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
-          Aucun score disponible pour le moment.
+          No scores available at this moment.
         </div>
       ) : (
         <>
@@ -102,7 +119,7 @@ const PerformanceScoresSection: React.FC<PerformanceScoresSectionProps> = ({
                       </div>
                       {employee.summary && (
                         <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">
-                          {employee.summary}
+                          {translateSummary(employee.summary)}
                         </p>
                       )}
                       <div className="mt-2 h-2 bg-gray-100 rounded-full overflow-hidden max-w-xs">
@@ -162,8 +179,8 @@ const PerformanceScoresSection: React.FC<PerformanceScoresSectionProps> = ({
                 className="text-sm font-medium text-violet-600 hover:text-violet-800"
               >
                 {showAll
-                  ? "Réduire la liste"
-                  : `Voir les ${data.length - 8} autres employés`}
+                  ? "Collapse list"
+                  : `View ${data.length - 8} other employees`}
               </button>
             </div>
           )}

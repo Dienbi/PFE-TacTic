@@ -15,9 +15,56 @@ interface AttendanceAlertsSectionProps {
 }
 
 const RISK_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  high: { bg: "bg-red-50", text: "text-red-700", label: "Risque élevé" },
-  medium: { bg: "bg-amber-50", text: "text-amber-700", label: "Risque modéré" },
-  low: { bg: "bg-emerald-50", text: "text-emerald-700", label: "Risque faible" },
+  high: { bg: "bg-red-50", text: "text-red-700", label: "High risk" },
+  medium: { bg: "bg-amber-50", text: "text-amber-700", label: "Moderate risk" },
+  low: { bg: "bg-emerald-50", text: "text-emerald-700", label: "Low risk" },
+};
+
+// Translation functions for French AI data
+const translateDayName = (dayName: string): string => {
+  const dayTranslations: Record<string, string> = {
+    "lundi": "Monday",
+    "mardi": "Tuesday",
+    "mercredi": "Wednesday",
+    "jeudi": "Thursday",
+    "vendredi": "Friday",
+    "samedi": "Saturday",
+    "dimanche": "Sunday",
+  };
+  return dayTranslations[dayName.toLowerCase()] || dayName;
+};
+
+const translatePattern = (pattern: string): string => {
+  // Common French patterns from AI service
+  if (pattern.includes("Absent régulièrement le lundi")) {
+    return pattern.replace(/Absent régulièrement le lundi/g, "Regularly absent on Monday");
+  }
+  if (pattern.includes("absences consécutives")) {
+    return pattern.replace(/absences consécutives/g, "consecutive absences");
+  }
+  if (pattern.includes("fois sur")) {
+    return pattern.replace(/fois sur/g, "times out of");
+  }
+  if (pattern.includes("semaines")) {
+    return pattern.replace(/semaines/g, "weeks");
+  }
+  if (pattern.includes("récentes")) {
+    return pattern.replace(/récentes/g, "recent");
+  }
+  return pattern;
+};
+
+const translateRecommendation = (recommendation: string): string => {
+  if (recommendation.includes("Contacter l'employé")) {
+    return recommendation.replace(/Contacter l'employé/g, "Contact the employee");
+  }
+  if (recommendation.includes("avant le")) {
+    return recommendation.replace(/avant le/g, "before");
+  }
+  if (recommendation.includes("pour prévenir une absence probable")) {
+    return recommendation.replace(/pour prévenir une absence probable/g, "to prevent a probable absence");
+  }
+  return recommendation;
 };
 
 const AttendanceAlertsSection: React.FC<AttendanceAlertsSectionProps> = ({
@@ -47,8 +94,8 @@ const AttendanceAlertsSection: React.FC<AttendanceAlertsSectionProps> = ({
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
         <ShieldAlert className="w-5 h-5 text-amber-600" />
-        <h2 className="text-lg font-semibold text-gray-900">Alertes d&apos;absence</h2>
-        <span className="ml-auto text-xs text-gray-500">7 prochains jours ouvrés</span>
+        <h2 className="text-lg font-semibold text-gray-900">Absence Alerts</h2>
+        <span className="ml-auto text-xs text-gray-500">Next 7 working days</span>
       </div>
 
       {atRisk.length === 0 ? (
@@ -56,9 +103,9 @@ const AttendanceAlertsSection: React.FC<AttendanceAlertsSectionProps> = ({
           <div className="inline-flex p-3 rounded-full bg-emerald-50 mb-3">
             <ShieldAlert className="w-6 h-6 text-emerald-600" />
           </div>
-          <p className="text-gray-600 font-medium">Aucune alerte détectée</p>
+          <p className="text-gray-600 font-medium">No alerts detected</p>
           <p className="text-sm text-gray-400 mt-1">
-            L&apos;IA analyse les habitudes de présence, retards et congés approuvés.
+            AI analyzes attendance habits, lateness and approved leaves.
           </p>
         </div>
       ) : (
@@ -94,7 +141,7 @@ const AttendanceAlertsSection: React.FC<AttendanceAlertsSectionProps> = ({
                     {employee.primary_pattern && (
                       <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                        {employee.primary_pattern}
+                        {translatePattern(employee.primary_pattern)}
                       </p>
                     )}
                     {employee.alert_dates && employee.alert_dates.length > 0 && (
@@ -105,14 +152,14 @@ const AttendanceAlertsSection: React.FC<AttendanceAlertsSectionProps> = ({
                             className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-800 ring-1 ring-amber-100"
                           >
                             <Calendar className="w-3 h-3" />
-                            {alert.day_name_fr ?? alert.day_name} {alert.date}
+                            {translateDayName(alert.day_name_fr ?? alert.day_name)} {alert.date}
                           </span>
                         ))}
                       </div>
                     )}
                     {employee.recommendation && (
                       <p className="text-xs text-violet-600 mt-2 font-medium">
-                        → {employee.recommendation}
+                        → {translateRecommendation(employee.recommendation)}
                       </p>
                     )}
                   </div>
@@ -127,16 +174,16 @@ const AttendanceAlertsSection: React.FC<AttendanceAlertsSectionProps> = ({
 
                 {isExpanded && employee.patterns && employee.patterns.length > 0 && (
                   <div className="mt-3 ml-13 pl-13 border-l-2 border-violet-100 ml-[52px] pl-4">
-                    <p className="text-xs font-medium text-gray-500 mb-2">Motifs détectés</p>
+                    <p className="text-xs font-medium text-gray-500 mb-2">Detected patterns</p>
                     <ul className="space-y-1">
                       {employee.patterns.map((pattern) => (
                         <li
                           key={pattern.type}
                           className="text-sm text-gray-600 flex items-center justify-between"
                         >
-                          <span>{pattern.label}</span>
+                          <span>{translatePattern(pattern.label)}</span>
                           <span className="text-xs text-gray-400">
-                            {Math.round(pattern.confidence * 100)}% confiance
+                            {Math.round(pattern.confidence * 100)}% confidence
                           </span>
                         </li>
                       ))}

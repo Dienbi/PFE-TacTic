@@ -261,7 +261,7 @@ const FiscalRulesManagement: React.FC = () => {
       <Sidebar />
       <div className="flex-1 ml-[260px]">
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 pt-[90px] max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6" data-tour="fiscal-overview">
             <div className="flex flex-col items-start text-left">
               <h1 className="text-2xl font-semibold text-gray-900 text-left">Fiscal Rules Management</h1>

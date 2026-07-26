@@ -120,7 +120,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
   return (
     /* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />

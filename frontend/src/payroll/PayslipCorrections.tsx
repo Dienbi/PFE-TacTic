@@ -129,7 +129,7 @@ const PayslipCorrections: React.FC = () => {
       <Sidebar />
       <div className="flex-1 ml-[260px]">
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 pt-[90px] max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6" data-tour="correction-overview">
             <div className="flex flex-col items-start text-left">
               <h1 className="text-2xl font-semibold text-gray-900 text-left">Payslip Corrections</h1>
@@ -251,6 +251,7 @@ const PayslipCorrections: React.FC = () => {
                               variant="secondary"
                               onClick={() => handleViewHistory(payslip.id)}
                               leftIcon={<History className="w-4 h-4" />}
+                              data-tour="correction-view-history-btn"
                               className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
                               style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
                             >

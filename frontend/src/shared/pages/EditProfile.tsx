@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Save, X, Plus, Upload, Check, AlertCircle } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import SocialStatusManager from "../../components/family/SocialStatusManager";
+import ChildrenManager from "../../components/family/ChildrenManager";
 import client from "../../api/client";
 import { useUploadCv, useCvLatest, useConfirmSkills, ExtractedSkills } from "../../api/cvApi";
 import "./Profile.css";
@@ -75,6 +77,8 @@ interface UserData {
   date_embauche?: string;
   salaire_base?: number;
   competences?: Competence[];
+  marital_status?: string;
+  children_count?: number;
 }
 
 const EditProfile: React.FC = () => {
@@ -340,7 +344,7 @@ const EditProfile: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              {activeTab === "personal" ? (
+              {activeTab === "personal" && (
                 <div className="info-list">
                   <div
                     className="form-row"
@@ -404,6 +408,14 @@ const EditProfile: React.FC = () => {
                       placeholder="Enter your address"
                       rows={3}
                     />
+                  </div>
+
+                  <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: "1px solid #E5E7EB" }}>
+                    <SocialStatusManager currentStatus={user?.marital_status} readonly={false} />
+                  </div>
+
+                  <div style={{ marginTop: "2rem" }}>
+                    <ChildrenManager readonly={false} />
                   </div>
 
                   {user.role === "RH" && (
@@ -475,7 +487,9 @@ const EditProfile: React.FC = () => {
                     </>
                   )}
                 </div>
-              ) : (
+              )}
+
+              {activeTab === "skills" && (
                 <div className="skills-section">
                   {/* CV Upload Section */}
                   <div className="form-group" style={{ marginBottom: "2rem" }}>

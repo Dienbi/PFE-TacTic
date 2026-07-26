@@ -124,7 +124,7 @@ const TunisianPayrollDashboard: React.FC = () => {
       <Sidebar />
       <div className="flex-1 ml-[260px]">
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 pt-[90px] max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6" data-tour="dashboard-welcome">
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-start text-left">

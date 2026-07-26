@@ -319,3 +319,16 @@ form {
 .leave-notice svg {
   flex-shrink: 0;
 }
+
+/* SweetAlert z-index override */
+.swal2-container {
+  z-index: 3000 !important;
+}
+
+.swal2-popup {
+  z-index: 3001 !important;
+}
+
+.swal2-backdrop {
+  z-index: 2999 !important;
+}

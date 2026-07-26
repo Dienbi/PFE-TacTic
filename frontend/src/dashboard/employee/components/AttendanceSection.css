@@ -67,7 +67,7 @@
 
 /* Live Timer */
 .live-timer {
-  background: #3b82f6;
+  background: #1E2258;
   padding: 1rem 1.5rem;
   border-radius: 12px;
   text-align: center;
@@ -144,11 +144,11 @@
 }
 
 .stat-box.purple-box {
-  background: #f3e8ff;
+  background: #eff6ff;
 }
 
 .stat-box.orange-box {
-  background: #fff7ed;
+  background: #eff6ff;
 }
 
 .box-label {

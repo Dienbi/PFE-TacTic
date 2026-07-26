@@ -8,7 +8,16 @@ import {
   Users,
   UserCog,
 } from "lucide-react";
+import Swal from "sweetalert2";
 import client from "../../../api/client";
+import "./TeamsModal.css";
+
+// Configure SweetAlert with higher z-index
+Swal.mixin({
+  customClass: {
+    container: 'swal2-container',
+  },
+});
 
 interface Utilisateur {
   id: number;
@@ -84,7 +93,16 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
         client.get("/equipes/available-managers"),
         client.get("/equipes/available-employees"),
       ]);
-      setMembres(membresRes.data);
+      const sortedMembres = membresRes.data.sort((a: Utilisateur, b: Utilisateur) => {
+        if (a.role === "CHEF_EQUIPE" && b.role !== "CHEF_EQUIPE") {
+          return -1; // a comes before b
+        }
+        if (a.role !== "CHEF_EQUIPE" && b.role === "CHEF_EQUIPE") {
+          return 1; // b comes before a
+        }
+        return 0; // maintain original order if both are managers or both are not managers
+      });
+      setMembres(sortedMembres);
 
       // Filter out users already in this team
       const membreIds = new Set(membresRes.data.map((m: Utilisateur) => m.id));
@@ -152,7 +170,34 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   };
 
   const handleRemoveMember = async (userId: number) => {
-    if (!globalThis.confirm("Remove this user from the team?")) return;
+    const result = await Swal.fire({
+      title: "Remove this user from the team?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, remove",
+      cancelButtonText: "Cancel",
+      didOpen: () => {
+        // Directly set z-index on SweetAlert elements with !important
+        const container = Swal.getContainer();
+        const popup = Swal.getPopup();
+
+        if (container) {
+          container.style.cssText = 'z-index: 9999 !important;';
+          const backdrop = container.querySelector('.swal2-backdrop') as HTMLElement;
+          if (backdrop) {
+            backdrop.style.cssText = 'z-index: 9998 !important;';
+          }
+        }
+        if (popup) {
+          popup.style.cssText = 'z-index: 10000 !important;';
+        }
+      },
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError("");
@@ -195,7 +240,7 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   return (
     /* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />

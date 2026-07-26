@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -11,7 +11,10 @@ import {
   AlertTriangle,
   Eye,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import Swal from "sweetalert2";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
 import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
@@ -58,12 +61,15 @@ const LeaveManagement: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
   const [processing, setProcessing] = useState<number | null>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
   const [selectedLeave, setSelectedLeave] = useState<LeaveRequestData | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const handleApprove = async (id: number) => {
     setProcessing(id);
@@ -83,13 +89,33 @@ const LeaveManagement: React.FC = () => {
   };
 
   const handleReject = async (id: number) => {
-    const reason = window.prompt("Rejection reason (optional):");
-    if (reason === null) return;
+    const { value: reason } = await Swal.fire({
+      title: "Rejection Reason",
+      text: "Please provide a reason for rejection (optional):",
+      input: "text",
+      inputPlaceholder: "Enter reason...",
+      showCancelButton: true,
+      confirmButtonText: "Reject",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        popup: 'swal2-popup-high-z',
+      },
+      didOpen: () => {
+        const container = Swal.getContainer();
+        if (container) {
+          container.style.zIndex = '10001';
+        }
+      },
+    });
+
+    if (reason === undefined) return;
 
     setProcessing(id);
     setMessage(null);
     try {
-      await rejectLeave.mutateAsync({ id, motif: reason });
+      await rejectLeave.mutateAsync({ id, motif: reason || "" });
       setMessage({ type: "success", text: "Request rejected." });
       await refetch();
     } catch (error: any) {
@@ -173,7 +199,10 @@ const LeaveManagement: React.FC = () => {
       const matchesStatus =
         statusFilter === "ALL" || leave.statut === statusFilter;
 
-      return matchesSearch && (activeTab === "pending" || matchesStatus);
+      const matchesType =
+        typeFilter === "ALL" || leave.type === typeFilter;
+
+      return matchesSearch && (activeTab === "pending" || matchesStatus) && matchesType;
     })
     .sort((a: LeaveRequestData, b: LeaveRequestData) => {
       // Sort by conflict
@@ -194,6 +223,18 @@ const LeaveManagement: React.FC = () => {
       const dateB = new Date(b.created_at).getTime();
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredLeaves.length / itemsPerPage);
+  const paginatedLeaves = filteredLeaves.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm, statusFilter, sortOrder, typeFilter]);
 
   return (
     <>
@@ -325,6 +366,19 @@ const LeaveManagement: React.FC = () => {
                       {sortOrder === "asc" ? "Oldest → Newest" : "Newest → Oldest"}
                     </button>
 
+                    <div className="filter-select">
+                      <Calendar size={18} />
+                      <select
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                      >
+                        <option value="ALL">All Types</option>
+                        <option value="ANNUEL">Annual Leave</option>
+                        <option value="MALADIE">Sick Leave</option>
+                        <option value="SANS_SOLDE">Unpaid Leave</option>
+                      </select>
+                    </div>
+
                     {activeTab === "all" && (
                       <div className="filter-select">
                         <Filter size={18} />
@@ -350,22 +404,23 @@ const LeaveManagement: React.FC = () => {
                       <p>No leave requests</p>
                     </div>
                   ) : (
-                    <div className="leaves-table-wrapper">
-                      <table className="leaves-table">
-                        <thead>
-                          <tr>
-                            <th>Employee</th>
-                            <th>Type</th>
-                            <th>Period</th>
-                            <th>Duration</th>
-                            <th>Reason</th>
-                            <th>Certificate</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredLeaves.map((leave) => (
+                    <>
+                      <div className="leaves-table-wrapper">
+                        <table className="leaves-table">
+                          <thead>
+                            <tr>
+                              <th>Employee</th>
+                              <th>Type</th>
+                              <th>Period</th>
+                              <th>Duration</th>
+                              <th>Reason</th>
+                              <th>Certificate</th>
+                              <th>Status</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedLeaves.map((leave) => (
                             <tr key={leave.id}>
                               <td>
                                 <div className="employee-info">
@@ -429,8 +484,9 @@ const LeaveManagement: React.FC = () => {
                                   <button
                                     className="btn btn-view"
                                     onClick={() => setSelectedLeave(leave)}
+                                    title="View Details"
                                   >
-                                    <Eye size={16} /> View Details
+                                    <Eye size={14} />
                                   </button>
                                   {activeTab === "pending" && (
                                     <>
@@ -438,17 +494,17 @@ const LeaveManagement: React.FC = () => {
                                         className="btn btn-approve"
                                         onClick={() => handleApprove(leave.id)}
                                         disabled={processing === leave.id}
+                                        title="Approve"
                                       >
-                                        <CheckCircle size={16} />
-                                        {processing === leave.id ? "..." : "Approve"}
+                                        <CheckCircle size={14} />
                                       </button>
                                       <button
                                         className="btn btn-reject"
                                         onClick={() => handleReject(leave.id)}
                                         disabled={processing === leave.id}
+                                        title="Reject"
                                       >
-                                        <XCircle size={16} />
-                                        Reject
+                                        <XCircle size={14} />
                                       </button>
                                     </>
                                   )}
@@ -459,6 +515,32 @@ const LeaveManagement: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="pagination">
+                        <button
+                          className="pagination-btn"
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                        >
+                          <ChevronLeft size={16} />
+                          Previous
+                        </button>
+                        <span className="pagination-info">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          className="pagination-btn"
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </>
                   )}
                 </div>
               </>

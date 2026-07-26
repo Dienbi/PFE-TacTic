@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { usePayrollGuide } from './PayrollGuideProvider';
 import { X, ChevronLeft, ChevronRight, SkipForward } from 'lucide-react';
 import './payrollTour.css';
@@ -7,6 +7,8 @@ const PayrollTourTooltip: React.FC = () => {
   const { activeTour, currentStep, isRunning, nextStep, prevStep, stopTour } = usePayrollGuide();
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+  const [highlightPosition, setHighlightPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
+  const targetElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!isRunning || !activeTour) return;
@@ -16,12 +18,81 @@ const PayrollTourTooltip: React.FC = () => {
 
     if (target) {
       setTargetElement(target);
+      targetElementRef.current = target;
       const rect = target.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+      let newTop = rect.bottom + scrollTop + 10;
+      let newLeft = rect.left + scrollLeft;
+
+      if (step.placement === 'right') {
+        newTop = rect.top + scrollTop;
+        newLeft = rect.right + scrollLeft + 10;
+      } else if (step.placement === 'left') {
+        newTop = rect.top + scrollTop;
+        newLeft = rect.left + scrollLeft - 370; // Tooltip max-width is 350px + padding
+        // Ensure it doesn't overlap sidebar (sidebar is 260px wide)
+        if (newLeft < 280) {
+          newLeft = 280;
+        }
+      }
+
       setPosition({
-        top: rect.bottom + 10,
-        left: rect.left,
+        top: newTop,
+        left: newLeft,
+      });
+      setHighlightPosition({
+        top: rect.top + scrollTop,
+        left: rect.left + scrollLeft,
+        width: rect.width,
+        height: rect.height,
       });
     }
+  }, [isRunning, activeTour, currentStep]);
+
+  // Update position on scroll
+  useEffect(() => {
+    if (!isRunning || !activeTour) return;
+
+    const handleScroll = () => {
+      const currentTarget = targetElementRef.current;
+      if (!currentTarget) return;
+
+      const rect = currentTarget.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      const step = activeTour.steps[currentStep];
+
+      let newTop = rect.bottom + scrollTop + 10;
+      let newLeft = rect.left + scrollLeft;
+
+      if (step.placement === 'right') {
+        newTop = rect.top + scrollTop;
+        newLeft = rect.right + scrollLeft + 10;
+      } else if (step.placement === 'left') {
+        newTop = rect.top + scrollTop;
+        newLeft = rect.left + scrollLeft - 370;
+        // Ensure it doesn't overlap sidebar (sidebar is 260px wide)
+        if (newLeft < 280) {
+          newLeft = 280;
+        }
+      }
+
+      setPosition({
+        top: newTop,
+        left: newLeft,
+      });
+      setHighlightPosition({
+        top: rect.top + scrollTop,
+        left: rect.left + scrollLeft,
+        width: rect.width,
+        height: rect.height,
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [isRunning, activeTour, currentStep]);
 
   const handleNext = () => {
@@ -52,10 +123,10 @@ const PayrollTourTooltip: React.FC = () => {
         <div
           className="payroll-tour-highlight"
           style={{
-            top: targetElement.offsetTop,
-            left: targetElement.offsetLeft,
-            width: targetElement.offsetWidth,
-            height: targetElement.offsetHeight,
+            top: highlightPosition.top,
+            left: highlightPosition.left,
+            width: highlightPosition.width,
+            height: highlightPosition.height,
           }}
         />
       )}

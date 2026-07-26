@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AffectationController;
 use App\Http\Controllers\Api\AIController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChildController;
 use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\CongeController;
 use App\Http\Controllers\Api\CvUploadController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Api\PerformanceReviewController;
 use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
 use App\Http\Controllers\Api\ReportsController;
+use App\Http\Controllers\Api\SocialStatusController;
 use App\Http\Controllers\Api\UtilisateurController;
 use App\Http\Controllers\Api\FiscalProfile\PersonalInfoChangeRequestController;
 use App\Http\Controllers\Api\FiscalProfile\FiscalProfileGroupController;
@@ -98,6 +100,21 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/latest', [CvUploadController::class, 'latest']);
         Route::post('/{id}/confirm', [CvUploadController::class, 'confirm']);
         Route::get('/{id}', [CvUploadController::class, 'show']);
+    });
+
+    // Children routes (accessible by all authenticated users)
+    Route::prefix('children')->group(function () {
+        Route::get('/', [ChildController::class, 'index']);
+        Route::post('/', [ChildController::class, 'store']);
+        Route::put('/{id}', [ChildController::class, 'update'])->where('id', '[0-9]+');
+        Route::delete('/{id}', [ChildController::class, 'destroy'])->where('id', '[0-9]+');
+    });
+
+    // Social status routes (accessible by all authenticated users)
+    Route::prefix('social-status')->group(function () {
+        Route::get('/', [SocialStatusController::class, 'index']);
+        Route::post('/', [SocialStatusController::class, 'store']);
+        Route::post('/{id}/verify', [SocialStatusController::class, 'verify'])->where('id', '[0-9]+')->middleware('role:rh');
     });
 
     // Dashboard routes (RH only)

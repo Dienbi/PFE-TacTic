@@ -41,6 +41,8 @@ class Utilisateur extends Authenticatable implements JWTSubject
         'equipe_id',
         'date_derniere_connexion',
         'gender',
+        'marital_status',
+        'children_count',
     ];
 
     protected $hidden = [
@@ -130,6 +132,16 @@ class Utilisateur extends Authenticatable implements JWTSubject
     public function fiscalProfile()
     {
         return $this->hasOne(\App\Models\EmployeeFiscalProfile::class, 'employee_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(\App\Models\Child::class);
+    }
+
+    public function socialStatusProofs()
+    {
+        return $this->hasMany(\App\Models\SocialStatusProof::class);
     }
 
     // Accessors

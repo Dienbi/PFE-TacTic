@@ -165,6 +165,7 @@ const AttendanceDashboard: React.FC = () => {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
                 className="form-input"
                 style={{ width: "auto", display: "inline-block" }}
               />

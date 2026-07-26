@@ -360,4 +360,66 @@ class PointageService
     {
         return $this->pointageRepository->delete($id);
     }
+
+    /**
+     * Auto check-in for employees and managers on first daily login
+     * Returns true if auto check-in was performed, false if already checked in or not applicable
+     */
+    public function autoCheckIn(int $utilisateurId, string $role): bool
+    {
+        // Only auto check-in for employees and team leaders
+        if (! in_array($role, ['EMPLOYE', 'CHEF_EQUIPE'])) {
+            return false;
+        }
+
+        // Check if already checked in today
+        $existing = $this->pointageRepository->getTodayPointage($utilisateurId);
+        
+        // If already checked in today (has entry time), don't auto check-in again
+        if ($existing && $existing->heure_entree) {
+            return false;
+        }
+
+        // Perform auto check-in
+        try {
+            $pointage = $this->pointageRepository->pointer($utilisateurId, 'entree');
+
+            // Log the auto check-in activity
+            $user = Utilisateur::find($utilisateurId);
+            if ($user) {
+                ActivityLogger::log(
+                    'AUTO_CHECK_IN',
+                    "{$user->prenom} {$user->nom} - auto check-in à la connexion",
+                    $utilisateurId
+                );
+
+                // Check if late (after 09:15)
+                $lateThreshold = Carbon::today()->setTime(9, 15);
+                $isLate = Carbon::now()->gt($lateThreshold);
+
+                // Broadcast to RH
+                try {
+                    event(new AttendanceNotification(
+                        $isLate ? 'warning' : 'info',
+                        $isLate ? 'Late Auto Check-in' : 'Auto Check-in',
+                        "{$user->prenom} {$user->nom} auto checked in at ".Carbon::now()->format('H:i').($isLate ? ' (late)' : ''),
+                        [
+                            'user_id' => $user->id,
+                            'user_name' => "{$user->prenom} {$user->nom}",
+                            'time' => Carbon::now()->format('H:i'),
+                            'is_late' => $isLate,
+                            'action' => 'auto_check_in',
+                        ]
+                    ));
+                } catch (\Exception $e) {
+                    \Log::warning('Broadcast failed for AttendanceNotification: '.$e->getMessage());
+                }
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            \Log::warning('Auto check-in failed for user '.$utilisateurId.': '.$e->getMessage());
+            return false;
+        }
+    }
 }

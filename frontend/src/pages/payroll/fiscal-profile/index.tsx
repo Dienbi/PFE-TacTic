@@ -30,7 +30,7 @@ export default function FiscalProfilePage() {
       <Sidebar />
       <div className="flex-1 ml-[260px]">
         <Navbar userName={displayName || ''} userRole={user?.role || ''} />
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 pt-[90px] max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-start mb-6" data-tour="fiscal-profile-overview">
             <div className="flex flex-col items-start text-left">

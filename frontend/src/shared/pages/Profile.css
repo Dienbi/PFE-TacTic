@@ -23,9 +23,10 @@
     position: relative;
     padding: 0 2rem 2rem 2rem;
     display: flex;
-    align-items: flex-end;
-    gap: 1.5rem;
-    margin-top: -50px;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: -80px;
 }
 
 .big-avatar {
@@ -41,20 +42,19 @@
     font-weight: 600;
     color: #1E2258;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    margin-right: 250px;
-
+    margin: 0;
 }
 
 .profile-title {
     flex: 1;
     padding-bottom: 0.5rem;
+    text-align: center;
 }
 
 .profile-title h2 {
     font-size: 1.8rem;
     margin: 0 0 0.5rem 0;
     color: #111827;
-    margin-right: 130px;
 }
 
 .role-badge {
@@ -64,7 +64,6 @@
     border-radius: 9999px;
     font-size: 0.875rem;
     font-weight: 500;
-    margin-right: 130px;
 }
 
 .edit-profile-btn {
@@ -79,7 +78,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .edit-profile-btn:hover {

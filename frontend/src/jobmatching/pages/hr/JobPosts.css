@@ -47,7 +47,7 @@
 }
 
 .btn-create-post {
-  background: #2563eb;
+  background: #1E2258;
   color: white;
   padding: 0.625rem 1.5rem;
   border: none;
@@ -63,7 +63,7 @@
 }
 
 .btn-create-post:hover {
-  background: #1d4ed8;
+  background: #2a2e75;
 }
 
 .btn-create-post:disabled {
@@ -143,9 +143,9 @@
 }
 
 .filter-tab.active {
-  background: #3b82f6;
+  background: #1E2258;
   color: white;
-  border-color: #3b82f6;
+  border-color: #1E2258;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -319,12 +319,12 @@
 }
 
 .btn-view {
-  background: #2563eb;
+  background: #1E2258;
   color: white;
 }
 
 .btn-view:hover {
-  background: #1d4ed8;
+  background: #2a2e75;
 }
 
 .btn-close {

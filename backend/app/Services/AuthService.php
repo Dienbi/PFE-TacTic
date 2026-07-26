@@ -74,6 +74,15 @@ class AuthService
         ActivityLogger::log('LOGIN', 'User logged in', $utilisateur->id, false);
         $checkpoint('activity_log');
 
+        // Auto check-in for employees and managers on first daily login
+        try {
+            $pointageService = app(PointageService::class);
+            $pointageService->autoCheckIn($utilisateur->id, $utilisateur->role->value);
+        } catch (\Exception $e) {
+            Log::warning('Auto check-in failed during login: '.$e->getMessage());
+        }
+        $checkpoint('auto_checkin');
+
         if ($this->shouldLogPerf()) {
             Log::info('auth.login.success', [
                 'email' => $email,

@@ -109,9 +109,15 @@ const AttendanceHistory: React.FC = () => {
   };
 
   const nextMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
-    );
+    const now = new Date();
+    const nextMonthDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+    
+    // Prevent navigating to future months
+    if (nextMonthDate.getMonth() === now.getMonth() && nextMonthDate.getFullYear() === now.getFullYear()) {
+      return;
+    }
+    
+    setCurrentMonth(nextMonthDate);
   };
 
   const monthYearLabel = currentMonth.toLocaleDateString("en-US", {
@@ -225,7 +231,14 @@ const AttendanceHistory: React.FC = () => {
                 <ChevronLeft size={20} />
               </button>
               <span className="month-label">{monthYearLabel}</span>
-              <button className="nav-btn" onClick={nextMonth}>
+              <button 
+                className="nav-btn" 
+                onClick={nextMonth}
+                disabled={
+                  currentMonth.getMonth() === new Date().getMonth() && 
+                  currentMonth.getFullYear() === new Date().getFullYear()
+                }
+              >
                 <ChevronRight size={20} />
               </button>
             </div>

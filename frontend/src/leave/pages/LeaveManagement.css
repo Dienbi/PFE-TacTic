@@ -1,6 +1,6 @@
 .leave-management-page {
   padding: 1.5rem;
-  padding-top: 85px;
+  padding-top: 20px;
   max-width: 100%;
   width: 100%;
 }
@@ -206,6 +206,11 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+.leaves-table th:last-child,
+.leaves-table td:last-child {
+  padding-right: 1.5rem;
+}
+
 .leaves-table th {
   font-size: 0.75rem;
   font-weight: 600;
@@ -235,7 +240,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: #1E2258;
   color: white;
   display: flex;
   align-items: center;
@@ -303,14 +308,18 @@
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.875rem;
-  border-radius: 6px;
-  font-size: 0.8125rem;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  font-size: 0.65rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  white-space: nowrap;
 }
 
 .btn:disabled {
@@ -337,12 +346,12 @@
 }
 
 .btn-view {
-  background-color: #e0f2fe;
-  color: #1d4ed8;
+  background-color: #1E2258;
+  color: white;
 }
 
 .btn-view:hover:not(:disabled) {
-  background-color: #bfdbfe;
+  background-color: #2a2e75;
 }
 
 /* Empty State */
@@ -388,7 +397,7 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
-  background-color: #3b82f6;
+  background-color: #1E2258;
   color: white;
   border: none;
   border-radius: 6px;
@@ -399,7 +408,7 @@
 }
 
 .btn-download:hover {
-  background-color: #2563eb;
+  background-color: #2a2e75;
 }
 
 .btn-download:disabled {
@@ -457,7 +466,7 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 120px);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -496,6 +505,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .details-grid {
@@ -591,6 +602,18 @@
   gap: 0.75rem;
 }
 
+.modal-actions .btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.modal-footer .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .btn-secondary {
   background: white;
   border: 1px solid #d1d5db;
@@ -599,4 +622,45 @@
 
 .btn-secondary:hover {
   background: #f3f4f6;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
 }

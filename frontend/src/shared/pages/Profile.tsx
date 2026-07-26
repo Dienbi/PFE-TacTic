@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import SocialStatusManager from "../../components/family/SocialStatusManager";
+import ChildrenManager from "../../components/family/ChildrenManager";
 import "./Profile.css";
 
 interface Competence {
@@ -34,6 +36,8 @@ interface UserData {
   salaire_base: number;
   solde_conge: number;
   competences?: Competence[];
+  marital_status?: string;
+  children_count?: number;
 }
 
 const Profile: React.FC = () => {
@@ -61,15 +65,15 @@ const Profile: React.FC = () => {
           <div className="profile-header-card">
             <div className="profile-cover"></div>
             <div className="profile-avatar-section">
+              <div className="big-avatar">
+                {user.prenom[0]}
+                {user.nom[0]}
+              </div>
               <div className="profile-title">
                 <h2>
                   {user.prenom} {user.nom}
                 </h2>
                 <span className="role-badge">{user.role}</span>
-              </div>
-              <div className="big-avatar">
-                {user.prenom[0]}
-                {user.nom[0]}
               </div>
               <button
                 className="edit-profile-btn"
@@ -115,6 +119,14 @@ const Profile: React.FC = () => {
                     <p>{user.adresse || "Not provided"}</p>
                   </div>
                 </div>
+              </div>
+
+              <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: "1px solid #E5E7EB" }}>
+                <SocialStatusManager currentStatus={user.marital_status} readonly={true} />
+              </div>
+
+              <div style={{ marginTop: "2rem" }}>
+                <ChildrenManager readonly={true} />
               </div>
             </div>
 

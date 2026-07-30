@@ -12,8 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Use raw SQL to drop the foreign key constraint if it exists
-        DB::statement('ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_actor_id_foreign');
+        // Use raw SQL to drop the foreign key constraint if it exists (only in pgsql/mysql, sqlite doesn't support DROP CONSTRAINT)
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_actor_id_foreign');
+        }
         
         Schema::table('audit_logs', function (Blueprint $table) {
             $table->dropIndex(['actor_id']);

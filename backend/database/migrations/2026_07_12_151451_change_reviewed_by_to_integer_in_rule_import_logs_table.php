@@ -12,10 +12,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('ALTER TABLE rule_import_logs DROP COLUMN IF EXISTS reviewed_by');
-        Schema::table('rule_import_logs', function (Blueprint $table) {
-            $table->unsignedBigInteger('reviewed_by')->nullable();
-        });
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('ALTER TABLE rule_import_logs DROP COLUMN IF EXISTS reviewed_by');
+            Schema::table('rule_import_logs', function (Blueprint $table) {
+                $table->unsignedBigInteger('reviewed_by')->nullable();
+            });
+        } else {
+            Schema::table('rule_import_logs', function (Blueprint $table) {
+                $table->dropColumn('reviewed_by');
+            });
+            Schema::table('rule_import_logs', function (Blueprint $table) {
+                $table->unsignedBigInteger('reviewed_by')->nullable();
+            });
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Repositories\SocialStatusProofRepository;
 use App\Repositories\ChildRepository;
 use App\Services\Notification\NotificationService;
 use App\Services\FiscalProfile\FiscalProfileIntegrationService;
+use App\Services\FiscalProfile\FiscalProfileAssignmentService;
 use Illuminate\Support\Facades\DB;
 
 class VerificationService
@@ -20,8 +21,61 @@ class VerificationService
         private SocialStatusProofRepository $socialStatusProofRepository,
         private ChildRepository $childRepository,
         private NotificationService $notificationService,
-        private FiscalProfileIntegrationService $fiscalProfileService
+        private FiscalProfileIntegrationService $fiscalProfileService,
+        private FiscalProfileAssignmentService $assignmentService
     ) {}
+
+    /**
+     * Check if there are any remaining pending social status proofs or children for the user.
+     */
+    private function hasPendingChangesForUser(int $userId): bool
+    {
+        $pendingSocialStatus = SocialStatusProof::where('utilisateur_id', $userId)
+            ->where('status', 'pending')
+            ->count();
+
+        $pendingChildren = Child::where('utilisateur_id', $userId)
+            ->where('verified', false)
+            ->where('rejected', false)
+            ->count();
+
+        return ($pendingSocialStatus > 0 || $pendingChildren > 0);
+    }
+
+    /**
+     * Automatically assign or create the appropriate fiscal profile for the employee.
+     */
+    private function autoAssignFiscalProfile(int $userId, int $hrUserId): void
+    {
+        $user = Utilisateur::find($userId);
+        if (!$user) {
+            return;
+        }
+
+        // Get count of verified children by status
+        $children = $this->childRepository->getByUtilisateur($userId)
+            ->where('verified', true)
+            ->where('rejected', false);
+
+        $disabledCount = $children->where('status', 'disabled')->count();
+        $studentCount = $children->where('status', 'university')->count();
+        $totalCount = $children->count();
+
+        $groupAttributes = [
+            'gender' => $user->gender,
+            'marital_status' => $user->marital_status,
+            'children_count' => $totalCount,
+            'disabled_children_count' => $disabledCount,
+            'student_non_scholarship_children_count' => $studentCount,
+        ];
+
+        $this->assignmentService->assignProfile(
+            (string) $userId,
+            $groupAttributes,
+            date('Y-m-d'),
+            (string) $hrUserId
+        );
+    }
 
     public function verifySocialStatus(int $proofId, int $hrUserId): VerificationResultDTO
     {
@@ -45,6 +99,11 @@ class VerificationService
             if ($user) {
                 $user->marital_status = $proof->social_status;
                 $user->save();
+            }
+
+            // Automatically assign/create fiscal profile if no other pending changes exist for this user
+            if (!$this->hasPendingChangesForUser($proof->utilisateur_id)) {
+                $this->autoAssignFiscalProfile($proof->utilisateur_id, $hrUserId);
             }
 
             // Create notification
@@ -147,6 +206,11 @@ class VerificationService
                     ->where('rejected', false)
                     ->count();
                 $user->save();
+            }
+
+            // Automatically assign/create fiscal profile if no other pending changes exist for this user
+            if (!$this->hasPendingChangesForUser($child->utilisateur_id)) {
+                $this->autoAssignFiscalProfile($child->utilisateur_id, $hrUserId);
             }
 
             // Create notification

@@ -367,17 +367,33 @@ const ChildrenManager: React.FC<ChildrenManagerProps> = ({ readonly = false }) =
                 <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>
                   Born: {new Date(child.date_naissance).toLocaleDateString()}
                 </div>
-                <span
-                  style={{
-                    fontSize: ' 0.75rem',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '9999px',
-                    fontWeight: '500',
-                  }}
-                  className={getStatusColor(child.status)}
-                >
-                  {getStatusLabel(child.status)}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '9999px',
+                      fontWeight: '500',
+                    }}
+                    className={getStatusColor(child.status)}
+                  >
+                    {getStatusLabel(child.status)}
+                  </span>
+                  {child.verified && (
+                    <span style={{ color: '#059669', fontSize: '0.75rem', fontWeight: '500' }}>✓ Verified</span>
+                  )}
+                  {child.rejected && (
+                    <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: '500' }}>✕ Rejected</span>
+                  )}
+                  {!child.verified && !child.rejected && (
+                    <span style={{ color: '#D97706', fontSize: '0.75rem', fontWeight: '500' }}>⏳ Pending</span>
+                  )}
+                </div>
+                {child.rejection_reason && (
+                  <div style={{ fontSize: '0.7rem', color: '#6B7280', marginTop: '0.25rem' }}>
+                    Reason: {child.rejection_reason}
+                  </div>
+                )}
               </div>
               {!readonly && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>

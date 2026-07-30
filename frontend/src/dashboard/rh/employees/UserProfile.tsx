@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
+import { SocialInfoVerification } from "./SocialInfoVerification/SocialInfoVerification";
+import { SocialInfoDisplay } from "./SocialInfoDisplay/SocialInfoDisplay";
 import client from "../../../api/client";
 import "./UserProfile.css";
 
@@ -52,6 +54,7 @@ const UserProfile: React.FC = () => {
     location.state?.user || null,
   );
   const [rhUser, setRhUser] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'profile' | 'social-info' | 'verification'>('profile');
 
   const fetchUser = useCallback(async () => {
     try {
@@ -86,15 +89,15 @@ const UserProfile: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "Non renseigné";
+    if (!dateString) return "Not provided";
     try {
-      return new Date(dateString).toLocaleDateString("fr-FR", {
+      return new Date(dateString).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
       });
     } catch {
-      return "Date invalide";
+      return "Invalid date";
     }
   };
 
@@ -121,8 +124,8 @@ const UserProfile: React.FC = () => {
           >
             <ArrowLeft size={20} />
             {["manager", "chef_equipe"].includes(rhUser?.role?.toLowerCase())
-              ? "Retour à mon équipe"
-              : "Retour aux employés"}
+              ? "Back to My Team"
+              : "Back to Employees"}
           </button>
 
           {/* Profile Header */}
@@ -147,16 +150,41 @@ const UserProfile: React.FC = () => {
             </div>
           </div>
 
+          {/* Tabs */}
+          <div className="profile-tabs">
+            <button
+              className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => setActiveTab('profile')}
+            >
+              Profile
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'social-info' ? 'active' : ''}`}
+              onClick={() => setActiveTab('social-info')}
+            >
+              Social Info
+            </button>
+            {rhUser?.role?.toLowerCase() === "rh" && (
+              <button
+                className={`tab-button ${activeTab === 'verification' ? 'active' : ''}`}
+                onClick={() => setActiveTab('verification')}
+              >
+                Verification
+              </button>
+            )}
+          </div>
+
           {/* Profile Content */}
-          <div className="user-profile-grid">
+          {activeTab === 'profile' ? (
+            <div className="user-profile-grid">
             {/* Personal Information */}
             <div className="profile-card">
-              <h3>Informations Personnelles</h3>
+              <h3>Personal Information</h3>
               <div className="info-list">
                 <div className="info-item">
                   <User className="info-icon" />
                   <div>
-                    <label>Nom Complet</label>
+                    <label>Full Name</label>
                     <p>
                       {user.prenom} {user.nom}
                     </p>
@@ -172,15 +200,15 @@ const UserProfile: React.FC = () => {
                 <div className="info-item">
                   <Phone className="info-icon" />
                   <div>
-                    <label>Téléphone</label>
-                    <p>{user.telephone || "Non renseigné"}</p>
+                    <label>Phone</label>
+                    <p>{user.telephone || "Not provided"}</p>
                   </div>
                 </div>
                 <div className="info-item">
                   <MapPin className="info-icon" />
                   <div>
-                    <label>Adresse</label>
-                    <p>{user.adresse || "Non renseigné"}</p>
+                    <label>Address</label>
+                    <p>{user.adresse || "Not provided"}</p>
                   </div>
                 </div>
               </div>
@@ -188,34 +216,34 @@ const UserProfile: React.FC = () => {
 
             {/* Professional Information */}
             <div className="profile-card">
-              <h3>Informations Professionnelles</h3>
+              <h3>Professional Information</h3>
               <div className="info-list">
                 <div className="info-item">
                   <Briefcase className="info-icon" />
                   <div>
-                    <label>Matricule</label>
+                    <label>Employee ID</label>
                     <p>{user.matricule}</p>
                   </div>
                 </div>
                 <div className="info-item">
                   <Calendar className="info-icon" />
                   <div>
-                    <label>Date d'embauche</label>
+                    <label>Hire Date</label>
                     <p>{formatDate(user.date_embauche)}</p>
                   </div>
                 </div>
                 <div className="info-item">
                   <Briefcase className="info-icon" />
                   <div>
-                    <label>Type de Contrat</label>
-                    <p>{user.type_contrat || "CDI"}</p>
+                    <label>Contract Type</label>
+                    <p>{user.type_contrat || "Full-time"}</p>
                   </div>
                 </div>
                 <div className="info-item">
                   <Users className="info-icon" />
                   <div>
-                    <label>Équipe</label>
-                    <p>{user.equipe?.nom || "Aucune équipe"}</p>
+                    <label>Team</label>
+                    <p>{user.equipe?.nom || "No team"}</p>
                   </div>
                 </div>
               </div>
@@ -224,22 +252,22 @@ const UserProfile: React.FC = () => {
             {/* Financial Information */}
             {rhUser?.role?.toLowerCase() === "rh" && (
               <div className="profile-card">
-                <h3>Informations Financières</h3>
+                <h3>Financial Information</h3>
                 <div className="info-list">
                   <div className="info-item">
                     <CreditCard className="info-icon" />
                     <div>
-                      <label>Salaire de Base</label>
+                      <label>Base Salary</label>
                       <p>
-                        {user.salaire_base?.toLocaleString("fr-FR") || 0} MAD
+                        {user.salaire_base?.toLocaleString("en-US") || 0} MAD
                       </p>
                     </div>
                   </div>
                   <div className="info-item">
                     <Calendar className="info-icon" />
                     <div>
-                      <label>Solde de Congés</label>
-                      <p>{user.solde_conge || 0} jours</p>
+                      <label>Leave Balance</label>
+                      <p>{user.solde_conge || 0} days</p>
                     </div>
                   </div>
                 </div>
@@ -248,7 +276,7 @@ const UserProfile: React.FC = () => {
 
             {/* Skills & Expertise */}
             <div className="profile-card skills-card">
-              <h3>Compétences</h3>
+              <h3>Skills & Expertise</h3>
               {user.competences && user.competences.length > 0 ? (
                 <div className="skills-list-display">
                   {user.competences.map((skill) => (
@@ -260,11 +288,16 @@ const UserProfile: React.FC = () => {
               ) : (
                 <div className="empty-state">
                   <Award className="empty-icon" />
-                  <p>Aucune compétence ajoutée.</p>
+                  <p>No skills added yet.</p>
                 </div>
               )}
             </div>
           </div>
+          ) : activeTab === 'social-info' ? (
+            <SocialInfoDisplay employeeId={user?.id ? parseInt(id || '0') : 0} />
+          ) : (
+            <SocialInfoVerification employeeId={user?.id ? parseInt(id || '0') : undefined} />
+          )}
         </div>
       </div>
     </div>

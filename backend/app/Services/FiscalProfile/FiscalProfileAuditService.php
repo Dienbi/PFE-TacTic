@@ -20,63 +20,6 @@ class FiscalProfileAuditService
     }
 
     /**
-     * Log a change request submission.
-     *
-     * @param string $actorId
-     * @param string $requestId
-     * @param array $details
-     * @return void
-     */
-    public function logChangeRequestSubmitted(string $actorId, string $requestId, array $details = []): void
-    {
-        $this->auditLogRepository->create([
-            'actor_id' => $actorId,
-            'action' => 'fiscal_profile.change_request_submitted',
-            'entity_type' => 'PersonalInfoChangeRequest',
-            'entity_id' => $requestId,
-            'details_json' => $details,
-        ]);
-    }
-
-    /**
-     * Log a change request approval.
-     *
-     * @param string $actorId
-     * @param string $requestId
-     * @param array $details
-     * @return void
-     */
-    public function logChangeRequestApproved(string $actorId, string $requestId, array $details = []): void
-    {
-        $this->auditLogRepository->create([
-            'actor_id' => $actorId,
-            'action' => 'fiscal_profile.change_request_approved',
-            'entity_type' => 'PersonalInfoChangeRequest',
-            'entity_id' => $requestId,
-            'details_json' => $details,
-        ]);
-    }
-
-    /**
-     * Log a change request rejection.
-     *
-     * @param string $actorId
-     * @param string $requestId
-     * @param array $details
-     * @return void
-     */
-    public function logChangeRequestRejected(string $actorId, string $requestId, array $details = []): void
-    {
-        $this->auditLogRepository->create([
-            'actor_id' => $actorId,
-            'action' => 'fiscal_profile.change_request_rejected',
-            'entity_type' => 'PersonalInfoChangeRequest',
-            'entity_id' => $requestId,
-            'details_json' => $details,
-        ]);
-    }
-
-    /**
      * Log a fiscal profile assignment.
      *
      * @param string $actorId
@@ -181,17 +124,6 @@ class FiscalProfileAuditService
             'entity_id' => $groupId,
             'details_json' => $details,
         ]);
-    }
-
-    /**
-     * Get audit trail for a specific change request.
-     *
-     * @param string $requestId
-     * @return array
-     */
-    public function getChangeRequestAuditTrail(string $requestId): array
-    {
-        return $this->auditLogRepository->findByEntity('PersonalInfoChangeRequest', $requestId);
     }
 
     /**

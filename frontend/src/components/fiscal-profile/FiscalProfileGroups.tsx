@@ -368,7 +368,10 @@ const CreateGroupForm: React.FC<{
           min="0"
           className={inputClass}
           value={formData.children_count}
-          onChange={(e) => setFormData({ ...formData, children_count: parseInt(e.target.value) || 0 })}
+          onChange={(e) => {
+            const value = e.target.value;
+            setFormData({ ...formData, children_count: value === '' ? 0 : parseInt(value) || 0 });
+          }}
         />
       </div>
 
@@ -380,7 +383,10 @@ const CreateGroupForm: React.FC<{
             min="0"
             className={inputClass}
             value={formData.disabled_children_count}
-            onChange={(e) => setFormData({ ...formData, disabled_children_count: parseInt(e.target.value) || 0 })}
+            onChange={(e) => {
+              const value = e.target.value;
+              setFormData({ ...formData, disabled_children_count: value === '' ? 0 : parseInt(value) || 0 });
+            }}
           />
         </div>
         <div>
@@ -390,9 +396,10 @@ const CreateGroupForm: React.FC<{
             min="0"
             className={inputClass}
             value={formData.student_non_scholarship_children_count}
-            onChange={(e) =>
-              setFormData({ ...formData, student_non_scholarship_children_count: parseInt(e.target.value) || 0 })
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              setFormData({ ...formData, student_non_scholarship_children_count: value === '' ? 0 : parseInt(value) || 0 });
+            }}
           />
         </div>
       </div>

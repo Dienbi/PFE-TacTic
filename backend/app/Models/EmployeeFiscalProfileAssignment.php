@@ -18,7 +18,6 @@ class EmployeeFiscalProfileAssignment extends Model
         'fiscal_profile_group_id',
         'effective_from',
         'effective_to',
-        'source_change_request_id',
         'assigned_by',
         'assigned_at',
     ];
@@ -37,11 +36,6 @@ class EmployeeFiscalProfileAssignment extends Model
     public function fiscalProfileGroup()
     {
         return $this->belongsTo(FiscalProfileGroup::class, 'fiscal_profile_group_id');
-    }
-
-    public function sourceChangeRequest()
-    {
-        return $this->belongsTo(PersonalInfoChangeRequest::class, 'source_change_request_id');
     }
 
     public function assignedBy()

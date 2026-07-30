@@ -2,322 +2,337 @@
 
 namespace App\Services\FiscalProfile;
 
-use App\Models\ChangeRequestDocument;
 use App\Models\PersonalInfoChangeRequest;
-use App\Models\Payslip;
 use App\Models\Utilisateur;
-use App\Services\FiscalProfile\DocumentRequirementService;
-use App\Services\FiscalProfile\FiscalProfileAssignmentService;
-use App\Services\FiscalProfile\HeadOfFamilyComputationService;
+use App\Repositories\ChangeRequestDocumentRepository;
+use App\Repositories\PersonalInfoChangeRequestRepository;
+use App\Services\Notification\NotificationService;
+use App\Enums\NotificationType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-/**
- * PersonalInfoChangeRequestService
- * 
- * Single Responsibility: Manage the lifecycle of personal info change requests,
- * including submission, validation, approval, and rejection workflows.
- */
 class PersonalInfoChangeRequestService
 {
-    private HeadOfFamilyComputationService $headOfFamilyComputation;
-    private DocumentRequirementService $documentRequirementService;
-    private FiscalProfileAssignmentService $assignmentService;
-
     public function __construct(
-        HeadOfFamilyComputationService $headOfFamilyComputation,
-        DocumentRequirementService $documentRequirementService,
-        FiscalProfileAssignmentService $assignmentService
-    ) {
-        $this->headOfFamilyComputation = $headOfFamilyComputation;
-        $this->documentRequirementService = $documentRequirementService;
-        $this->assignmentService = $assignmentService;
-    }
+        private PersonalInfoChangeRequestRepository $changeRequestRepository,
+        private ChangeRequestDocumentRepository $documentRepository,
+        private FiscalProfileAssignmentService $assignmentService,
+        private HeadOfFamilyComputationService $headOfFamilyComputation,
+        private NotificationService $notificationService
+    ) {}
 
     /**
      * Submit a new personal info change request.
-     *
-     * @param array $data Request data
-     * @param array $documents Document uploads
-     * @return PersonalInfoChangeRequest
-     * @throws \Exception If employee has an active request
      */
-    public function submitRequest(array $data, array $documents): PersonalInfoChangeRequest
+    public function submitRequest(int $employeeId, array $data): PersonalInfoChangeRequest
     {
-        $employeeId = $data['employee_id'];
-        
-        // Check for active requests
-        $hasActive = PersonalInfoChangeRequest::forEmployee($employeeId)
-            ->active()
-            ->exists();
-        
-        if ($hasActive) {
-            throw new \Exception('Employee already has an active change request. Please wait for it to be processed.');
+        // Check if employee already has an active request
+        $activeRequest = $this->changeRequestRepository->getActiveForEmployee($employeeId);
+        if ($activeRequest) {
+            throw new \Exception('You already have an active change request. Please wait for it to be reviewed.');
         }
-        
-        // Get employee data for head-of-family computation
+
+        // Get employee data for head of family computation
         $employee = Utilisateur::find($employeeId);
         if (!$employee) {
-            throw new \Exception('Employee not found');
+            throw new \Exception('Employee not found.');
         }
-        
-        // Compute head-of-family preview
-        $headOfFamily = $this->headOfFamilyComputation->compute(
-            $employee->gender ?? 'male',
-            $data['requested_marital_status'] ?? $employee->marital_status ?? 'single',
-            $data['requested_children_count'] ?? 0
+
+        // Compute head of family preview
+        $gender = $employee->gender;
+        $maritalStatus = $data['requested_marital_status'] ?? $employee->marital_status;
+        $childrenCount = $data['requested_children_count'] ?? $employee->children_count;
+
+        $computedHeadOfFamily = $this->headOfFamilyComputation->compute(
+            $gender,
+            $maritalStatus,
+            $childrenCount
         );
-        
-        DB::beginTransaction();
-        try {
-            // Create change request
-            $request = PersonalInfoChangeRequest::create([
-                'id' => (string) Str::uuid(),
-                'employee_id' => $employeeId,
-                'requested_marital_status' => $data['requested_marital_status'] ?? null,
-                'requested_children_count' => $data['requested_children_count'] ?? null,
-                'requested_disabled_children_count' => $data['requested_disabled_children_count'] ?? null,
-                'requested_student_children_count' => $data['requested_student_children_count'] ?? null,
-                'computed_head_of_family_preview' => $headOfFamily,
-                'claimed_effective_date' => $data['claimed_effective_date'],
-                'status' => 'pending',
-                'submitted_at' => now(),
-            ]);
-            
-            // Attach documents
-            foreach ($documents as $docData) {
-                ChangeRequestDocument::create([
-                    'id' => (string) Str::uuid(),
-                    'change_request_id' => $request->id,
-                    'document_type' => $docData['type'],
-                    'file_path' => $docData['path'],
-                    'uploaded_at' => now(),
-                    'verified_by_hr' => false,
-                ]);
-            }
-            
-            DB::commit();
-            return $request->fresh(['documents']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+
+        // Create the change request
+        $requestData = array_merge($data, [
+            'id' => (string) Str::uuid(),
+            'employee_id' => $employeeId,
+            'computed_head_of_family_preview' => $computedHeadOfFamily,
+            'status' => 'pending',
+            'submitted_at' => now(),
+        ]);
+
+        return $this->changeRequestRepository->create($requestData);
     }
 
     /**
-     * Approve a change request.
-     *
-     * @param string $requestId
-     * @param string $reviewedBy
-     * @return array
-     * @throws \Exception If validation fails
+     * Approve a personal info change request and reassign fiscal profile.
      */
-    public function approveRequest(string $requestId, string $reviewedBy): array
+    public function approveRequest(string $requestId, int $hrUserId): array
     {
-        $request = PersonalInfoChangeRequest::with(['documents', 'employee'])->findOrFail($requestId);
-        
-        // Validate document requirements
-        if (!$this->documentRequirementService->validateDocumentsPresent($request)) {
-            throw new \Exception('Cannot approve: Required documents are missing');
+        $request = PersonalInfoChangeRequest::find($requestId);
+        if (!$request) {
+            throw new \Exception('Change request not found.');
         }
-        
-        if (!$this->documentRequirementService->validateDocumentsVerified($request)) {
-            throw new \Exception('Cannot approve: All required documents must be verified by HR');
+
+        if ($request->status !== 'pending') {
+            throw new \Exception('Only pending requests can be approved.');
         }
-        
-        // Check for children decrease (always needs more info)
-        if ($this->documentRequirementService->hasChildrenDecrease($request)) {
-            $request->update([
-                'status' => 'needs_more_info',
-                'reviewed_by' => $reviewedBy,
-                'reviewed_at' => now(),
-            ]);
-            return [
-                'status' => 'needs_more_info',
-                'message' => 'Request requires additional review due to children count decrease',
-            ];
-        }
-        
-        // Check for locked payslip conflict
-        $affectsLocked = $this->checkLockedPayslipConflict(
-            $request->employee_id,
-            $request->claimed_effective_date
-        );
-        
+
+        // Validate required documents are verified
+        $this->validateRequiredDocuments($request);
+
         DB::beginTransaction();
         try {
-            // Update request status
-            $request->update([
-                'status' => 'approved',
-                'reviewed_by' => $reviewedBy,
-                'reviewed_at' => now(),
-                'affects_locked_payslips' => $affectsLocked,
-            ]);
-            
-            // Create fiscal profile assignment
-            $employee = $request->employee;
+            // Update employee's personal info
+            $employee = Utilisateur::find($request->employee_id);
+            if (!$employee) {
+                throw new \Exception('Employee not found.');
+            }
+
+            $oldMaritalStatus = $employee->marital_status;
+            $oldChildrenCount = $employee->children_count;
+
+            // Apply changes
+            if ($request->requested_marital_status) {
+                $employee->marital_status = $request->requested_marital_status;
+            }
+            if ($request->requested_children_count !== null) {
+                $employee->children_count = $request->requested_children_count;
+            }
+            if ($request->requested_disabled_children_count !== null) {
+                $employee->disabled_children_count = $request->requested_disabled_children_count;
+            }
+            if ($request->requested_student_children_count !== null) {
+                $employee->student_non_scholarship_children_count = $request->requested_student_children_count;
+            }
+            $employee->save();
+
+            // Reassign fiscal profile
             $groupAttributes = [
-                'gender' => $employee->gender ?? 'male',
-                'marital_status' => $request->requested_marital_status ?? $employee->marital_status ?? 'single',
-                'children_count' => $request->requested_children_count ?? 0,
-                'disabled_children_count' => $request->requested_disabled_children_count ?? 0,
-                'student_non_scholarship_children_count' => $request->requested_student_children_count ?? 0,
+                'gender' => $employee->gender,
+                'marital_status' => $employee->marital_status,
+                'children_count' => $employee->children_count,
+                'disabled_children_count' => $employee->disabled_children_count ?? 0,
+                'student_non_scholarship_children_count' => $employee->student_non_scholarship_children_count ?? 0,
             ];
-            
+
+            \Log::info('Assigning fiscal profile', [
+                'employee_id' => $request->employee_id,
+                'employee_id_type' => gettype($request->employee_id),
+                'group_attributes' => $groupAttributes,
+                'effective_date' => $request->claimed_effective_date,
+                'hr_user_id' => $hrUserId,
+                'hr_user_id_type' => gettype($hrUserId),
+            ]);
+
             $assignment = $this->assignmentService->assignProfile(
-                $employeeId,
+                (string) $request->employee_id,
                 $groupAttributes,
                 $request->claimed_effective_date,
-                $reviewedBy,
-                $request->id
+                (string) $hrUserId
             );
-            
+
+            // Update request status
+            $this->changeRequestRepository->updateStatus($requestId, 'approved', $hrUserId);
+
+            // Check if affects locked payslips (simplified check - in production, query actual payslips)
+            $affectsLockedPayslips = $this->checkAffectsLockedPayslips($request->employee_id, $request->claimed_effective_date);
+            if ($affectsLockedPayslips) {
+                $this->changeRequestRepository->markAsAffectsLockedPayslips($requestId);
+            }
+
+            // Notify employee
+            $this->notificationService->createNotification(
+                $request->employee_id,
+                NotificationType::SOCIAL_STATUS_APPROVED,
+                [
+                    'title' => 'Personal Info Change Approved',
+                    'message' => 'Your personal information changes have been approved and your fiscal profile has been updated.',
+                    'data' => [
+                        'request_id' => $requestId,
+                        'old_marital_status' => $oldMaritalStatus,
+                        'new_marital_status' => $employee->marital_status,
+                        'old_children_count' => $oldChildrenCount,
+                        'new_children_count' => $employee->children_count,
+                    ]
+                ]
+            );
+
+            // Notify HR of reassignment
+            $this->notifyHROfReassignment($hrUserId, $employee, $assignment);
+
             DB::commit();
-            
+
             return [
-                'status' => 'approved',
-                'assignment_id' => $assignment->id,
-                'affects_locked_payslips' => $affectsLocked,
+                'success' => true,
+                'message' => 'Change request approved and fiscal profile reassigned.',
+                'assignment' => $assignment,
+                'affects_locked_payslips' => $affectsLockedPayslips,
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Failed to approve change request', [
+                'request_id' => $requestId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             throw $e;
         }
     }
 
     /**
-     * Reject a change request.
-     *
-     * @param string $requestId
-     * @param string $reviewedBy
-     * @param string $notes
-     * @return void
+     * Reject a personal info change request.
      */
-    public function rejectRequest(string $requestId, string $reviewedBy, string $notes): void
+    public function rejectRequest(string $requestId, string $reason, int $hrUserId): bool
     {
-        $request = PersonalInfoChangeRequest::findOrFail($requestId);
-        
-        $request->update([
-            'status' => 'rejected',
-            'reviewed_by' => $reviewedBy,
-            'reviewed_at' => now(),
-            'review_notes' => $notes,
-        ]);
+        $request = PersonalInfoChangeRequest::find($requestId);
+        if (!$request) {
+            throw new \Exception('Change request not found.');
+        }
+
+        if ($request->status !== 'pending') {
+            throw new \Exception('Only pending requests can be rejected.');
+        }
+
+        $this->changeRequestRepository->updateStatus($requestId, 'rejected', $hrUserId, $reason);
+
+        // Notify employee
+        $this->notificationService->createNotification(
+            $request->employee_id,
+            NotificationType::SOCIAL_STATUS_REJECTED,
+            [
+                'title' => 'Personal Info Change Rejected',
+                'message' => "Your personal information change was rejected. Reason: {$reason}",
+                'data' => ['request_id' => $requestId, 'rejection_reason' => $reason]
+            ]
+        );
+
+        return true;
     }
 
     /**
-     * Check if the effective date conflicts with locked payslips.
-     *
-     * @param string $employeeId
-     * @param string $effectiveDate
-     * @return bool
+     * Mark request as needs more info.
      */
-    public function checkLockedPayslipConflict(string $employeeId, string $effectiveDate): bool
+    public function requestMoreInfo(string $requestId, string $reason, int $hrUserId): bool
     {
-        // Get the pay period for the effective date
-        $effectiveDateObj = \Carbon\Carbon::parse($effectiveDate);
-        
-        // Check if there's a locked payslip for this period
-        $hasLockedPayslip = Payslip::where('employee_id', $employeeId)
-            ->where('period_start', '<=', $effectiveDateObj)
-            ->where('period_end', '>=', $effectiveDateObj)
-            ->where('is_locked', true)
-            ->exists();
-        
-        return $hasLockedPayslip;
+        $request = PersonalInfoChangeRequest::find($requestId);
+        if (!$request) {
+            throw new \Exception('Change request not found.');
+        }
+
+        $this->changeRequestRepository->updateStatus($requestId, 'needs_more_info', $hrUserId, $reason);
+
+        // Notify employee
+        $this->notificationService->createNotification(
+            $request->employee_id,
+            NotificationType::SOCIAL_STATUS_REJECTED,
+            [
+                'title' => 'Additional Information Required',
+                'message' => "Your change request needs additional information. Reason: {$reason}",
+                'data' => ['request_id' => $requestId, 'reason' => $reason]
+            ]
+        );
+
+        return true;
     }
 
     /**
-     * Get a change request by ID.
-     *
-     * @param string $requestId
-     * @return PersonalInfoChangeRequest|null
+     * Validate that all required documents are verified.
      */
-    public function getRequestById(string $requestId): ?PersonalInfoChangeRequest
+    private function validateRequiredDocuments(PersonalInfoChangeRequest $request): void
     {
-        return PersonalInfoChangeRequest::with(['employee', 'documents', 'reviewedBy'])->find($requestId);
+        $requiredDocTypes = $this->getRequiredDocumentTypes($request);
+        $documents = $this->documentRepository->getByChangeRequest($request->id);
+
+        foreach ($requiredDocTypes as $docType) {
+            $doc = $documents->firstWhere('document_type', $docType);
+            if (!$doc) {
+                throw new \Exception("Missing required document: {$docType}");
+            }
+            if (!$doc->verified_by_hr) {
+                throw new \Exception("Document not verified: {$docType}");
+            }
+        }
+
+        // Check for children count decrease
+        $employee = Utilisateur::find($request->employee_id);
+        if ($request->requested_children_count !== null && 
+            $request->requested_children_count < $employee->children_count) {
+            throw new \Exception('Children count decrease requires manual review. Please use "Request More Info".');
+        }
     }
 
     /**
-     * Get change requests by employee ID.
-     *
-     * @param int $employeeId
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Get required document types based on the change.
      */
-    public function getByEmployee(int $employeeId)
+    private function getRequiredDocumentTypes(PersonalInfoChangeRequest $request): array
     {
-        return PersonalInfoChangeRequest::forEmployee($employeeId)
-            ->with(['documents', 'reviewedBy'])
-            ->orderBy('submitted_at', 'desc')
-            ->get();
+        $required = [];
+        $employee = Utilisateur::find($request->employee_id);
+
+        // Marital status changes
+        if ($request->requested_marital_status) {
+            $from = $employee->marital_status;
+            $to = $request->requested_marital_status;
+
+            if ($from === 'single' && $to === 'married') {
+                $required[] = 'marriage_certificate';
+            } elseif ($from === 'married' && $to === 'divorced') {
+                $required[] = 'divorce_judgment';
+            } elseif ($from === 'married' && $to === 'widowed') {
+                $required[] = 'death_certificate';
+            }
+        }
+
+        // Children count increase
+        if ($request->requested_children_count !== null && 
+            $request->requested_children_count > $employee->children_count) {
+            $newChildren = $request->requested_children_count - $employee->children_count;
+            for ($i = 0; $i < $newChildren; $i++) {
+                $required[] = 'birth_certificate';
+            }
+        }
+
+        // Disabled children
+        if ($request->requested_disabled_children_count > 0) {
+            $required[] = 'disability_certificate';
+        }
+
+        // Student children
+        if ($request->requested_student_children_count > 0) {
+            $required[] = 'school_enrollment_certificate';
+        }
+
+        return $required;
     }
 
     /**
-     * Add a document to a change request.
-     *
-     * @param string $requestId
-     * @param array $documentData
-     * @return ChangeRequestDocument
+     * Check if the change affects locked payslips.
+     * Simplified implementation - in production, query actual payslip data.
      */
-    public function addDocument(string $requestId, array $documentData): ChangeRequestDocument
+    private function checkAffectsLockedPayslips(int $employeeId, string $effectiveDate): bool
     {
-        return ChangeRequestDocument::create([
-            'id' => (string) Str::uuid(),
-            'change_request_id' => $requestId,
-            'document_type' => $documentData['type'],
-            'file_path' => $documentData['path'],
-            'uploaded_at' => now(),
-            'verified_by_hr' => false,
-        ]);
+        // TODO: Implement actual check against payslips table
+        // For now, return false as placeholder
+        return false;
     }
 
     /**
-     * Verify a document.
-     *
-     * @param string $documentId
-     * @param int $verifiedBy
-     * @param string|null $notes
-     * @return ChangeRequestDocument
+     * Notify HR of fiscal profile reassignment.
      */
-    public function verifyDocument(string $documentId, int $verifiedBy, ?string $notes = null): ChangeRequestDocument
+    private function notifyHROfReassignment(int $hrUserId, Utilisateur $employee, $assignment): void
     {
-        $document = ChangeRequestDocument::findOrFail($documentId);
-        $document->update([
-            'verified_by_hr' => true,
-            'verified_by' => $verifiedBy,
-            'verification_notes' => $notes,
-        ]);
-        return $document->fresh();
-    }
-
-    /**
-     * Get pending requests for HR review.
-     *
-     * @param int $page
-     * @param int $perPage
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
-    public function getPendingRequests(int $page = 1, int $perPage = 15)
-    {
-        return PersonalInfoChangeRequest::with(['employee', 'documents'])
-            ->pending()
-            ->orderBy('submitted_at', 'desc')
-            ->paginate($perPage, ['*'], 'page', $page);
-    }
-
-    /**
-     * Get requests by status.
-     *
-     * @param string $status
-     * @param int $page
-     * @param int $perPage
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
-    public function getByStatus(string $status, int $page = 1, int $perPage = 15)
-    {
-        return PersonalInfoChangeRequest::with(['employee', 'documents', 'reviewedBy'])
-            ->where('status', $status)
-            ->orderBy('submitted_at', 'desc')
-            ->paginate($perPage, ['*'], 'page', $page);
+        $this->notificationService->createNotification(
+            $hrUserId,
+            NotificationType::FISCAL_PROFILE_REASSIGNED,
+            [
+                'title' => 'Fiscal Profile Reassigned',
+                'message' => "Employee {$employee->nom_complet} has been reassigned to fiscal profile: {$assignment->fiscalProfileGroup->label}",
+                'data' => [
+                    'employee_id' => $employee->id,
+                    'employee_name' => $employee->nom_complet,
+                    'fiscal_profile_group_id' => $assignment->fiscal_profile_group_id,
+                    'fiscal_profile_label' => $assignment->fiscalProfileGroup->label,
+                    'effective_from' => $assignment->effective_from,
+                ]
+            ]
+        );
     }
 }

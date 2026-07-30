@@ -1,36 +1,5 @@
 import apiClient from './client';
 
-export interface PersonalInfoChangeRequest {
-  id: string;
-  employee_id: number;
-  requested_marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null;
-  requested_children_count: number | null;
-  requested_disabled_children_count: number | null;
-  requested_student_children_count: number | null;
-  computed_head_of_family_preview: boolean;
-  claimed_effective_date: string;
-  status: 'pending' | 'approved' | 'rejected' | 'needs_more_info';
-  submitted_at: string;
-  reviewed_by: number | null;
-  reviewed_at: string | null;
-  review_notes: string | null;
-  affects_locked_payslips: boolean;
-  documents?: ChangeRequestDocument[];
-  employee?: Employee;
-  reviewed_by_user?: Employee;
-}
-
-export interface ChangeRequestDocument {
-  id: string;
-  change_request_id: string;
-  document_type: 'marriage_certificate' | 'divorce_judgment' | 'death_certificate' | 'birth_certificate' | 'disability_certificate' | 'school_enrollment_certificate';
-  file_path: string;
-  uploaded_at: string;
-  verified_by_hr: boolean;
-  verified_by: number | null;
-  verification_notes: string | null;
-}
-
 export interface FiscalProfileGroup {
   id: string;
   gender: 'male' | 'female';
@@ -48,7 +17,6 @@ export interface EmployeeFiscalProfileAssignment {
   fiscal_profile_group_id: string;
   effective_from: string;
   effective_to: string | null;
-  source_change_request_id: string | null;
   assigned_by: number;
   assigned_at: string;
   fiscal_profile_group?: FiscalProfileGroup;
@@ -72,37 +40,8 @@ export interface Employee {
   email: string;
 }
 
-// Personal Info Change Requests
+// Fiscal Profile API
 export const fiscalProfileApi = {
-  // Change Requests
-  submitChangeRequest: (data: {
-    requested_marital_status?: string;
-    requested_children_count?: number;
-    requested_disabled_children_count?: number;
-    requested_student_children_count?: number;
-    claimed_effective_date: string;
-    documents: { type: string; path: string }[];
-  }) => 
-    apiClient.post<PersonalInfoChangeRequest>('/payroll/fiscal-profile/change-requests', data),
-
-  getChangeRequests: (params?: { status?: string; page?: number; per_page?: number }) =>
-    apiClient.get('/payroll/fiscal-profile/change-requests', { params }),
-
-  getChangeRequest: (id: string) =>
-    apiClient.get<PersonalInfoChangeRequest>(`/payroll/fiscal-profile/change-requests/${id}`),
-
-  approveChangeRequest: (id: string) =>
-    apiClient.post(`/payroll/fiscal-profile/change-requests/${id}/approve`),
-
-  rejectChangeRequest: (id: string, notes: string) =>
-    apiClient.post(`/payroll/fiscal-profile/change-requests/${id}/reject`, { notes }),
-
-  uploadDocument: (requestId: string, type: string, path: string) =>
-    apiClient.post(`/payroll/fiscal-profile/change-requests/${requestId}/documents`, { type, path }),
-
-  verifyDocument: (requestId: string, docId: string, verified: boolean, notes?: string) =>
-    apiClient.patch(`/payroll/fiscal-profile/change-requests/${requestId}/documents/${docId}/verify`, { verified, notes }),
-
   // Fiscal Profile Groups
   getFiscalProfileGroups: () =>
     apiClient.get<FiscalProfileGroup[]>('/payroll/fiscal-profile/groups'),

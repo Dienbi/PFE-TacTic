@@ -14,16 +14,14 @@ return new class extends Migration
         Schema::create('change_request_documents', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('change_request_id');
+            $table->foreign('change_request_id')->references('id')->on('personal_info_change_requests')->onDelete('cascade');
             $table->enum('document_type', ['marriage_certificate', 'divorce_judgment', 'death_certificate', 'birth_certificate', 'disability_certificate', 'school_enrollment_certificate']);
             $table->text('file_path');
-            $table->timestamp('uploaded_at');
+            $table->timestamp('uploaded_at')->useCurrent();
             $table->boolean('verified_by_hr')->default(false);
-            $table->unsignedBigInteger('verified_by')->nullable();
+            $table->foreignId('verified_by')->nullable()->constrained('utilisateurs');
             $table->text('verification_notes')->nullable();
             $table->timestamps();
-
-            $table->foreign('change_request_id')->references('id')->on('personal_info_change_requests')->onDelete('cascade');
-            $table->foreign('verified_by')->references('id')->on('utilisateurs')->onDelete('set null');
         });
     }
 

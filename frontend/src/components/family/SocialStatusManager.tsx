@@ -305,9 +305,22 @@ const SocialStatusManager: React.FC<SocialStatusManagerProps> = ({ currentStatus
                     {new Date(record.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                {record.verified && (
-                  <span style={{ color: '#059669', fontSize: '0.75rem' }}>✓ Verified</span>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                  {record.status === 'pending' && (
+                    <span style={{ color: '#D97706', fontSize: '0.75rem', fontWeight: '500' }}>⏳ Pending Verification</span>
+                  )}
+                  {record.status === 'verified' && (
+                    <span style={{ color: '#059669', fontSize: '0.75rem', fontWeight: '500' }}>✓ Verified</span>
+                  )}
+                  {record.status === 'rejected' && (
+                    <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: '500' }}>✕ Rejected</span>
+                  )}
+                  {record.rejection_reason && (
+                    <span style={{ color: '#6B7280', fontSize: '0.7rem', maxWidth: '150px', textAlign: 'right' }}>
+                      {record.rejection_reason}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

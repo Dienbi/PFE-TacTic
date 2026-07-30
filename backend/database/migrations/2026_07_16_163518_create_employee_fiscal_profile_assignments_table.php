@@ -24,7 +24,8 @@ return new class extends Migration
 
             $table->foreign('employee_id')->references('id')->on('utilisateurs')->onDelete('cascade');
             $table->foreign('fiscal_profile_group_id')->references('id')->on('fiscal_profile_groups')->onDelete('cascade');
-            $table->foreign('source_change_request_id')->references('id')->on('personal_info_change_requests')->onDelete('set null');
+            // Foreign key for source_change_request_id will be added in a later migration
+            // after personal_info_change_requests table is created
             $table->foreign('assigned_by')->references('id')->on('utilisateurs')->onDelete('cascade');
             $table->index(['employee_id', 'effective_from', 'effective_to'], 'employee_effective_date_index');
         });

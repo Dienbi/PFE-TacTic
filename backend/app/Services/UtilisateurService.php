@@ -50,13 +50,109 @@ class UtilisateurService
         }
 
         $user = $this->utilisateurRepository->findOrFail($id);
+        
+        // Check if fiscal profile-related fields are changing
+        $fiscalFieldsChanged = $this->checkFiscalFieldsChanged($user, $data);
+        
+        // Check if fiscal fields are being updated directly (HR bypassing change request)
+        $directFiscalUpdate = isset($data['marital_status']) || isset($data['children_count']) || 
+                             isset($data['disabled_children_count']) || isset($data['student_non_scholarship_children_count']);
+        
+        // If fiscal fields are changing, create change request instead of updating data
+        if ($fiscalFieldsChanged['hasChanges']) {
+            $this->autoCreateChangeRequest($user, $fiscalFieldsChanged);
+            
+            // Remove fiscal fields from data update
+            unset($data['marital_status'], $data['children_count'], 
+                  $data['disabled_children_count'], $data['student_non_scholarship_children_count']);
+        }
+        
         $result = $this->utilisateurRepository->update($id, $data);
 
         if ($result) {
             ActivityLogger::log('USER_UPDATED', "Updated user: {$user->prenom} {$user->nom}");
+            
+            // If fiscal fields were updated directly (HR bypassing change request), reassign profile
+            if ($directFiscalUpdate) {
+                $this->reassignFiscalProfile($id);
+            }
         }
 
         return $result;
+    }
+    
+    private function reassignFiscalProfile(int $userId): void
+    {
+        try {
+            $user = $this->utilisateurRepository->findOrFail($userId);
+            $assignmentService = app(\App\Services\FiscalProfile\FiscalProfileAssignmentService::class);
+            
+            $groupAttributes = [
+                'gender' => $user->gender,
+                'marital_status' => $user->marital_status,
+                'children_count' => $user->children_count,
+                'disabled_children_count' => $user->disabled_children_count ?? 0,
+                'student_non_scholarship_children_count' => $user->student_non_scholarship_children_count ?? 0,
+            ];
+            
+            $assignmentService->assignProfile(
+                (string) $userId,
+                $groupAttributes,
+                date('Y-m-d'),
+                1 // System user ID
+            );
+            
+            ActivityLogger::log('FISCAL_PROFILE_REASSIGNED', "Auto-reassigned fiscal profile for user: {$user->prenom} {$user->nom}");
+        } catch (\Exception $e) {
+            // Log but don't fail the update
+            ActivityLogger::log('FISCAL_REASSIGNMENT_FAILED', "Failed to reassign fiscal profile: {$e->getMessage()}");
+        }
+    }
+    
+    private function checkFiscalFieldsChanged(Utilisateur $user, array $data): array
+    {
+        $changes = [];
+        $hasChanges = false;
+        
+        if (isset($data['marital_status']) && $data['marital_status'] !== $user->marital_status) {
+            $changes['requested_marital_status'] = $data['marital_status'];
+            $hasChanges = true;
+        }
+        
+        if (isset($data['children_count']) && $data['children_count'] !== $user->children_count) {
+            $changes['requested_children_count'] = $data['children_count'];
+            $hasChanges = true;
+        }
+        
+        if (isset($data['disabled_children_count']) && $data['disabled_children_count'] !== ($user->disabled_children_count ?? 0)) {
+            $changes['requested_disabled_children_count'] = $data['disabled_children_count'];
+            $hasChanges = true;
+        }
+        
+        if (isset($data['student_non_scholarship_children_count']) && $data['student_non_scholarship_children_count'] !== ($user->student_non_scholarship_children_count ?? 0)) {
+            $changes['requested_student_children_count'] = $data['student_non_scholarship_children_count'];
+            $hasChanges = true;
+        }
+        
+        return ['hasChanges' => $hasChanges, 'changes' => $changes];
+    }
+    
+    private function autoCreateChangeRequest(Utilisateur $user, array $fiscalFields): void
+    {
+        try {
+            $service = app(\App\Services\FiscalProfile\PersonalInfoChangeRequestService::class);
+            
+            $requestData = array_merge($fiscalFields['changes'], [
+                'claimed_effective_date' => date('Y-m-d'),
+            ]);
+            
+            $service->submitRequest($user->id, $requestData);
+            
+            ActivityLogger::log('FISCAL_CHANGE_REQUEST_CREATED', "Auto-created change request for user: {$user->prenom} {$user->nom}");
+        } catch (\Exception $e) {
+            // Log but don't fail the update
+            ActivityLogger::log('FISCAL_CHANGE_REQUEST_FAILED', "Failed to auto-create change request: {$e->getMessage()}");
+        }
     }
 
     public function delete(int $id): bool

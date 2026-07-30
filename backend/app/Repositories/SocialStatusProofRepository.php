@@ -28,8 +28,17 @@ class SocialStatusProofRepository extends BaseRepository implements SocialStatus
     public function verifyProof(int $proofId): bool
     {
         return $this->update($proofId, [
+            'status' => 'verified',
             'verified' => true,
             'verified_at' => now(),
+        ]);
+    }
+
+    public function rejectProof(int $proofId, string $reason): bool
+    {
+        return $this->update($proofId, [
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
         ]);
     }
 
@@ -38,5 +47,21 @@ class SocialStatusProofRepository extends BaseRepository implements SocialStatus
         return $this->model->where('utilisateur_id', $utilisateurId)
             ->orderBy('created_at', 'desc')
             ->first();
+    }
+
+    public function getLatestVerifiedByUtilisateur(int $utilisateurId): ?SocialStatusProof
+    {
+        return $this->model->where('utilisateur_id', $utilisateurId)
+            ->where('status', 'verified')
+            ->orderBy('verified_at', 'desc')
+            ->first();
+    }
+
+    public function getPendingForAllUsers(): Collection
+    {
+        return $this->model->where('status', 'pending')
+            ->with('utilisateur:id,nom,prenom,email,matricule')
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }

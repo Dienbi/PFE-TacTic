@@ -31,15 +31,13 @@ class FiscalProfileAssignmentService
      * @param array $groupAttributes
      * @param string $effectiveFrom
      * @param string $assignedBy
-     * @param string|null $sourceChangeRequestId
      * @return EmployeeFiscalProfileAssignment
      */
     public function assignProfile(
         string $employeeId,
         array $groupAttributes,
         string $effectiveFrom,
-        string $assignedBy,
-        ?string $sourceChangeRequestId = null
+        string $assignedBy
     ): EmployeeFiscalProfileAssignment {
         // Find or create the fiscal profile group
         $group = $this->groupService->findOrCreate($groupAttributes);
@@ -56,7 +54,6 @@ class FiscalProfileAssignmentService
                 'fiscal_profile_group_id' => $group->id,
                 'effective_from' => $effectiveFrom,
                 'effective_to' => null,
-                'source_change_request_id' => $sourceChangeRequestId,
                 'assigned_by' => $assignedBy,
                 'assigned_at' => now(),
             ]);
@@ -71,7 +68,7 @@ class FiscalProfileAssignmentService
 
     /**
      * Close the previous assignment for an employee.
-     * Sets effective_to to the day before the new effective date.
+     * Sets effective_to to the day before the new effective date, or same day if same day.
      *
      * @param string $employeeId
      * @param string $newEffectiveFrom
@@ -84,9 +81,20 @@ class FiscalProfileAssignmentService
             ->first();
         
         if ($previousAssignment) {
-            $previousAssignment->update([
-                'effective_to' => \Carbon\Carbon::parse($newEffectiveFrom)->subDay()->toDateString(),
-            ]);
+            $newEffectiveDate = \Carbon\Carbon::parse($newEffectiveFrom);
+            $previousEffectiveDate = \Carbon\Carbon::parse($previousAssignment->effective_from);
+            
+            // If same day, set effective_to to same day (end of day)
+            if ($newEffectiveDate->isSameDay($previousEffectiveDate)) {
+                $previousAssignment->update([
+                    'effective_to' => $newEffectiveDate->toDateString(),
+                ]);
+            } else {
+                // Otherwise set to day before
+                $previousAssignment->update([
+                    'effective_to' => $newEffectiveDate->subDay()->toDateString(),
+                ]);
+            }
         }
     }
 
@@ -132,7 +140,7 @@ class FiscalProfileAssignmentService
     public function getEmployeeHistory(string $employeeId)
     {
         return EmployeeFiscalProfileAssignment::forEmployee($employeeId)
-            ->with(['fiscalProfileGroup', 'assignedBy', 'sourceChangeRequest'])
+            ->with(['fiscalProfileGroup', 'assignedBy'])
             ->orderBy('effective_from', 'desc')
             ->get();
     }
@@ -170,8 +178,7 @@ class FiscalProfileAssignmentService
                     $employeeId,
                     $groupAttributes,
                     $effectiveFrom,
-                    $assignedBy,
-                    null // No source change request for bulk assignments
+                    $assignedBy
                 );
                 $assignmentIds[] = $assignment->id;
             }

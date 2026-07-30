@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('audit_log', function (Blueprint $table) {
+        Schema::table('audit_logs', function (Blueprint $table) {
             $table->uuid('source_ai_chat_message_id')->nullable()->after('details_json');
             $table->foreign('source_ai_chat_message_id')->references('id')->on('ai_chat_messages')->onDelete('set null');
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('audit_log', function (Blueprint $table) {
+        Schema::table('audit_logs', function (Blueprint $table) {
             $table->dropForeign(['source_ai_chat_message_id']);
             $table->dropColumn('source_ai_chat_message_id');
         });

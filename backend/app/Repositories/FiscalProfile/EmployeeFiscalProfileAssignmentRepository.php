@@ -15,7 +15,6 @@ class EmployeeFiscalProfileAssignmentRepository
             'fiscal_profile_group_id' => $data['fiscal_profile_group_id'],
             'effective_from' => $data['effective_from'],
             'effective_to' => $data['effective_to'] ?? null,
-            'source_change_request_id' => $data['source_change_request_id'] ?? null,
             'assigned_by' => $data['assigned_by'],
             'assigned_at' => $data['assigned_at'] ?? now(),
         ]);
@@ -23,13 +22,13 @@ class EmployeeFiscalProfileAssignmentRepository
 
     public function findById(string $id): ?EmployeeFiscalProfileAssignment
     {
-        return EmployeeFiscalProfileAssignment::with(['employee', 'fiscalProfileGroup', 'assignedBy', 'sourceChangeRequest'])->find($id);
+        return EmployeeFiscalProfileAssignment::with(['employee', 'fiscalProfileGroup', 'assignedBy'])->find($id);
     }
 
     public function findByEmployee(int $employeeId): \Illuminate\Database\Eloquent\Collection
     {
         return EmployeeFiscalProfileAssignment::where('employee_id', $employeeId)
-            ->with(['fiscalProfileGroup', 'assignedBy', 'sourceChangeRequest'])
+            ->with(['fiscalProfileGroup', 'assignedBy'])
             ->orderBy('effective_from', 'desc')
             ->get();
     }

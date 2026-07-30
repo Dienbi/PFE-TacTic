@@ -95,11 +95,6 @@ export const EmployeeFiscalProfile: React.FC<EmployeeFiscalProfileProps> = ({ em
                         {assignment.effective_to && ` - ${new Date(assignment.effective_to).toLocaleDateString()}`}
                       </p>
                     </div>
-                    {assignment.source_change_request_id && (
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        Via Request
-                      </span>
-                    )}
                   </div>
                 </div>
               ))}

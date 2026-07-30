@@ -27,8 +27,9 @@ use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\PosteController;
 use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\SocialStatusController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PersonalInfoChangeRequestController;
 use App\Http\Controllers\Api\UtilisateurController;
-use App\Http\Controllers\Api\FiscalProfile\PersonalInfoChangeRequestController;
 use App\Http\Controllers\Api\FiscalProfile\FiscalProfileGroupController;
 use App\Http\Controllers\Api\FiscalProfile\EmployeeFiscalProfileAssignmentController;
 use App\Http\Controllers\Api\FiscalProfile\HeadOfFamilyOverrideController;
@@ -108,13 +109,51 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('/', [ChildController::class, 'store']);
         Route::put('/{id}', [ChildController::class, 'update'])->where('id', '[0-9]+');
         Route::delete('/{id}', [ChildController::class, 'destroy'])->where('id', '[0-9]+');
+        
+        // HR only routes
+        Route::middleware('role:rh')->group(function () {
+            Route::post('/{id}/verify', [ChildController::class, 'verify'])->where('id', '[0-9]+');
+            Route::post('/{id}/reject', [ChildController::class, 'reject'])->where('id', '[0-9]+');
+            Route::get('/hr/pending', [ChildController::class, 'indexForHR']);
+        });
     });
 
     // Social status routes (accessible by all authenticated users)
     Route::prefix('social-status')->group(function () {
         Route::get('/', [SocialStatusController::class, 'index']);
         Route::post('/', [SocialStatusController::class, 'store']);
-        Route::post('/{id}/verify', [SocialStatusController::class, 'verify'])->where('id', '[0-9]+')->middleware('role:rh');
+        
+        // HR only routes
+        Route::middleware('role:rh')->group(function () {
+            Route::post('/{id}/verify', [SocialStatusController::class, 'verify'])->where('id', '[0-9]+');
+            Route::post('/{id}/reject', [SocialStatusController::class, 'reject'])->where('id', '[0-9]+');
+            Route::get('/hr/pending', [SocialStatusController::class, 'indexForHR']);
+        });
+    });
+
+    // Personal info change request routes (accessible by all authenticated users)
+    Route::prefix('change-requests')->group(function () {
+        Route::get('/', [PersonalInfoChangeRequestController::class, 'index']);
+        Route::post('/', [PersonalInfoChangeRequestController::class, 'store']);
+        Route::get('/{id}', [PersonalInfoChangeRequestController::class, 'show'])->where('id', '[0-9a-f-]+');
+        Route::post('/{id}/documents', [PersonalInfoChangeRequestController::class, 'uploadDocument'])->where('id', '[0-9a-f-]+');
+        
+        // HR only routes
+        Route::middleware('role:rh')->group(function () {
+            Route::get('/hr', [PersonalInfoChangeRequestController::class, 'indexForHR']);
+            Route::post('/documents/{documentId}/verify', [PersonalInfoChangeRequestController::class, 'verifyDocument'])->where('documentId', '[0-9a-f-]+');
+            Route::post('/{id}/approve', [PersonalInfoChangeRequestController::class, 'approve'])->where('id', '[0-9a-f-]+');
+            Route::post('/{id}/reject', [PersonalInfoChangeRequestController::class, 'reject'])->where('id', '[0-9a-f-]+');
+            Route::post('/{id}/request-more-info', [PersonalInfoChangeRequestController::class, 'requestMoreInfo'])->where('id', '[0-9a-f-]+');
+        });
+    });
+
+    // Notification routes (accessible by all authenticated users)
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread', [NotificationController::class, 'unread']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->where('id', '[0-9]+');
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
     });
 
     // Dashboard routes (RH only)
@@ -143,6 +182,9 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/search', [UtilisateurController::class, 'search']);
         Route::get('/disponibles', [UtilisateurController::class, 'disponibles']);
         Route::get('/role/{role}', [UtilisateurController::class, 'byRole']);
+
+        // Social info route (accessible by all authenticated users - RH and managers can view team info)
+        Route::get('/{id}/social-info', [UtilisateurController::class, 'getSocialInfo']);
 
         // RH only routes (must be before /{id} to avoid conflict)
         Route::middleware('role:rh')->group(function () {
@@ -511,17 +553,6 @@ Route::middleware('jwt.auth')->group(function () {
 
         // ─── Fiscal Profile Module ─────────────────────────────────
         Route::prefix('fiscal-profile')->group(function () {
-            // Change Requests
-            Route::prefix('change-requests')->group(function () {
-                Route::get('/', [PersonalInfoChangeRequestController::class, 'index']);
-                Route::post('/', [PersonalInfoChangeRequestController::class, 'submit']);
-                Route::get('/{id}', [PersonalInfoChangeRequestController::class, 'show'])->where('id', '[0-9a-f-]+');
-                Route::post('/{id}/documents', [PersonalInfoChangeRequestController::class, 'uploadDocument'])->where('id', '[0-9a-f-]+');
-                Route::patch('/{id}/documents/{docId}/verify', [PersonalInfoChangeRequestController::class, 'verifyDocument'])->where('id', '[0-9a-f-]+')->where('docId', '[0-9a-f-]+');
-                Route::post('/{id}/approve', [PersonalInfoChangeRequestController::class, 'approve'])->where('id', '[0-9a-f-]+');
-                Route::post('/{id}/reject', [PersonalInfoChangeRequestController::class, 'reject'])->where('id', '[0-9a-f-]+');
-            });
-
             // Fiscal Profile Groups
             Route::prefix('groups')->group(function () {
                 Route::get('/', [FiscalProfileGroupController::class, 'index']);

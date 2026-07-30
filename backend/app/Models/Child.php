@@ -16,10 +16,19 @@ class Child extends Model
         'date_naissance',
         'status',
         'document_path',
+        'verified',
+        'verified_at',
+        'rejected',
+        'rejected_at',
+        'rejection_reason',
     ];
 
     protected $casts = [
         'date_naissance' => 'date',
+        'verified' => 'boolean',
+        'verified_at' => 'datetime',
+        'rejected' => 'boolean',
+        'rejected_at' => 'datetime',
     ];
 
     public function utilisateur()

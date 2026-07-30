@@ -34,4 +34,40 @@ class ChildRepository extends BaseRepository implements ChildRepositoryInterface
     {
         return $this->delete($childId);
     }
+
+    public function verifyChild(int $childId): bool
+    {
+        return $this->update($childId, [
+            'verified' => true,
+            'verified_at' => now(),
+            'rejected' => false,
+        ]);
+    }
+
+    public function rejectChild(int $childId, string $reason): bool
+    {
+        return $this->update($childId, [
+            'rejected' => true,
+            'rejected_at' => now(),
+            'rejection_reason' => $reason,
+        ]);
+    }
+
+    public function getPendingForAllUsers(): Collection
+    {
+        return $this->model->where('verified', false)
+            ->where('rejected', false)
+            ->with('utilisateur:id,nom,prenom,email,matricule')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getVerifiedCountByStatus(int $utilisateurId, string $status): int
+    {
+        return $this->model->where('utilisateur_id', $utilisateurId)
+            ->where('verified', true)
+            ->where('rejected', false)
+            ->where('status', $status)
+            ->count();
+    }
 }

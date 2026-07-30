@@ -6,6 +6,37 @@ from datetime import datetime
 
 router = APIRouter()
 
+# Word-to-number mapping for natural language processing
+WORD_TO_NUMBER = {
+    'zero': 0, 'no': 0, 'none': 0,
+    'one': 1, 'a': 1, 'an': 1, 'single': 1,
+    'two': 2, 'couple': 2,
+    'three': 3,
+    'four': 4,
+    'five': 5,
+    'six': 6,
+    'seven': 7,
+    'eight': 8,
+    'nine': 9,
+    'ten': 10
+}
+
+def extract_number_from_text(text: str) -> int:
+    """Extract a number from text, handling both digits and number words."""
+    import re
+    
+    # First try to find a digit
+    digit_match = re.search(r'\d+', text)
+    if digit_match:
+        return int(digit_match.group(0))
+    
+    # Then try to find number words
+    for word, number in WORD_TO_NUMBER.items():
+        if re.search(r'\b' + word + r'\b', text.lower()):
+            return number
+    
+    return 0
+
 # Pydantic models for request/response
 class ChatMessage(BaseModel):
     role: str
@@ -160,34 +191,61 @@ def extract_group_params(message: str) -> Dict[str, Any]:
     else:
         # Extract attributes for create operations
         print(f"DEBUG: Extraction for create operation, message: {message_lower}")
-        if "female" in message_lower:
+        
+        # Gender extraction - more comprehensive HR language
+        if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
             params["gender"] = "female"
             print(f"DEBUG: Extracted gender=female")
-        elif "male" in message_lower:
+        elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
             params["gender"] = "male"
             print(f"DEBUG: Extracted gender=male")
         else:
             params["gender"] = "male"  # default
             print(f"DEBUG: Using default gender=male")
         
+        # Marital status extraction - more comprehensive HR language
         if "married" in message_lower:
             params["marital_status"] = "married"
-        elif "single" in message_lower:
+        elif "single" in message_lower or "unmarried" in message_lower or "never married" in message_lower:
             params["marital_status"] = "single"
-        elif "divorced" in message_lower:
+        elif "divorced" in message_lower or "separated" in message_lower:
             params["marital_status"] = "divorced"
-        elif "widowed" in message_lower:
+        elif "widowed" in message_lower or "widow" in message_lower or "widower" in message_lower:
             params["marital_status"] = "widowed"
         else:
             params["marital_status"] = "single"  # default
         
-        # Extract children count
+        # Extract children count - more comprehensive patterns for HR language
         import re
-        children_match = re.search(r'(\d+)\s*children?', message_lower)
+        print(f"DEBUG: Extracting children from: {message_lower}")
+        
+        # Pattern 1: "with X child/children" or "has X child/children"
+        children_match = re.search(r'(?:with|has|and)\s+(\d+|\w+)\s*child(?:ren)?', message_lower)
+        print(f"DEBUG: Pattern 1 match: {children_match}")
+        if not children_match:
+            # Pattern 2: "X child/children" at end or followed by other keywords
+            children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?(?:\s*(?:and|for|who|which|$))', message_lower)
+            print(f"DEBUG: Pattern 2 match: {children_match}")
+        if not children_match:
+            # Pattern 3: standalone number followed by child/children
+            children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?', message_lower)
+            print(f"DEBUG: Pattern 3 match: {children_match}")
+        
         if children_match:
-            params["children_count"] = int(children_match.group(1))
+            matched_text = children_match.group(1)
+            print(f"DEBUG: Matched text: {matched_text}")
+            # Use the new extract_number_from_text function to handle both digits and words
+            extracted_number = extract_number_from_text(matched_text)
+            print(f"DEBUG: Extracted number: {extracted_number}")
+            params["children_count"] = extracted_number
         else:
-            params["children_count"] = 0
+            # Check for "no children" or "without children"
+            if re.search(r'no\s+children|without\s+children|zero\s+children', message_lower):
+                params["children_count"] = 0
+                print(f"DEBUG: No children detected")
+            else:
+                params["children_count"] = 0
+                print(f"DEBUG: No children match found, defaulting to 0")
     
     print(f"DEBUG: Extracted group params: {params}")
     return params
@@ -199,29 +257,42 @@ def extract_employee_criteria(message: str) -> Dict[str, Any]:
     
     print(f"DEBUG: Extracting criteria from message: {message}")
     
-    # Check for female first to avoid "female" matching "male" substring
-    if "female" in message_lower:
+    # Gender extraction - more comprehensive HR language
+    if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
         criteria["gender"] = "female"
         print(f"DEBUG: Found gender=female")
-    elif "male" in message_lower:
+    elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
         criteria["gender"] = "male"
         print(f"DEBUG: Found gender=male")
     
+    # Marital status extraction - more comprehensive HR language
     if "married" in message_lower:
         criteria["marital_status"] = "married"
-    elif "single" in message_lower:
+    elif "single" in message_lower or "unmarried" in message_lower or "never married" in message_lower:
         criteria["marital_status"] = "single"
-    elif "divorced" in message_lower:
+    elif "divorced" in message_lower or "separated" in message_lower:
         criteria["marital_status"] = "divorced"
-    elif "widowed" in message_lower:
+    elif "widowed" in message_lower or "widow" in message_lower or "widower" in message_lower:
         criteria["marital_status"] = "widowed"
     
     import re
-    children_match = re.search(r'(\d+)\s*children?', message_lower)
+    # Pattern 1: "with X child/children" or "has X child/children"
+    children_match = re.search(r'(?:with|has|and)\s+(\d+|\w+)\s*child(?:ren)?', message_lower)
+    if not children_match:
+        # Pattern 2: "X child/children" at end or followed by other keywords
+        children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?(?:\s*(?:and|for|who|which|$))', message_lower)
+    if not children_match:
+        # Pattern 3: standalone number followed by child/children
+        children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?', message_lower)
+    
     if children_match:
-        criteria["children_count"] = int(children_match.group(1))
+        # Use the new extract_number_from_text function to handle both digits and words
+        criteria["children_count"] = extract_number_from_text(children_match.group(1))
     
     if "without" in message_lower and "children" in message_lower:
+        criteria["children_count"] = 0
+    # Check for "no children" or "zero children"
+    if re.search(r'no\s+children|zero\s+children', message_lower):
         criteria["children_count"] = 0
     
     print(f"DEBUG: Extracted criteria: {criteria}")
@@ -263,25 +334,40 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
             group_label = re.sub(r'\s+(to|for|employee|effective|from)\s*$', '', group_label, flags=re.IGNORECASE)
             params["group_label"] = group_label
     
-    # Extract fiscal profile attributes (gender, marital_status, children_count)
-    if "female" in message_lower:
+    # Extract fiscal profile attributes (gender, marital_status, children_count) - more comprehensive HR language
+    # Gender extraction
+    if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
         params["gender"] = "female"
-    elif "male" in message_lower:
+    elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
         params["gender"] = "male"
     
+    # Marital status extraction
     if "married" in message_lower:
         params["marital_status"] = "married"
-    elif "single" in message_lower:
+    elif "single" in message_lower or "unmarried" in message_lower or "never married" in message_lower:
         params["marital_status"] = "single"
-    elif "divorced" in message_lower:
+    elif "divorced" in message_lower or "separated" in message_lower:
         params["marital_status"] = "divorced"
-    elif "widowed" in message_lower:
+    elif "widowed" in message_lower or "widow" in message_lower or "widower" in message_lower:
         params["marital_status"] = "widowed"
     
-    # Extract children count
-    children_match = re.search(r'(\d+)\s+children?', message_lower)
+    # Extract children count - more comprehensive patterns for HR language
+    # Pattern 1: "with X child/children" or "has X child/children"
+    children_match = re.search(r'(?:with|has|and)\s+(\d+|\w+)\s*child(?:ren)?', message_lower)
+    if not children_match:
+        # Pattern 2: "X child/children" at end or followed by other keywords
+        children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?(?:\s*(?:and|for|who|which|$))', message_lower)
+    if not children_match:
+        # Pattern 3: standalone number followed by child/children
+        children_match = re.search(r'(\d+|\w+)\s+child(?:ren)?', message_lower)
+    
     if children_match:
-        params["children_count"] = int(children_match.group(1))
+        # Use the new extract_number_from_text function to handle both digits and words
+        params["children_count"] = extract_number_from_text(children_match.group(1))
+    
+    # Check for "no children" or "zero children"
+    if re.search(r'no\s+children|without\s+children|zero\s+children', message_lower):
+        params["children_count"] = 0
     
     # Extract effective date
     date_match = re.search(r'effective\s+(?:from\s+)?(\d{4}-\d{2}-\d{2})', message_lower)
@@ -688,7 +774,7 @@ def handle_general_query(session_id: Optional[str]) -> ChatResponse:
         session_id=session_id or "new",
         ai_message=ChatMessage(
             role="ai",
-            content="I can help you with fiscal profile management. Here are some things you can ask:\n\n- \"Create a fiscal profile group for married males with 2 children\"\n- \"Find all single employees without children\"\n- \"Assign fiscal profile X to employees Y and Z\"\n\nWhat would you like to do?"
+            content="I'm here to help you manage fiscal profiles for your employees. You can ask me to:\n\n• **Create profile groups**: \"Create a fiscal group for married men with 1 child\" or \"Make a profile for single women without kids\"\n• **Find employees**: \"Find all divorced employees\" or \"Show me married men with 2 children\"\n• **Assign profiles**: \"Assign the married profile to John Doe\" or \"Bulk assign single female profile to matching employees\"\n• **Edit/Delete**: \"Update the married profile to have 3 children\" or \"Delete the single male profile\"\n\nI understand natural language - just describe what you need in your own words!"
         )
     )
 

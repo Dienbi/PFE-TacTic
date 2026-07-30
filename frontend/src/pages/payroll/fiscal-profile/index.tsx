@@ -2,25 +2,21 @@ import React, { useState } from 'react';
 import Sidebar from '../../../shared/components/Sidebar';
 import Navbar from '../../../shared/components/Navbar';
 import { useAuth } from '../../../hooks/useAuth';
-import { ChangeRequestForm } from '../../../components/fiscal-profile/ChangeRequestForm';
-import { ChangeRequestReview } from '../../../components/fiscal-profile/ChangeRequestReview';
 import { FiscalProfileGroups } from '../../../components/fiscal-profile/FiscalProfileGroups';
 import { AiChatbot } from '../../../components/fiscal-profile/AiChatbot';
 import Button from '../../../shared/components/ui/Button';
 import PayrollGuideButton from '../../../guide/PayrollGuideButton';
-import { FileText, Layers, Bot, Plus } from 'lucide-react';
+import { Layers, Bot } from 'lucide-react';
 
 const NAVY = '#1E2258';
 
-type ProfileTab = 'requests' | 'groups' | 'chatbot';
+type ProfileTab = 'groups' | 'chatbot';
 
 export default function FiscalProfilePage() {
   const { user, displayName } = useAuth();
-  const [activeTab, setActiveTab] = useState<ProfileTab>('requests');
-  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('groups');
 
   const tabItems: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'requests', label: 'Change Requests', icon: <FileText className="w-4 h-4" /> },
     { id: 'groups', label: 'Fiscal Profile Groups', icon: <Layers className="w-4 h-4" /> },
     { id: 'chatbot', label: 'AI Assistant', icon: <Bot className="w-4 h-4" /> },
   ];
@@ -36,21 +32,11 @@ export default function FiscalProfilePage() {
             <div className="flex flex-col items-start text-left">
               <h1 className="text-2xl font-semibold text-gray-900 text-left">Fiscal Profile Management</h1>
               <p className="text-sm text-gray-600 mt-1 text-left">
-                Manage employee fiscal profiles, change requests, and AI-assisted operations
+                Manage employee fiscal profiles and AI-assisted operations
               </p>
             </div>
             <div className="flex items-center gap-3">
               <PayrollGuideButton />
-              <Button
-                onClick={() => {
-                  setActiveTab('requests');
-                  setShowRequestForm(true);
-                }}
-                leftIcon={<Plus className="w-4 h-4" />}
-                className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
-              >
-                Submit Change Request
-              </Button>
             </div>
           </div>
 
@@ -80,31 +66,6 @@ export default function FiscalProfilePage() {
           </div>
 
           {/* Tab Content */}
-          {activeTab === 'requests' && (
-            <div className="space-y-4">
-              {showRequestForm && (
-                <ChangeRequestForm
-                  onSuccess={() => setShowRequestForm(false)}
-                  onCancel={() => setShowRequestForm(false)}
-                />
-              )}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-left" style={{ color: NAVY }}>
-                    Pending Requests
-                  </h3>
-                  <ChangeRequestReview status="pending" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-left" style={{ color: NAVY }}>
-                    Approved Requests
-                  </h3>
-                  <ChangeRequestReview status="approved" />
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'groups' && <FiscalProfileGroups />}
 
           {activeTab === 'chatbot' && (

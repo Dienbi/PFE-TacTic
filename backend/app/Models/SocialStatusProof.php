@@ -15,6 +15,8 @@ class SocialStatusProof extends Model
         'document_path',
         'verified',
         'verified_at',
+        'status',
+        'rejection_reason',
     ];
 
     protected $casts = [

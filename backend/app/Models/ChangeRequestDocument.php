@@ -24,8 +24,8 @@ class ChangeRequestDocument extends Model
     ];
 
     protected $casts = [
-        'uploaded_at' => 'datetime',
         'verified_by_hr' => 'boolean',
+        'uploaded_at' => 'datetime',
     ];
 
     public function changeRequest()

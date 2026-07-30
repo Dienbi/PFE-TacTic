@@ -6,6 +6,8 @@ use App\Enums\EmployeStatus;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UtilisateurRequest;
+use App\Repositories\ChildRepository;
+use App\Repositories\SocialStatusProofRepository;
 use App\Services\ActivityLogger;
 use App\Services\UtilisateurService;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +17,9 @@ use Illuminate\Support\Facades\Cache;
 class UtilisateurController extends Controller
 {
     public function __construct(
-        protected UtilisateurService $utilisateurService
+        protected UtilisateurService $utilisateurService,
+        protected ChildRepository $childRepository,
+        protected SocialStatusProofRepository $socialStatusProofRepository
     ) {}
 
     /**
@@ -231,6 +235,20 @@ class UtilisateurController extends Controller
 
         return response()->json([
             'message' => 'Compétences mises à jour.',
+        ]);
+    }
+
+    /**
+     * Get social information for a user
+     */
+    public function getSocialInfo(int $id): JsonResponse
+    {
+        $socialStatus = $this->socialStatusProofRepository->getByUtilisateur($id);
+        $children = $this->childRepository->getByUtilisateur($id);
+
+        return response()->json([
+            'social_status' => $socialStatus,
+            'children' => $children,
         ]);
     }
 }

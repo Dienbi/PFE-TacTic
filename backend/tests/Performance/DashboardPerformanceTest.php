@@ -3,11 +3,13 @@
 namespace Tests\Performance;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Feature\Concerns\AuthenticatesApiUsers;
 use Tests\TestCase;
 use Tests\TestHelpers;
 
 class DashboardPerformanceTest extends TestCase
 {
+    use AuthenticatesApiUsers;
     use RefreshDatabase;
     use TestHelpers;
 
@@ -17,8 +19,8 @@ class DashboardPerformanceTest extends TestCase
         $rh = $this->createTestRh();
         $this->actingAsApiUser($rh);
 
-        $this->assertQueryCount(15, function () {
+        $this->assertQueryCount(function () {
             $this->getJson('/api/dashboard/all');
-        });
+        }, 15);
     }
 }

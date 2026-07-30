@@ -3,10 +3,8 @@
 namespace Tests\Integration\Services\Verification;
 
 use App\Models\Child;
-use App\Models\SocialStatusProof;
-use App\Models\Utilisateur;
 use App\Models\FiscalProfileGroup;
-use App\Models\EmployeeFiscalProfileAssignment;
+use App\Models\SocialStatusProof;
 use App\Services\Verification\VerificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

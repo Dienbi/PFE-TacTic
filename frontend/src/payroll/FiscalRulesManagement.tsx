@@ -852,11 +852,36 @@ const FiscalRulesManagement: React.FC = () => {
           <Modal
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
-            title={<span style={{ color: NAVY }}>Create Draft Rule Set</span>}
+            title="Create Rule Set"
             size="lg"
+            footer={
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={createDraft.isPending}
+                  className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
+                  style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
+                >
+                  Create Draft
+                </Button>
+              </div>
+            }
           >
-            <form onSubmit={handleCreateDraft} className="space-y-4">
+            <form onSubmit={handleCreateDraft} className="space-y-4 rounded-lg">
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    placeholder="e.g., 2024 Fiscal Rules"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                   <input
@@ -985,19 +1010,6 @@ const FiscalRulesManagement: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={createDraft.isPending}
-                  variant="ghost"
-                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
-                >
-                  Create Draft
-                </Button>
-              </div>
             </form>
           </Modal>
 
@@ -1005,8 +1017,23 @@ const FiscalRulesManagement: React.FC = () => {
           <Modal
             isOpen={isBracketModalOpen}
             onClose={() => setIsBracketModalOpen(false)}
-            title={<span style={{ color: NAVY }}>Add IRPP Bracket</span>}
+            title="Add IRPP Bracket"
             size="md"
+            footer={
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setIsBracketModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={addIrppBracket.isPending}
+                  className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
+                  style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
+                >
+                  Add Bracket
+                </Button>
+              </div>
+            }
           >
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -1082,19 +1109,6 @@ const FiscalRulesManagement: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="secondary" onClick={() => setIsBracketModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={addIrppBracket.isPending}
-                  variant="ghost"
-                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
-                >
-                  Add Bracket
-                </Button>
-              </div>
             </form>
           </Modal>
 
@@ -1102,8 +1116,23 @@ const FiscalRulesManagement: React.FC = () => {
           <Modal
             isOpen={isDeductionModalOpen}
             onClose={() => setIsDeductionModalOpen(false)}
-            title={<span style={{ color: NAVY }}>Add Family Deduction</span>}
+            title="Add Family Deduction"
             size="md"
+            footer={
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setIsDeductionModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={addFamilyDeduction.isPending}
+                  className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
+                  style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
+                >
+                  Add Deduction
+                </Button>
+              </div>
+            }
           >
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -1139,9 +1168,10 @@ const FiscalRulesManagement: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select type</option>
-                  <option value="spouse">Spouse</option>
-                  <option value="child">Child</option>
-                  <option value="dependent">Dependent</option>
+                  <option value="head_of_household">Head of Household - Primary breadwinner deduction</option>
+                  <option value="child">Child - General child deduction</option>
+                  <option value="disabled_child">Disabled Child - Additional deduction for disabled children</option>
+                  <option value="student_child_non_scholarship">Student Child (Non-Scholarship) - For students not receiving scholarships</option>
                 </select>
               </div>
               <div>
@@ -1152,6 +1182,7 @@ const FiscalRulesManagement: React.FC = () => {
                   required
                   step="0.01"
                   min="0"
+                  placeholder="e.g., 150.00"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -1162,21 +1193,10 @@ const FiscalRulesManagement: React.FC = () => {
                   name="max_count"
                   step="1"
                   min="1"
+                  placeholder="e.g., 3 for children"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="secondary" onClick={() => setIsDeductionModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={addFamilyDeduction.isPending}
-                  variant="ghost"
-                  className="bg-[#1E2258] hover:bg-[#1E2258]/90 border-[#1E2258] text-white"
-                >
-                  Add Deduction
-                </Button>
+                <p className="text-xs text-gray-500 mt-1">Maximum number of dependents this deduction applies to. Leave empty for unlimited.</p>
               </div>
             </form>
           </Modal>

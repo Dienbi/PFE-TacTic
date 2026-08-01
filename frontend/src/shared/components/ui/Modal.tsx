@@ -6,6 +6,7 @@ interface ModalProps {
   onClose: () => void;
   title?: React.ReactNode;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showCloseButton?: boolean;
   headerClassName?: string;
@@ -19,6 +20,7 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
+  footer,
   size = 'md',
   showCloseButton = true,
   headerClassName = '',
@@ -48,7 +50,7 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
@@ -56,7 +58,7 @@ const Modal: React.FC<ModalProps> = ({
       />
       
       {/* Modal */}
-      <div className={`relative bg-white rounded-lg shadow-xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-y-auto ${containerClassName}`}>
+      <div className={`relative bg-white rounded-lg shadow-xl w-full ${sizeStyles[size]} ${footer ? 'max-h-[90vh] flex flex-col' : 'max-h-[90vh] overflow-y-auto'} ${containerClassName}`}>
         {/* Header */}
         {(title || showCloseButton) && (
           <div className={`flex items-center justify-between p-6 border-b border-gray-200 ${headerClassName}`} style={{ backgroundColor: headerBackgroundColor }}>
@@ -75,9 +77,16 @@ const Modal: React.FC<ModalProps> = ({
         )}
         
         {/* Body */}
-        <div className="p-6">
+        <div className={`p-6 ${footer ? 'flex-1 overflow-y-auto' : ''}`}>
           {children}
         </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="p-6 border-t border-gray-200 bg-gray-50">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

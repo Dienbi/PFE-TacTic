@@ -156,6 +156,14 @@ function App() {
               }
             />
             <Route
+              path="/payroll/payslips/:id"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <PayslipGeneration />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/payroll/payments"
               element={
                 <ProtectedRoute allowedRoles={["rh"]}>

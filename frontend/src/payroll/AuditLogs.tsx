@@ -57,20 +57,36 @@ const getEntityName = (log: any): string => {
 
 // ---- Details modal helpers ---------------------------------------------
 
-const humanizeKey = (key: string): string =>
-  key
+const humanizeKey = (key: string): string => {
+  const lowerKey = key.toLowerCase();
+  // Special handling for path fields to show just the entity name
+  if (lowerKey.includes('path') || lowerKey.includes('file')) {
+    return key.replace(/_path$/i, '').replace(/_file$/i, '').replace(/_/g, ' ').replace(/^./, (s) => s.toUpperCase()).trim();
+  }
+  return key
     .replace(/_/g, ' ')
     .replace(/([A-Z])/g, ' $1')
     .replace(/\s+/g, ' ')
     .replace(/^./, (s) => s.toUpperCase())
     .trim();
+};
 
 const ID_KEY = /(^id$|_id$)/i;
 
-const formatValue = (value: unknown): string => {
+const formatValue = (value: unknown, key?: string): string => {
   if (value === null || value === undefined || value === '') return '-';
   if (typeof value === 'object') return JSON.stringify(value, null, 2);
-  return String(value);
+  let strValue = String(value);
+  // Extract filename from path if the key suggests it's a file path
+  if (key && (key.toLowerCase().includes('path') || key.toLowerCase().includes('file'))) {
+    const parts = strValue.split(/[\\/]/);
+    if (parts.length > 1) {
+      strValue = parts[parts.length - 1];
+    }
+  }
+  // Remove any escape sequences (like \2005, \uXXXX) from the filename
+  strValue = strValue.replace(/\\[0-7]{3}|\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}/g, '');
+  return strValue;
 };
 
 /**
@@ -83,7 +99,7 @@ const buildDisplayRows = (details: Record<string, unknown> | null) => {
   if (!details) return [];
 
   const data: Record<string, unknown> = { ...details };
-  const drop = new Set<string>(['id']);
+  const drop = new Set<string>(['id', 'year']);
 
   // Find every "<prefix>_nom" key and merge it with its "<prefix>_prenom" sibling
   const prefixes = new Set<string>();
@@ -113,7 +129,7 @@ const buildDisplayRows = (details: Record<string, unknown> | null) => {
     .map((key) => ({
       key,
       label: humanizeKey(key),
-      value: formatValue(data[key]),
+      value: formatValue(data[key], key),
     }));
 };
 

@@ -91,20 +91,38 @@ const UserSelect: React.FC<UserSelectProps> = ({
     setSearchTerm('');
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (!disabled) {
+      setIsOpen(true);
+    }
+  };
+
   const displayName = selectedUser 
     ? `${selectedUser.prenom} ${selectedUser.nom} (${selectedUser.matricule})`
-    : '';
+    : searchTerm;
 
   return (
     <div className="relative">
-      <div
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-4 py-2 text-left bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      >
-        <span className={selectedUser ? 'text-gray-900' : 'text-gray-500'}>
-          {displayName || placeholder}
-        </span>
-        <div className="flex items-center gap-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <input
+          type="text"
+          value={displayName}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`w-full pl-10 pr-10 py-2 text-left bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${disabled ? 'cursor-not-allowed' : ''}`}
+        />
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
           {selectedUser && (
             <button
               type="button"
@@ -123,20 +141,6 @@ const UserSelect: React.FC<UserSelectProps> = ({
 
       {isOpen && !disabled && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-          <div className="p-2 border-b border-gray-200">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name or matricule..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                autoFocus
-              />
-            </div>
-          </div>
-
           <div className="p-2">
             {loading ? (
               <div className="text-center py-4 text-gray-500">Loading...</div>

@@ -11,7 +11,7 @@
 }
 
 .dashboard-content {
-    padding: 2rem;
+    padding: 2rem 2rem 0 2rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -25,6 +25,7 @@
   align-items: center;
   gap: 16px;
   margin-bottom: 8px;
+  margin-top: 3rem;
 }
 
 .btn-icon-back {
@@ -308,27 +309,43 @@
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .btn-accept {
   background: #10B981;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 80px;
+  transition: all 0.2s;
+}
+
+.btn-accept:hover {
+  background: #059669;
 }
 
 .btn-reject {
   background: white;
-  border: 1px solid #EF4444;
+  border: 2px solid #EF4444;
   color: #EF4444;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 80px;
+  transition: all 0.2s;
+}
+
+.btn-reject:hover {
+  background: #FEF2F2;
+  border-color: #DC2626;
+  color: #DC2626;
 }
 
 .motivation-box {

@@ -44,14 +44,29 @@ class PayslipCorrectionController extends Controller
 
     public function compare(Request $request)
     {
-        $request->validate([
-            'payslip_id_1' => 'required|exists:payslips,id',
-            'payslip_id_2' => 'required|exists:payslips,id',
-        ]);
+        try {
+            $request->validate([
+                'payslip_id_1' => 'required|exists:payslips,id',
+                'payslip_id_2' => 'required|exists:payslips,id',
+            ]);
 
-        $result = $this->service->compareVersions($request->payslip_id_1, $request->payslip_id_2);
+            \Log::info('Comparing payslips', [
+                'payslip_id_1' => $request->payslip_id_1,
+                'payslip_id_2' => $request->payslip_id_2,
+            ]);
 
-        return response()->json($result);
+            $result = $this->service->compareVersions($request->payslip_id_1, $request->payslip_id_2);
+
+            \Log::info('Comparison result', ['result' => $result]);
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            \Log::error('Comparison error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 
     public function revert(Request $request, string $currentPayslipId)

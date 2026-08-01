@@ -158,8 +158,8 @@ class PayslipCorrectionService
         }
 
         return [
-            'payslip_1' => $payslip1,
-            'payslip_2' => $payslip2,
+            'payslip1' => $payslip1->load(['employee', 'ruleSet', 'generatedBy']),
+            'payslip2' => $payslip2->load(['employee', 'ruleSet', 'generatedBy']),
             'differences' => $this->calculateChanges($payslip1, $payslip2),
         ];
     }

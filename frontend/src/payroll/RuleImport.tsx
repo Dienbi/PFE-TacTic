@@ -11,6 +11,7 @@ import Modal from '../shared/components/ui/Modal';
 import PayrollGuideButton from '../guide/PayrollGuideButton';
 import PayrollTourTooltip from '../guide/PayrollTourTooltip';
 import { Upload, FileText, CheckCircle, XCircle, Clock, AlertTriangle, ArrowRight, Edit2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const BRAND = '#1E2258';
 
@@ -20,6 +21,7 @@ const RuleImport: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isHistoryDetailModalOpen, setIsHistoryDetailModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [editedData, setEditedData] = useState<any>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -37,7 +39,12 @@ const RuleImport: React.FC = () => {
 
     const pdfFile = formData.get('pdf_file') as File;
     if (!pdfFile) {
-      alert('Please select a PDF file');
+      Swal.fire({
+        icon: 'warning',
+        title: 'File Required',
+        text: 'Please select a PDF file',
+        confirmButtonColor: BRAND,
+      });
       return;
     }
 
@@ -46,10 +53,20 @@ const RuleImport: React.FC = () => {
       setIsUploadModalOpen(false);
       refetchPending();
       refetchHistory();
-      alert('PDF uploaded successfully! Check the Pending Review section.');
+      Swal.fire({
+        icon: 'success',
+        title: 'Upload Successful',
+        text: 'PDF uploaded successfully! Check the Pending Review section.',
+        confirmButtonColor: BRAND,
+      });
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Failed to upload PDF. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'Failed to upload PDF. Please try again.',
+        confirmButtonColor: BRAND,
+      });
     }
   };
 
@@ -58,6 +75,11 @@ const RuleImport: React.FC = () => {
     setEditedData(null);
     setEditingField(null);
     setIsReviewModalOpen(true);
+  };
+
+  const handleViewHistoryDetails = (importId: string) => {
+    setSelectedImport(importId);
+    setIsHistoryDetailModalOpen(true);
   };
 
   const handleEditField = (field: string, value: any) => {
@@ -150,6 +172,45 @@ const RuleImport: React.FC = () => {
     setIsReviewModalOpen(false);
     refetchPending();
     refetchHistory();
+
+    // Show details of confirmed values
+    if (selectedImportData?.proposed_changes_json) {
+      const changes = selectedImportData.proposed_changes_json;
+      Swal.fire({
+        icon: 'success',
+        title: 'Rule Set Confirmed',
+        html: `
+          <div class="text-left" style="font-size: 14px;">
+            <p class="mb-3"><strong>Fiscal Year:</strong> ${changes.year}</p>
+            <div class="border-t pt-2 mt-2">
+              <p class="font-semibold mb-2">Applied Changes:</p>
+              <ul class="space-y-1" style="list-style: none; padding: 0;">
+                <li>• CNSS Employee Rate: ${changes.cnss_employee_rate}</li>
+                <li>• CNSS Employer Rate: ${changes.cnss_employer_rate}</li>
+                <li>• CNSS Monthly Ceiling: ${changes.cnss_monthly_ceiling || 'N/A'} TND</li>
+                <li>• CSS Rate: ${changes.css_rate}</li>
+                <li>• CSS Exempt Threshold: ${changes.css_exempt_annual_net_threshold} TND</li>
+                <li>• Professional Expense Rate: ${changes.prof_expense_rate}</li>
+                <li>• Professional Expense Cap: ${changes.prof_expense_annual_cap} TND</li>
+                <li>• Minimum Annual Tax: ${changes.min_annual_tax} TND</li>
+              </ul>
+            </div>
+            ${changes.irpp_brackets?.length ? `
+              <div class="border-t pt-2 mt-2">
+                <p class="font-semibold mb-2">${changes.irpp_brackets.length} IRPP Brackets Applied</p>
+              </div>
+            ` : ''}
+            ${changes.family_deductions?.length ? `
+              <div class="border-t pt-2 mt-2">
+                <p class="font-semibold mb-2">${changes.family_deductions.length} Family Deductions Applied</p>
+              </div>
+            ` : ''}
+          </div>
+        `,
+        confirmButtonColor: BRAND,
+        width: '500px',
+      });
+    }
   };
 
   const handleReject = async () => {
@@ -286,9 +347,19 @@ const RuleImport: React.FC = () => {
                                 </p>
                               </div>
                             </div>
-                            <Badge variant={getStatusBadge(importLog.status)}>
-                              {importLog.status.replace('_', ' ')}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => handleViewHistoryDetails(importLog.id)}
+                                style={{ color: BRAND, borderColor: BRAND }}
+                              >
+                                View Details
+                              </Button>
+                              <Badge variant={getStatusBadge(importLog.status)}>
+                                {importLog.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
                           </div>
                         </CardBody>
                       </Card>
@@ -495,6 +566,128 @@ const RuleImport: React.FC = () => {
                 </Button>
               </div>
             </div>
+          </Modal>
+
+          {/* History Detail Modal */}
+          <Modal
+            isOpen={isHistoryDetailModalOpen}
+            onClose={() => setIsHistoryDetailModalOpen(false)}
+            title="Import Details"
+            size="xl"
+          >
+            {selectedImportData && (
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <h3 className="text-base font-semibold text-gray-900">Fiscal Year {selectedImportData.proposed_changes_json?.year}</h3>
+                      <p className="text-xs text-gray-600">
+                        Status: <span className={`font-medium ${
+                          selectedImportData.status === 'confirmed' ? 'text-green-600' :
+                          selectedImportData.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
+                        }`}>{selectedImportData.status.replace('_', ' ')}</span>
+                      </p>
+                    </CardHeader>
+                    <CardBody>
+                      <div className="space-y-0">
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">CNSS Employee Rate</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.cnss_employee_rate}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">CNSS Employer Rate</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.cnss_employer_rate}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">CNSS Monthly Ceiling</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.cnss_monthly_ceiling || 'N/A'} TND</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">CSS Rate</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.css_rate}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">CSS Exempt Threshold</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.css_exempt_annual_net_threshold} TND</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">Professional Expense Rate</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.prof_expense_rate}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">Professional Expense Cap</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.prof_expense_annual_cap} TND</span>
+                        </div>
+                        <div className="flex justify-between py-2">
+                          <span className="text-sm font-medium text-gray-700">Minimum Annual Tax</span>
+                          <span className="text-sm text-gray-900">{selectedImportData.proposed_changes_json?.min_annual_tax} TND</span>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <h3 className="text-base font-semibold text-gray-900">IRPP Brackets</h3>
+                    </CardHeader>
+                    <CardBody>
+                      <div className="space-y-2">
+                        {selectedImportData.proposed_changes_json?.irpp_brackets?.map((bracket: any, idx: number) => (
+                          <div key={idx} className="bg-gray-50 p-3 rounded-lg">
+                            <div className="text-sm font-medium text-gray-700 mb-2">Bracket {idx + 1}</div>
+                            <div className="grid grid-cols-3 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">Min:</span> {bracket.min} TND
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Max:</span> {bracket.max || '∞'} TND
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Rate:</span> {(bracket.rate * 100).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <h3 className="text-base font-semibold text-gray-900">Family Deductions</h3>
+                    </CardHeader>
+                    <CardBody>
+                      <div className="space-y-2">
+                        {selectedImportData.proposed_changes_json?.family_deductions?.map((deduction: any, idx: number) => (
+                          <div key={idx} className="bg-gray-50 p-3 rounded-lg">
+                            <div className="text-sm font-medium text-gray-700 mb-2 capitalize">
+                              {deduction.type.replace(/_/g, ' ')}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">Amount:</span> {deduction.amount} TND
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Max Count:</span> {deduction.max_count || 'Unlimited'}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsHistoryDetailModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
           </Modal>
         </div>
       </div>

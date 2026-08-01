@@ -309,17 +309,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+/* Small icon buttons in table */
+.action-buttons .btn {
   padding: 0;
   width: 32px;
   height: 32px;
   border-radius: 4px;
   font-size: 0.65rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  white-space: nowrap;
+  gap: 0;
+  min-width: 32px;
 }
 
 .btn:disabled {
@@ -445,10 +456,10 @@
 /* Modal Stying */
 .modal-overlay {
   position: fixed;
-  top: 80px;
+  top: 0;
   left: 0;
   width: 100vw;
-  height: calc(100vh - 80px);
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;

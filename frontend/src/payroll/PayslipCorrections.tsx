@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../shared/components/Sidebar';
 import Navbar from '../shared/components/Navbar';
 import { useAuth } from '../hooks/useAuth';
@@ -14,11 +15,14 @@ import { History, GitCompare, RotateCcw, FileText, Search, Calendar } from 'luci
 import Swal from 'sweetalert2';
 
 const PayslipCorrections: React.FC = () => {
+  const navigate = useNavigate();
   const { user, displayName } = useAuth();
   const [selectedPayslipId, setSelectedPayslipId] = useState<string>('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isComparisonResultsModalOpen, setIsComparisonResultsModalOpen] = useState(false);
+  const [comparisonResults, setComparisonResults] = useState<any>(null);
   const [comparePayslip1, setComparePayslip1] = useState<string>('');
   const [comparePayslip2, setComparePayslip2] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -68,10 +72,17 @@ const PayslipCorrections: React.FC = () => {
     try {
       const result = await compareVersions.mutateAsync({ payslipId1: comparePayslip1, payslipId2: comparePayslip2 });
       console.log('Comparison result:', result);
-      alert('Comparison executed. Check console for details.');
+      
+      // Store comparison results and open results modal
+      setComparisonResults(result.data?.differences || {});
+      setIsComparisonResultsModalOpen(true);
+      setIsCompareModalOpen(false);
     } catch (error: any) {
       console.error('Comparison failed:', error);
-      alert('Failed to compare versions. Please try again.');
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
+      console.error('Error message:', error.response?.data?.message);
+      alert(error.response?.data?.message || error.response?.data?.error || 'Failed to compare versions. Please try again.');
     }
   };
 
@@ -336,7 +347,7 @@ const PayslipCorrections: React.FC = () => {
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() => window.location.href = `/payroll/payslips/${payslip.id}`}
+                              onClick={() => navigate(`/payroll/payslips/${payslip.id}`)}
                               leftIcon={<FileText className="w-4 h-4" />}
                               className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
                               style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
@@ -418,6 +429,86 @@ const PayslipCorrections: React.FC = () => {
             </form>
           </Modal>
 
+          {/* Comparison Results Modal */}
+          <Modal
+            isOpen={isComparisonResultsModalOpen}
+            onClose={() => setIsComparisonResultsModalOpen(false)}
+            title="Comparison Results"
+            size="lg"
+            headerClassName="bg-[#1E2258] border-[#1E2258]"
+            titleClassName="text-white"
+            containerClassName="border border-[#1E2258]"
+          >
+            <CardBody>
+              {comparisonResults && (
+                <div className="space-y-4">
+                  {comparisonResults.base_salary && (
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                      <span className="font-medium text-gray-700">Base Salary</span>
+                      <div className="text-right">
+                        <span className="text-gray-600">{Number(comparisonResults.base_salary.from).toFixed(2)} TND</span>
+                        <span className="mx-2 text-gray-400">→</span>
+                        <span className="font-semibold text-gray-900">{Number(comparisonResults.base_salary.to).toFixed(2)} TND</span>
+                        <span className={`ml-2 ${Number(comparisonResults.base_salary.difference) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ({Number(comparisonResults.base_salary.difference) >= 0 ? '+' : ''}{Number(comparisonResults.base_salary.difference).toFixed(2)})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {comparisonResults.gross_salary && (
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                      <span className="font-medium text-gray-700">Gross Salary</span>
+                      <div className="text-right">
+                        <span className="text-gray-600">{Number(comparisonResults.gross_salary.from).toFixed(2)} TND</span>
+                        <span className="mx-2 text-gray-400">→</span>
+                        <span className="font-semibold text-gray-900">{Number(comparisonResults.gross_salary.to).toFixed(2)} TND</span>
+                        <span className={`ml-2 ${Number(comparisonResults.gross_salary.difference) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ({Number(comparisonResults.gross_salary.difference) >= 0 ? '+' : ''}{Number(comparisonResults.gross_salary.difference).toFixed(2)})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {comparisonResults.net_salary && (
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                      <span className="font-medium text-gray-700">Net Salary</span>
+                      <div className="text-right">
+                        <span className="text-gray-600">{Number(comparisonResults.net_salary.from).toFixed(2)} TND</span>
+                        <span className="mx-2 text-gray-400">→</span>
+                        <span className="font-semibold text-gray-900">{Number(comparisonResults.net_salary.to).toFixed(2)} TND</span>
+                        <span className={`ml-2 ${Number(comparisonResults.net_salary.difference) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ({Number(comparisonResults.net_salary.difference) >= 0 ? '+' : ''}{Number(comparisonResults.net_salary.difference).toFixed(2)})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {comparisonResults.irpp_monthly && (
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                      <span className="font-medium text-gray-700">IRPP Monthly</span>
+                      <div className="text-right">
+                        <span className="text-gray-600">{Number(comparisonResults.irpp_monthly.from).toFixed(2)} TND</span>
+                        <span className="mx-2 text-gray-400">→</span>
+                        <span className="font-semibold text-gray-900">{Number(comparisonResults.irpp_monthly.to).toFixed(2)} TND</span>
+                        <span className={`ml-2 ${Number(comparisonResults.irpp_monthly.difference) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ({Number(comparisonResults.irpp_monthly.difference) >= 0 ? '+' : ''}{Number(comparisonResults.irpp_monthly.difference).toFixed(2)})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex justify-end pt-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsComparisonResultsModalOpen(false)}
+                  className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
+                  style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardBody>
+          </Modal>
+
           {/* Compare Versions Modal */}
           <Modal
             isOpen={isCompareModalOpen}
@@ -435,19 +526,25 @@ const PayslipCorrections: React.FC = () => {
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Latest Version ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Latest Version</label>
                 <input
                   type="text"
-                  value={comparePayslip1}
+                  value={(() => {
+                    const v = versions.find((v: any) => v.id === comparePayslip1);
+                    return v?.generated_at ? new Date(v.generated_at).toLocaleString() : '';
+                  })()}
                   readOnly
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Previous Version ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Previous Version</label>
                 <input
                   type="text"
-                  value={comparePayslip2}
+                  value={(() => {
+                    const v = versions.find((v: any) => v.id === comparePayslip2);
+                    return v?.generated_at ? new Date(v.generated_at).toLocaleString() : '';
+                  })()}
                   readOnly
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none"
                 />

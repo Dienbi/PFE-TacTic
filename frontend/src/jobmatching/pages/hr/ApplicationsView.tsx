@@ -61,7 +61,7 @@ const ApplicationsView: React.FC = () => {
     } catch (err: any) {
       setAiError(
         err.response?.data?.message ||
-          "Impossible de charger les recommandations IA.",
+          "Failed to load AI recommendations.",
       );
     } finally {
       setAiLoading(false);
@@ -193,13 +193,13 @@ const ApplicationsView: React.FC = () => {
               className={`view-tab ${activeTab === "applications" ? "active" : ""}`}
               onClick={() => setActiveTab("applications")}
             >
-              📋 Candidatures ({applications.length})
+              📋 Applications ({applications.length})
             </button>
             <button
               className={`view-tab ${activeTab === "ai" ? "active" : ""}`}
               onClick={() => setActiveTab("ai")}
             >
-              🤖 Recommandations IA
+              🤖 AI Recommendations
               {aiRecommendations.length > 0 && (
                 <span className="ai-tab-badge">{aiRecommendations.length}</span>
               )}
@@ -211,29 +211,29 @@ const ApplicationsView: React.FC = () => {
               {aiLoading ? (
                 <div className="loading-state">
                   <div className="spinner"></div>
-                  <p>Analyse IA en cours...</p>
+                  <p>AI analysis in progress...</p>
                 </div>
               ) : aiError ? (
                 <div className="alert alert-danger">{aiError}</div>
               ) : aiRecommendations.length === 0 ? (
                 <div className="empty-state-card">
                   <div className="empty-icon">🤖</div>
-                  <h3>Aucune recommandation</h3>
+                  <h3>No Recommendations</h3>
                   <p>
-                    Aucun employé actif ne correspond aux critères de ce poste.
+                    No active employees match the criteria for this position.
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="mb-4 px-1">
                     <h3 className="text-base font-semibold text-gray-800">
-                      Top {Math.min(AI_PREVIEW_COUNT, aiRecommendations.length)} sur{" "}
+                      Top {Math.min(AI_PREVIEW_COUNT, aiRecommendations.length)} of{" "}
                       {matchResult?.total_candidates ?? aiRecommendations.length}{" "}
-                      employés analysés
+                      employees analyzed
                     </h3>
                     {matchResult?.job_post_titre && (
                       <p className="text-sm text-gray-500 mt-0.5">
-                        Poste : {matchResult.job_post_titre}
+                        Position: {matchResult.job_post_titre}
                       </p>
                     )}
                   </div>
@@ -254,8 +254,8 @@ const ApplicationsView: React.FC = () => {
                         onClick={() => setShowAllAiRecs(!showAllAiRecs)}
                       >
                         {showAllAiRecs
-                          ? "Réduire la liste"
-                          : `Voir les ${aiRecommendations.length - AI_PREVIEW_COUNT} autres recommandations`}
+                          ? "Show less"
+                          : `View ${aiRecommendations.length - AI_PREVIEW_COUNT} more recommendations`}
                       </button>
                     </div>
                   )}

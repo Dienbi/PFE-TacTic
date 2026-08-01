@@ -78,6 +78,7 @@ const LeaveManagement: React.FC = () => {
       await approveLeave.mutateAsync(id);
       setMessage({ type: "success", text: "Request approved successfully!" });
       await refetch();
+      setSelectedLeave(null);
     } catch (error: any) {
       setMessage({
         type: "error",
@@ -118,6 +119,7 @@ const LeaveManagement: React.FC = () => {
       await rejectLeave.mutateAsync({ id, motif: reason || "" });
       setMessage({ type: "success", text: "Request rejected." });
       await refetch();
+      setSelectedLeave(null);
     } catch (error: any) {
       setMessage({
         type: "error",
@@ -619,19 +621,19 @@ const LeaveManagement: React.FC = () => {
                     className="btn btn-approve"
                     onClick={() => {
                       handleApprove(selectedLeave.id);
-                      setSelectedLeave(null);
                     }}
+                    disabled={processing === selectedLeave.id}
                   >
-                    <CheckCircle size={16} /> Approve
+                    <CheckCircle size={16} /> {processing === selectedLeave.id ? 'Approving...' : 'Approve'}
                   </button>
                   <button
                     className="btn btn-reject"
                     onClick={() => {
                       handleReject(selectedLeave.id);
-                      setSelectedLeave(null);
                     }}
+                    disabled={processing === selectedLeave.id}
                   >
-                    <XCircle size={16} /> Reject
+                    <XCircle size={16} /> {processing === selectedLeave.id ? 'Rejecting...' : 'Reject'}
                   </button>
                 </div>
               )}

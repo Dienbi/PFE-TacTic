@@ -57,7 +57,7 @@ class FiscalRuleSetRepository
 
     public function getAll(): \Illuminate\Database\Eloquent\Collection
     {
-        return FiscalRuleSet::orderBy('year', 'desc')->get();
+        return FiscalRuleSet::with(['irppBrackets', 'familyDeductionRules'])->orderBy('year', 'desc')->get();
     }
 
     public function getConfirmed(): \Illuminate\Database\Eloquent\Collection

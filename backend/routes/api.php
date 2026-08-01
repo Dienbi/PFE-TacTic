@@ -516,9 +516,9 @@ Route::middleware('jwt.auth')->group(function () {
 
         // Payslip Correction
         Route::prefix('corrections')->group(function () {
-            Route::post('/{originalPayslipId}', [PayslipCorrectionController::class, 'createCorrection']);
-            Route::get('/history/{payslipId}', [PayslipCorrectionController::class, 'getHistory']);
             Route::post('/compare', [PayslipCorrectionController::class, 'compare']);
+            Route::get('/history/{payslipId}', [PayslipCorrectionController::class, 'getHistory']);
+            Route::post('/{originalPayslipId}', [PayslipCorrectionController::class, 'createCorrection']);
             Route::post('/{currentPayslipId}/revert', [PayslipCorrectionController::class, 'revert']);
         });
 

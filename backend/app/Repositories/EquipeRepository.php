@@ -15,6 +15,32 @@ class EquipeRepository extends BaseRepository implements EquipeRepositoryInterfa
         parent::__construct($model);
     }
 
+    public function create(array $data): \Illuminate\Database\Eloquent\Model
+    {
+        $model = parent::create($data);
+        $this->cacheService->invalidateTeams();
+        return $model;
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        $result = parent::update($id, $data);
+        if ($result) {
+            $this->cacheService->invalidateTeams();
+        }
+        return $result;
+    }
+
+    public function delete(int $id): bool
+    {
+        $result = parent::delete($id);
+        if ($result) {
+            $this->cacheService->invalidateTeams();
+            $this->cacheService->invalidateTeamMembers($id);
+        }
+        return $result;
+    }
+
     public function getWithMembres(int $id): ?Equipe
     {
         return $this->cacheService->getTeamMembers($id, function () use ($id) {

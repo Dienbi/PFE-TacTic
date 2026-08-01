@@ -14,6 +14,7 @@ import client from "../../../api/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CreateTeamModal from "./CreateTeamModal";
 import TeamDetailsModal from "./TeamDetailsModal";
+import Swal from "sweetalert2";
 import "./Teams.css";
 
 interface Equipe {
@@ -123,14 +124,37 @@ const Teams: React.FC = () => {
   };
 
   const handleDeleteTeam = async (teamId: number) => {
-    if (!globalThis.confirm("Are you sure you want to delete this team?"))
-      return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#4f46e5",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       setDeletingId(teamId);
       await client.delete(`/equipes/${teamId}`);
       await refetch();
+      Swal.fire({
+        title: "Deleted!",
+        text: "The team has been deleted successfully.",
+        icon: "success",
+        confirmButtonColor: "#4f46e5",
+      });
     } catch (error) {
       console.error("Error deleting team:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "There was an error deleting the team.",
+        icon: "error",
+        confirmButtonColor: "#4f46e5",
+      });
     } finally {
       setDeletingId(null);
     }

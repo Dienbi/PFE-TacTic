@@ -164,9 +164,24 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   };
 
   const handleRemoveMember = async (userId: number) => {
-    const confirmed = window.confirm("Remove this user from the team? This action cannot be undone.");
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Remove this user from the team? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, remove them!",
+      cancelButtonText: "Cancel",
+      didOpen: () => {
+        const container = Swal.getContainer();
+        if (container) {
+          container.style.zIndex = "100000";
+        }
+      },
+    });
 
-    if (!confirmed) return;
+    if (!result.isConfirmed) return;
 
     try {
       setError("");
@@ -175,9 +190,34 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
       setSuccess("User removed from team");
       await fetchTeamData();
       onRefresh();
+
+      Swal.fire({
+        title: "Removed!",
+        text: "User has been removed from the team successfully.",
+        icon: "success",
+        confirmButtonColor: "#4f46e5",
+        didOpen: () => {
+          const container = Swal.getContainer();
+          if (container) {
+            container.style.zIndex = "100000";
+          }
+        },
+      });
     } catch (err) {
       setError("Failed to remove user from team");
       console.error(err);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to remove user from the team.",
+        icon: "error",
+        confirmButtonColor: "#4f46e5",
+        didOpen: () => {
+          const container = Swal.getContainer();
+          if (container) {
+            container.style.zIndex = "100000";
+          }
+        },
+      });
     }
   };
 

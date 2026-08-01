@@ -66,12 +66,11 @@ const Employees: React.FC = () => {
     useEmployeeMutations();
 
   const users: User[] = employeesPage?.data ?? (Array.isArray(employeesPage) ? employeesPage : []);
-  const pagination = employeesPage?.meta;
-  const meta = pagination?.current_page
+  const meta = employeesPage?.current_page
     ? {
-        current_page: pagination.current_page,
-        last_page: pagination.last_page,
-        total: pagination.total,
+        current_page: employeesPage.current_page,
+        last_page: employeesPage.last_page,
+        total: employeesPage.total,
       }
     : {
         current_page: page,
@@ -591,26 +590,68 @@ const Employees: React.FC = () => {
               </tbody>
             </table>
 
-            {!isLoading && viewMode === "active" && meta.total > perPage && (
+            {!isLoading && viewMode === "active" && meta.total > 0 && (
               <div className="pagination-bar">
-                <button
-                  className="page-btn"
-                  disabled={meta.current_page <= 1 || isSearching}
-                  onClick={() => fetchUsersPage(meta.current_page - 1)}
-                >
-                  Précédent
-                </button>
-                <span className="page-info">
-                  Page {meta.current_page} / {meta.last_page} ({meta.total}{" "}
-                  utilisateurs)
-                </span>
-                <button
-                  className="page-btn"
-                  disabled={meta.current_page >= meta.last_page || isSearching}
-                  onClick={() => fetchUsersPage(meta.current_page + 1)}
-                >
-                  Suivant
-                </button>
+                <div className="pagination-controls">
+                  <button
+                    className="page-btn"
+                    disabled={meta.current_page <= 1 || isSearching}
+                    onClick={() => fetchUsersPage(meta.current_page - 1)}
+                  >
+                    Précédent
+                  </button>
+                  
+                  <div className="page-numbers">
+                    {Array.from({ length: Math.min(meta.last_page, 5) }, (_, i) => {
+                      let pageNum: number;
+                      if (meta.last_page <= 5) {
+                        pageNum = i + 1;
+                      } else if (meta.current_page <= 3) {
+                        pageNum = i + 1;
+                      } else if (meta.current_page >= meta.last_page - 2) {
+                        pageNum = meta.last_page - 4 + i;
+                      } else {
+                        pageNum = meta.current_page - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          className={`page-number ${meta.current_page === pageNum ? 'active' : ''}`}
+                          disabled={isSearching}
+                          onClick={() => fetchUsersPage(pageNum)}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    className="page-btn"
+                    disabled={meta.current_page >= meta.last_page || isSearching}
+                    onClick={() => fetchUsersPage(meta.current_page + 1)}
+                  >
+                    Suivant
+                  </button>
+                </div>
+                
+                <div className="pagination-info">
+                  <span className="page-info">
+                    Page {meta.current_page} / {meta.last_page} ({meta.total} utilisateurs)
+                  </span>
+                  <select
+                    className="per-page-select"
+                    value={perPage}
+                    onChange={(e) => fetchUsersPage(1, parseInt(e.target.value))}
+                    disabled={isSearching}
+                  >
+                    <option value={10}>10 / page</option>
+                    <option value={25}>25 / page</option>
+                    <option value={50}>50 / page</option>
+                    <option value={100}>100 / page</option>
+                  </select>
+                </div>
               </div>
             )}
           </div>

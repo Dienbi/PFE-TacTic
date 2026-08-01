@@ -50,7 +50,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
         return $this->model->actif()->count();
     }
 
-    public function getActifsPaginated(int $perPage = 15): LengthAwarePaginator
+    public function getActifsPaginated(int $perPage = 15, int $page = 1): LengthAwarePaginator
     {
         return $this->model
             ->actif()
@@ -59,7 +59,7 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
                 'id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif',
                 'telephone', 'date_embauche', 'salaire_base', 'equipe_id', 'deleted_at',
             ])
-            ->paginate($perPage);
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function getByRole(Role $role): Collection

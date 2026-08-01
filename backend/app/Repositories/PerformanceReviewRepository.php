@@ -80,7 +80,8 @@ class PerformanceReviewRepository implements PerformanceReviewRepositoryInterfac
     {
         return PerformanceReview::where('utilisateur_id', $employeeId)
             ->where('chef_id', $chefId)
-            ->where('review_date', $date)
+            ->whereYear('review_date', date('Y', strtotime($date)))
+            ->whereMonth('review_date', date('m', strtotime($date)))
             ->exists();
     }
 }

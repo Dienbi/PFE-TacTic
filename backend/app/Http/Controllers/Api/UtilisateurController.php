@@ -29,6 +29,7 @@ class UtilisateurController extends Controller
     {
         $perPage = (int) $request->integer('per_page', 25);
         $perPage = $perPage > 0 ? min($perPage, 100) : 25;
+        $page = (int) $request->integer('page', 1);
 
         if ($request->boolean('all')) {
             if (! $request->user()->isRh()) {
@@ -39,7 +40,7 @@ class UtilisateurController extends Controller
 
             $users = Cache::remember('users_all', 120, fn () => $this->utilisateurService->getAll());
         } else {
-            $users = $this->utilisateurService->getPaginated($perPage);
+            $users = $this->utilisateurService->getPaginated($perPage, $page);
         }
 
         return response()->json($users);

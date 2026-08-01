@@ -21,9 +21,9 @@ class UtilisateurService
         return $this->utilisateurRepository->getAllWithRelations();
     }
 
-    public function getPaginated(int $perPage = 15): LengthAwarePaginator
+    public function getPaginated(int $perPage = 15, int $page = 1): LengthAwarePaginator
     {
-        return $this->utilisateurRepository->getActifsPaginated($perPage);
+        return $this->utilisateurRepository->getActifsPaginated($perPage, $page);
     }
 
     public function getById(int $id): ?Utilisateur

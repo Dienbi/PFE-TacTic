@@ -9,15 +9,9 @@ import {
   UserCog,
 } from "lucide-react";
 import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.css";
 import client from "../../../api/client";
 import "./TeamsModal.css";
-
-// Configure SweetAlert with higher z-index
-Swal.mixin({
-  customClass: {
-    container: 'swal2-container',
-  },
-});
 
 interface Utilisateur {
   id: number;
@@ -170,34 +164,9 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
   };
 
   const handleRemoveMember = async (userId: number) => {
-    const result = await Swal.fire({
-      title: "Remove this user from the team?",
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, remove",
-      cancelButtonText: "Cancel",
-      didOpen: () => {
-        // Directly set z-index on SweetAlert elements with !important
-        const container = Swal.getContainer();
-        const popup = Swal.getPopup();
+    const confirmed = window.confirm("Remove this user from the team? This action cannot be undone.");
 
-        if (container) {
-          container.style.cssText = 'z-index: 9999 !important;';
-          const backdrop = container.querySelector('.swal2-backdrop') as HTMLElement;
-          if (backdrop) {
-            backdrop.style.cssText = 'z-index: 9998 !important;';
-          }
-        }
-        if (popup) {
-          popup.style.cssText = 'z-index: 10000 !important;';
-        }
-      },
-    });
-
-    if (!result.isConfirmed) return;
+    if (!confirmed) return;
 
     try {
       setError("");
@@ -243,9 +212,9 @@ const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({
       className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/40 z-[1999]" />
       <div
-        className="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+        className="relative z-[2001] bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

@@ -55,6 +55,7 @@ const UserProfile: React.FC = () => {
   );
   const [rhUser, setRhUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'social-info' | 'verification'>('profile');
+  const [pendingCount, setPendingCount] = useState(0);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -66,6 +67,26 @@ const UserProfile: React.FC = () => {
     }
   }, [id, navigate]);
 
+  const fetchPendingCount = useCallback(async () => {
+    if (!id) return;
+    try {
+      const employeeId = parseInt(id);
+      const [socialStatusRes, childrenRes, personalInfoRes] = await Promise.all([
+        client.get("/social-status/hr/pending"),
+        client.get("/children/hr/pending"),
+        client.get("/change-requests?status=pending"),
+      ]);
+
+      const socialStatusPending = socialStatusRes.data?.filter((r: any) => r.utilisateur_id === employeeId && r.status === 'pending').length || 0;
+      const childrenPending = childrenRes.data?.filter((r: any) => r.utilisateur_id === employeeId && !r.verified && r.status !== 'rejected').length || 0;
+      const personalInfoPending = personalInfoRes.data?.filter((r: any) => r.employee_id === employeeId && (r.status === 'pending' || r.status === 'needs_more_info')).length || 0;
+
+      setPendingCount(socialStatusPending + childrenPending + personalInfoPending);
+    } catch (error) {
+      console.error("Error fetching pending count:", error);
+    }
+  }, [id]);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -73,7 +94,8 @@ const UserProfile: React.FC = () => {
     }
     // Always fetch user data to ensure we have the latest details (including competences)
     fetchUser();
-  }, [id, fetchUser]);
+    fetchPendingCount();
+  }, [id, fetchUser, fetchPendingCount]);
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -170,6 +192,9 @@ const UserProfile: React.FC = () => {
                 onClick={() => setActiveTab('verification')}
               >
                 Verification
+                {pendingCount > 0 && (
+                  <span className="pending-count-badge">{pendingCount}</span>
+                )}
               </button>
             )}
           </div>
@@ -296,7 +321,7 @@ const UserProfile: React.FC = () => {
           ) : activeTab === 'social-info' ? (
             <SocialInfoDisplay employeeId={user?.id ? parseInt(id || '0') : 0} />
           ) : (
-            <SocialInfoVerification employeeId={user?.id ? parseInt(id || '0') : undefined} />
+            <SocialInfoVerification employeeId={user?.id ? parseInt(id || '0') : undefined} onRefresh={fetchPendingCount} />
           )}
         </div>
       </div>

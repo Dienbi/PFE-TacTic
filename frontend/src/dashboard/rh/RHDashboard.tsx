@@ -5,6 +5,7 @@ import KPISection from "./components/KPISection";
 import ChartsSection from "./components/ChartsSection";
 import RecentLeaves from "./components/RecentLeaves";
 import FeedbackNotifications from "./components/FeedbackNotifications";
+import SocialStatusRequests from "./components/SocialStatusRequests";
 import DashboardSkeleton from "../../shared/components/DashboardSkeleton";
 import { useRhDashboard } from "../../hooks/queries";
 import { useAuth } from "../../hooks/useAuth";
@@ -85,6 +86,7 @@ const RHDashboard: React.FC = () => {
           </section>
 
           <section className="feedback-row">
+            <SocialStatusRequests />
             <FeedbackNotifications />
           </section>
         </div>

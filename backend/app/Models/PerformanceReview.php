@@ -17,6 +17,8 @@ class PerformanceReview extends Model
         'score',
         'message',
         'review_date',
+        'review_year',
+        'review_month',
     ];
 
     protected $casts = [

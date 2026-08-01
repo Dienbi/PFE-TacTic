@@ -5,9 +5,10 @@ import { SocialStatusProof, Child } from '../../../../api/familyInfo';
 
 interface SocialInfoVerificationProps {
   employeeId?: number;
+  onRefresh?: () => void;
 }
 
-export const SocialInfoVerification: React.FC<SocialInfoVerificationProps> = ({ employeeId }) => {
+export const SocialInfoVerification: React.FC<SocialInfoVerificationProps> = ({ employeeId, onRefresh }) => {
   const [activeTab, setActiveTab] = useState<'social' | 'children'>('social');
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -36,6 +37,7 @@ export const SocialInfoVerification: React.FC<SocialInfoVerificationProps> = ({ 
 
     if (success) {
       loadPendingChanges();
+      onRefresh?.();
     }
   };
 
@@ -56,6 +58,7 @@ export const SocialInfoVerification: React.FC<SocialInfoVerificationProps> = ({ 
 
     if (success) {
       loadPendingChanges();
+      onRefresh?.();
       setShowRejectModal(false);
       setRejectReason('');
       setSelectedItem(null);

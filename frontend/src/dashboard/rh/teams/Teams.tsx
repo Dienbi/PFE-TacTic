@@ -11,9 +11,10 @@ import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import client from "../../../api/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CreateTeamModal from "./CreateTeamModal";
 import TeamDetailsModal from "./TeamDetailsModal";
+import "./Teams.css";
 
 interface Equipe {
   id: number;
@@ -75,6 +76,7 @@ const TEAM_COLORS = [
 ];
 
 const Teams: React.FC = () => {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<UserData | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -88,8 +90,6 @@ const Teams: React.FC = () => {
       const response = await client.get("/equipes");
       return response.data;
     },
-    staleTime: 5 * 60_000, // 5 minutes
-    gcTime: 10 * 60_000, // 10 minutes
   });
 
   useEffect(() => {
@@ -108,7 +108,7 @@ const Teams: React.FC = () => {
     const response = await client.post("/equipes", {
       nom: teamData.nom,
       description: teamData.description,
-      chef_id: teamData.chef_id,
+      chef_equipe_id: teamData.chef_id,
     });
     const newTeamId = response.data.id;
     if (teamData.membre_ids && teamData.membre_ids.length > 0) {
@@ -119,7 +119,7 @@ const Teams: React.FC = () => {
       }
     }
     setShowCreateModal(false);
-    refetch();
+    await refetch();
   };
 
   const handleDeleteTeam = async (teamId: number) => {
@@ -128,7 +128,7 @@ const Teams: React.FC = () => {
     try {
       setDeletingId(teamId);
       await client.delete(`/equipes/${teamId}`);
-      refetch();
+      await refetch();
     } catch (error) {
       console.error("Error deleting team:", error);
     } finally {
@@ -146,18 +146,15 @@ const Teams: React.FC = () => {
   );
 
   return (
-    <div className="dashboard-container">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="main-content">
+      <div className="flex-1 ml-[260px] pt-[70px]">
         <Navbar
           userName={user ? `${user.prenom} ${user.nom}` : "RH Manager"}
           userRole={user?.role || "RH"}
         />
 
-        <div
-          className="dashboard-content"
-          style={{ maxWidth: 1400, margin: "0 auto" }}
-        >
+        <div className="dashboard-content px-6" style={{ maxWidth: 1400, margin: "0 auto" }}>
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>

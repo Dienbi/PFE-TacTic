@@ -19,6 +19,7 @@ const JobBoard: React.FC = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userName = user ? `${user.prenom} ${user.nom}` : "Employee";
   const userRole = user ? user.role : "employe";
+  const userId = user?.id;
 
   const handleApply = (post: JobPost) => {
     setSelectedPost(post);
@@ -30,12 +31,15 @@ const JobBoard: React.FC = () => {
 
     setApplyingTo(selectedPost.id);
     try {
+      console.log('Applying to job:', { jobPostId: selectedPost.id, motivation, userId, userRole, postStatus: selectedPost.statut });
       await jobMatchingApi.applyToJob(selectedPost.id, motivation);
       setSelectedPost(null);
       setMotivation("");
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['job-posts', 'published'] });
     } catch (err: any) {
+      console.error('Application error:', err);
+      console.error('Error response:', err.response?.data);
       const validationErrors = err.response?.data?.errors;
       if (validationErrors) {
         const messages = Object.values(validationErrors).flat().join(" ");
@@ -94,7 +98,7 @@ const JobBoard: React.FC = () => {
             <div className="jobs-grid-layout">
               {filteredPosts.map((post: JobPost) => {
                 const hasApplied = post.applications?.some(
-                  (app: any) => app.candidat?.id === post.id,
+                  (app: any) => app.candidat?.id === user.id,
                 );
 
                 return (

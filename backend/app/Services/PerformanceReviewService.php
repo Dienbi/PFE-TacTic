@@ -31,13 +31,18 @@ class PerformanceReviewService
         $data['chef_id'] = $chefId;
         $review = $this->repository->create($data);
 
-        // Trigger notifications
-        $this->notificationService->notifyFeedbackCreated(
-            $review->utilisateur_id,
-            $review->chef_id,
-            $review->score,
-            $review->message
-        );
+        // Trigger notifications (wrap in try-catch to prevent broadcasting errors from failing the operation)
+        try {
+            $this->notificationService->notifyFeedbackCreated(
+                $review->utilisateur_id,
+                $review->chef_id,
+                $review->score,
+                $review->message
+            );
+        } catch (\Exception $e) {
+            // Log error but don't fail the operation
+            \Log::warning('Failed to dispatch feedback notification: ' . $e->getMessage());
+        }
 
         return $review;
     }
@@ -70,12 +75,17 @@ class PerformanceReviewService
 
         $updatedReview = $this->repository->update($id, $data);
 
-        // Trigger notifications
-        $this->notificationService->notifyFeedbackUpdated(
-            $updatedReview->utilisateur_id,
-            $updatedReview->chef_id,
-            $updatedReview->score
-        );
+        // Trigger notifications (wrap in try-catch to prevent broadcasting errors from failing the operation)
+        try {
+            $this->notificationService->notifyFeedbackUpdated(
+                $updatedReview->utilisateur_id,
+                $updatedReview->chef_id,
+                $updatedReview->score
+            );
+        } catch (\Exception $e) {
+            // Log error but don't fail the operation
+            \Log::warning('Failed to dispatch feedback update notification: ' . $e->getMessage());
+        }
 
         return $updatedReview;
     }
@@ -99,8 +109,13 @@ class PerformanceReviewService
         $result = $this->repository->delete($id);
 
         if ($result) {
-            // Trigger notifications
-            $this->notificationService->notifyFeedbackDeleted($employeeId, $chefIdToDelete);
+            // Trigger notifications (wrap in try-catch to prevent broadcasting errors from failing the operation)
+            try {
+                $this->notificationService->notifyFeedbackDeleted($employeeId, $chefIdToDelete);
+            } catch (\Exception $e) {
+                // Log error but don't fail the operation
+                \Log::warning('Failed to dispatch feedback deletion notification: ' . $e->getMessage());
+            }
         }
 
         return $result;

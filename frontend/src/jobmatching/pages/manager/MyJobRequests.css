@@ -7,11 +7,12 @@
 .main-content {
     flex: 1;
     margin-left: 260px; /* Sidebar width */
+    width: calc(100% - 260px);
     min-width: 0;
 }
 
 .dashboard-content {
-    padding: 2rem;
+    padding: calc(70px + 2rem) 2rem 2rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;

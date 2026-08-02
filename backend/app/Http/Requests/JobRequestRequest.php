@@ -16,18 +16,17 @@ class JobRequestRequest extends FormRequest
         return [
             'titre' => 'required|string|max:255',
             'description' => 'required|string',
-            'equipe_id' => 'required|integer|exists:equipes,id',
+            'equipe_id' => 'sometimes|integer|exists:equipes,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'titre.required' => 'Le titre est obligatoire.',
-            'titre.max' => 'Le titre ne peut pas dépasser 255 caractères.',
-            'description.required' => 'La description est obligatoire.',
-            'equipe_id.required' => 'L\'équipe est obligatoire.',
-            'equipe_id.exists' => 'L\'équipe sélectionnée n\'existe pas.',
+            'titre.required' => 'The title is required.',
+            'titre.max' => 'The title cannot exceed 255 characters.',
+            'description.required' => 'The description is required.',
+            'equipe_id.exists' => 'The selected team does not exist.',
         ];
     }
 }

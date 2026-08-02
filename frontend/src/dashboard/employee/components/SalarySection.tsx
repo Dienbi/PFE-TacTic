@@ -53,9 +53,9 @@ const SalarySection: React.FC = () => {
 
   return (
     <div className="salary-section-full">
-      <h3 className="section-title">Information Salariale</h3>
+      <h3 className="section-title">Salary Information</h3>
       <p style={{ color: "#666" }}>
-        Module de paie en cours de migration vers le nouveau système tunisien.
+        Payroll module is being migrated to the new Tunisian system.
       </p>
     </div>
   );

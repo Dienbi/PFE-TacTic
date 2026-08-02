@@ -4,7 +4,7 @@ import { jobMatchingApi } from '../../jobmatching/api/jobMatchingApi';
 export const useJobPosts = () =>
     useQuery({
         queryKey: ['job-posts', 'published'],
-        queryFn: () => jobMatchingApi.getPublishedJobPosts(),
+        queryFn: () => jobMatchingApi.getJobPosts(),
         staleTime: 5 * 60_000, // 5 minutes
         gcTime: 10 * 60_000, // 10 minutes
     });

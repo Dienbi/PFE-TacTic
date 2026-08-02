@@ -7,7 +7,9 @@
 .main-content {
     flex: 1;
     margin-left: 260px;
+    width: calc(100% - 260px);
     min-width: 0;
+    padding-top: 70px;
 }
 
 .dashboard-content {

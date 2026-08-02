@@ -144,7 +144,7 @@ export const SocialInfoDisplay: React.FC<SocialInfoDisplayProps> = ({ employeeId
               <div className="mt-6">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Status History</h4>
                 <div className="space-y-2">
-                  {socialStatusHistory.slice(1).map((record) => (
+                  {socialStatusHistory.slice(1, 4).map((record) => (
                     <div
                       key={record.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-md text-sm"

@@ -41,7 +41,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
     try {
       const data: CreatePerformanceReviewRequest | UpdatePerformanceReviewRequest = {
         utilisateur_id: employeeId,
-        score,
+        score: parseFloat(score.toFixed(1)),
         message,
         review_date: reviewDate,
       };
@@ -57,7 +57,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
       onSuccess();
       onClose();
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to save feedback';
+      console.error('Feedback submission error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save feedback';
       showToast('error', 'Error', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -93,8 +94,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative z-[101]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[2000] p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative z-[2001]">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
             {existingReview ? 'Edit Feedback' : 'Give Feedback'}

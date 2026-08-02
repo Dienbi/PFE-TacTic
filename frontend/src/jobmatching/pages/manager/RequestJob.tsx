@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jobMatchingApi, CreateJobRequestDto } from "../../api/jobMatchingApi";
 import Sidebar from "../../../shared/components/Sidebar";
@@ -12,18 +12,27 @@ const RequestJob: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userName = user ? `${user.prenom} ${user.nom}` : "Manager";
+  const userRole = user ? user.role : "manager";
+  const managerEquipeId = user?.equipe_id || 0;
 
   const [formData, setFormData] = useState<CreateJobRequestDto>({
-    equipe_id: 0,
+    equipe_id: managerEquipeId,
     nom_poste: "",
     description_poste: "",
     justification: "",
     date_souhaitee: new Date().toISOString().split("T")[0],
   });
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userName = user ? `${user.prenom} ${user.nom}` : "Manager";
-  const userRole = user ? user.role : "manager";
+  // Auto-scroll to error when it appears
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [error]);
 
   const requestSummary = useMemo(
     () => [
@@ -33,17 +42,12 @@ const RequestJob: React.FC = () => {
         icon: Briefcase,
       },
       {
-        label: "Team ID",
-        value: formData.equipe_id ? String(formData.equipe_id) : "Not set yet",
-        icon: Layers3,
-      },
-      {
         label: "Target Date",
         value: formData.date_souhaitee || "Not set yet",
         icon: CalendarDays,
       },
     ],
-    [formData.date_souhaitee, formData.equipe_id, formData.nom_poste],
+    [formData.date_souhaitee, formData.nom_poste],
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,7 +59,21 @@ const RequestJob: React.FC = () => {
       await jobMatchingApi.createJobRequest(formData);
       navigate("/manager/job-requests");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create job request");
+      const errorMessage = err.response?.data?.message || "Failed to create job request";
+      // Translate French error messages to English
+      const translatedError = errorMessage
+        .replace("Seuls les chefs d'équipe peuvent créer des demandes de poste.", "Only team managers can create job requests.")
+        .replace("Vous ne pouvez créer une demande que pour votre propre équipe.", "You can only create a request for your own team.")
+        .replace("Demande de poste non trouvée.", "Job request not found.")
+        .replace("Seules les demandes en attente peuvent être modifiées.", "Only pending requests can be modified.")
+        .replace("Demande mise à jour.", "Request updated.")
+        .replace("Cette demande a déjà été traitée.", "This request has already been processed.")
+        .replace("Échec de l'approbation de la demande.", "Failed to approve the request.")
+        .replace("Demande approuvée et poste créé.", "Request approved and job position created.")
+        .replace("Demande rejetée.", "Request rejected.")
+        .replace("Seules les demandes en attente peuvent être supprimées.", "Only pending requests can be deleted.")
+        .replace("Demande supprimée.", "Request deleted.");
+      setError(translatedError);
     } finally {
       setLoading(false);
     }
@@ -67,7 +85,7 @@ const RequestJob: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "equipe_id" ? Number.parseInt(value, 10) : value,
+      [name]: value,
     }));
   };
 
@@ -99,7 +117,7 @@ const RequestJob: React.FC = () => {
 
           <div className="request-layout">
             <section className="request-form-shell">
-              {error && <div className="request-alert">{error}</div>}
+              {error && <div ref={errorRef} className="request-alert">{error}</div>}
 
               <form onSubmit={handleSubmit} className="request-form">
                 <section className="request-section">
@@ -109,7 +127,7 @@ const RequestJob: React.FC = () => {
                     </div>
                     <div>
                       <h2>Basic Information</h2>
-                      <p>Define the role, team, and target start date.</p>
+                      <p>Define the role and target start date.</p>
                     </div>
                   </div>
 
@@ -141,21 +159,6 @@ const RequestJob: React.FC = () => {
                         onBlur={() => setFocusedField(null)}
                         required
                         placeholder="e.g. Senior Product Designer"
-                      />
-                    </div>
-
-                    <div className={`field ${focusedField === "equipe_id" ? "is-focused" : ""}`}>
-                      <label htmlFor="equipe_id">Team ID</label>
-                      <input
-                        id="equipe_id"
-                        type="number"
-                        name="equipe_id"
-                        value={formData.equipe_id || ""}
-                        onChange={handleChange}
-                        onFocus={() => setFocusedField("equipe_id")}
-                        onBlur={() => setFocusedField(null)}
-                        required
-                        placeholder="e.g. 101"
                       />
                     </div>
 

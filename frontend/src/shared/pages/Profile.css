@@ -6,6 +6,12 @@
     gap: 2rem;
 }
 
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+
 .profile-header-card {
     background: white;
     border-radius: 24px;
@@ -171,28 +177,58 @@
 }
 
 /* Edit Profile Styles */
+.dashboard-content.profile-wrapper {
+    padding-top: 5rem;
+}
+
+.profile-title {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.profile-title h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+}
+
+.profile-title p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 1rem;
+}
+
 .nav-tabs {
     display: flex;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 2px solid #E5E7EB;
     margin-bottom: 2rem;
+    background: #F9FAFB;
+    border-radius: 12px 12px 0 0;
+    padding: 0 1rem;
 }
 
 .nav-tab {
     padding: 1rem 1.5rem;
     font-weight: 500;
     color: #6B7280;
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
+    margin-bottom: -2px;
 }
 
 .nav-tab:hover {
     color: #374151;
+    background: rgba(79, 70, 229, 0.05);
 }
 
 .nav-tab.active {
     color: #4F46E5;
     border-bottom-color: #4F46E5;
+    background: white;
+    font-weight: 600;
 }
 
 .skills-input-container {
@@ -214,6 +250,59 @@
 
 .add-skill-btn:hover {
     background-color: #4338CA;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #F9FAFB;
+    color: #1F2937;
+}
+
+.form-input:focus,
+textarea.form-input:focus {
+    outline: none;
+    border-color: #4F46E5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+textarea.form-input {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.form-input::placeholder {
+    color: #9CA3AF;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row .form-group {
+    flex: 1;
 }
 
 .skills-tags-container {

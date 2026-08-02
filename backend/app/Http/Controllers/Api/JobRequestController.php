@@ -23,7 +23,7 @@ class JobRequestController extends Controller
         } elseif ($user->isChefEquipe()) {
             $jobRequests = $this->jobRequestService->getByDemandeur($user->id);
         } else {
-            return response()->json(['message' => 'Accès non autorisé.'], 403);
+            return response()->json(['message' => 'Access unauthorized.'], 403);
         }
 
         return response()->json($jobRequests);
@@ -34,7 +34,7 @@ class JobRequestController extends Controller
         $jobRequest = $this->jobRequestService->getById($id);
 
         if (! $jobRequest) {
-            return response()->json(['message' => 'Demande de poste non trouvée.'], 404);
+            return response()->json(['message' => 'Job request not found.'], 404);
         }
 
         return response()->json($jobRequest);
@@ -67,7 +67,7 @@ class JobRequestController extends Controller
             return response()->json(['message' => $result['error']], 400);
         }
 
-        return response()->json(['message' => 'Demande mise à jour.']);
+        return response()->json(['message' => 'Request updated.']);
     }
 
     public function approve(int $id, Request $request): JsonResponse
@@ -79,7 +79,7 @@ class JobRequestController extends Controller
         }
 
         return response()->json([
-            'message' => 'Demande approuvée et poste créé.',
+            'message' => 'Request approved and job position created.',
             'job_post' => $result['job_post'],
         ]);
     }
@@ -98,7 +98,7 @@ class JobRequestController extends Controller
             return response()->json(['message' => $result['error']], 400);
         }
 
-        return response()->json(['message' => 'Demande rejetée.']);
+        return response()->json(['message' => 'Request rejected.']);
     }
 
     public function destroy(int $id): JsonResponse
@@ -109,6 +109,6 @@ class JobRequestController extends Controller
             return response()->json(['message' => $result['error']], 400);
         }
 
-        return response()->json(['message' => 'Demande supprimée.']);
+        return response()->json(['message' => 'Request deleted.']);
     }
 }

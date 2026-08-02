@@ -8,6 +8,7 @@ import {
   CheckCircle,
   XCircle,
   Trash2,
+  X,
 } from "lucide-react";
 import Sidebar from "../../shared/components/Sidebar";
 import Navbar from "../../shared/components/Navbar";
@@ -122,8 +123,12 @@ const LeaveRequest: React.FC = () => {
       refetch();
       fetchUserInfo(); // Refresh solde
     } catch (err: any) {
+      console.error('Leave request error:', err.response?.data);
       setError(
         err.response?.data?.message ||
+          err.response?.data?.errors?.type?.[0] ||
+          err.response?.data?.errors?.date_debut?.[0] ||
+          err.response?.data?.errors?.date_fin?.[0] ||
           "Error submitting the request.",
       );
     } finally {
@@ -238,11 +243,11 @@ const LeaveRequest: React.FC = () => {
           <div className="button-container">
             <button
               className="button-custom"
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => setShowForm(true)}
             >
               <Calendar />
               <div className="text">
-                {showForm ? "Cancel" : "New Request"}
+                New Request
               </div>
             </button>
           </div>
@@ -261,145 +266,157 @@ const LeaveRequest: React.FC = () => {
             </div>
           )}
 
-          {/* Leave Request Form */}
+          {/* Leave Request Form Modal */}
           {showForm && (
-            <div className="leave-form-card">
-              <h2>New Leave Request</h2>
-              <form onSubmit={handleSubmit}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Leave Type</label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) =>
-                        setFormData({ ...formData, type: e.target.value })
-                      }
-                      required
-                    >
-                      <option value="ANNUEL">Annual leave</option>
-                      <option value="MALADIE">Sick leave</option>
-                      <option value="SANS_SOLDE">Unpaid</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Start Date</label>
-                    <input
-                      type="date"
-                      value={formData.date_debut}
-                      onChange={(e) =>
-                        setFormData({ ...formData, date_debut: e.target.value })
-                      }
-                      min={new Date().toISOString().split("T")[0]}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>End Date</label>
-                    <input
-                      type="date"
-                      value={formData.date_fin}
-                      onChange={(e) =>
-                        setFormData({ ...formData, date_fin: e.target.value })
-                      }
-                      min={
-                        formData.date_debut ||
-                        new Date().toISOString().split("T")[0]
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
-                {calculateDays() > 0 && (
-                  <div className="days-preview">
-                    <Clock size={16} />
-                    <span>Duration: {calculateDays()} day(s)</span>
-                    {formData.type !== "SANS_SOLDE" &&
-                      calculateDays() > (user?.solde_conge || 0) && (
-                        <span className="warning">(Insufficient balance!)</span>
-                      )}
-                  </div>
-                )}
-
-                <div className="form-group">
-                  <label>Reason (optional)</label>
-                  <textarea
-                    value={formData.motif}
-                    onChange={(e) =>
-                      setFormData({ ...formData, motif: e.target.value })
-                    }
-                    placeholder="Describe the reason for your request..."
-                    rows={3}
-                  />
-                </div>
-
-                {formData.type === "MALADIE" && (
-                  <div className="form-group">
-                    <label>
-                      Medical Certificate *{" "}
-                      <span className="required-badge">Required</span>
-                    </label>
-                    <input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // Check file size (max 5MB)
-                          if (file.size > 5 * 1024 * 1024) {
-                            setError(
-                              "File size must not exceed 5 MB.",
-                            );
-                            e.target.value = "";
-                            return;
-                          }
-                          setMedicalFile(file);
-                          setError(null);
-                        }
-                      }}
-                      required
-                      className="file-input"
-                    />
-                    {medicalFile && (
-                      <div className="file-preview">
-                        <FileText size={16} />
-                        <span>{medicalFile.name}</span>
-                        <button
-                          type="button"
-                          className="remove-file"
-                          onClick={() => setMedicalFile(null)}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    )}
-                    <small className="help-text">
-                      Accepted formats: PDF, JPG, PNG (max 5 MB)
-                    </small>
-                  </div>
-                )}
-
-                <div className="form-actions">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
+            <div className="modal-overlay" onClick={() => setShowForm(false)}>
+              <div className="modal-content leave-form-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2>New Leave Request</h2>
+                  <button 
+                    className="btn-close" 
                     onClick={() => setShowForm(false)}
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={isSubmitting}
-                  >
-                    <Send size={16} />
-                    {isSubmitting ? "Sending..." : "Submit Request"}
+                    <X size={20} />
                   </button>
                 </div>
-              </form>
+                <div className="modal-body">
+                  <form onSubmit={handleSubmit}>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Leave Type</label>
+                        <select
+                          value={formData.type}
+                          onChange={(e) =>
+                            setFormData({ ...formData, type: e.target.value })
+                          }
+                          required
+                        >
+                          <option value="ANNUEL">Annual leave</option>
+                          <option value="MALADIE">Sick leave</option>
+                          <option value="SANS_SOLDE">Unpaid</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Start Date</label>
+                        <input
+                          type="date"
+                          value={formData.date_debut}
+                          onChange={(e) =>
+                            setFormData({ ...formData, date_debut: e.target.value })
+                          }
+                          min={new Date().toISOString().split("T")[0]}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>End Date</label>
+                        <input
+                          type="date"
+                          value={formData.date_fin}
+                          onChange={(e) =>
+                            setFormData({ ...formData, date_fin: e.target.value })
+                          }
+                          min={
+                            formData.date_debut ||
+                            new Date().toISOString().split("T")[0]
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {calculateDays() > 0 && (
+                      <div className="days-preview">
+                        <Clock size={16} />
+                        <span>Duration: {calculateDays()} day(s)</span>
+                        {formData.type !== "SANS_SOLDE" &&
+                          calculateDays() > (user?.solde_conge || 0) && (
+                            <span className="warning">(Insufficient balance!)</span>
+                          )}
+                      </div>
+                    )}
+
+                    <div className="form-group">
+                      <label>Reason (optional)</label>
+                      <textarea
+                        value={formData.motif}
+                        onChange={(e) =>
+                          setFormData({ ...formData, motif: e.target.value })
+                        }
+                        placeholder="Describe the reason for your request..."
+                        rows={3}
+                      />
+                    </div>
+
+                    {formData.type === "MALADIE" && (
+                      <div className="form-group">
+                        <label>
+                          Medical Certificate *{" "}
+                          <span className="required-badge">Required</span>
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              // Check file size (max 5MB)
+                              if (file.size > 5 * 1024 * 1024) {
+                                setError(
+                                  "File size must not exceed 5 MB.",
+                                );
+                                e.target.value = "";
+                                return;
+                              }
+                              setMedicalFile(file);
+                              setError(null);
+                            }
+                          }}
+                          required
+                          className="file-input"
+                        />
+                        {medicalFile && (
+                          <div className="file-preview">
+                            <FileText size={16} />
+                            <span>{medicalFile.name}</span>
+                            <button
+                              type="button"
+                              className="remove-file"
+                              onClick={() => setMedicalFile(null)}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+                        <small className="help-text">
+                          Accepted formats: PDF, JPG, PNG (max 5 MB)
+                        </small>
+                      </div>
+                    )}
+
+                    <div className="form-actions">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowForm(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={isSubmitting}
+                      >
+                        <Send size={16} />
+                        {isSubmitting ? "Sending..." : "Submit Request"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
             </div>
           )}
 
@@ -423,7 +440,6 @@ const LeaveRequest: React.FC = () => {
                       <th>Duration</th>
                       <th>Reason</th>
                       <th>Status</th>
-                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -453,17 +469,6 @@ const LeaveRequest: React.FC = () => {
                               <span style={{ fontWeight: 600 }}>Reason:</span>{" "}
                               {leave.motif_refus}
                             </div>
-                          )}
-                        </td>
-                        <td>
-                          {leave.statut === "EN_ATTENTE" && (
-                            <button
-                              className="btn-icon btn-danger"
-                              onClick={() => handleCancel(leave.id)}
-                              title="Cancel"
-                            >
-                              <Trash2 size={16} />
-                            </button>
                           )}
                         </td>
                       </tr>

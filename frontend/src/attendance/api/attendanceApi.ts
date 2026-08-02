@@ -72,3 +72,42 @@ export const getMesPointages = async (): Promise<Pointage[]> => {
   // The endpoint returns a paginated response; extract the data array
   return Array.isArray(response.data) ? response.data : (response.data.data ?? []);
 };
+
+// Export attendance to CSV (Excel-compatible)
+export const exportAttendanceToExcel = (pointages: Pointage[], userName: string): void => {
+  // Format data for CSV
+  const headers = ['Date', 'Entry Time', 'Exit Time', 'Duration (hours)', 'Status'];
+  const rows = pointages.map((p) => {
+    const duration = p.duree_travail ? (typeof p.duree_travail === 'string' ? parseFloat(p.duree_travail) : p.duree_travail) : 0;
+    return [
+      new Date(p.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      p.heure_entree ? p.heure_entree.substring(0, 5) : '--:--',
+      p.heure_sortie ? p.heure_sortie.substring(0, 5) : '--:--',
+      `${duration.toFixed(1)}h`,
+      !p.heure_entree && p.absence_justifiee ? 'Justified absence' : !p.heure_entree ? 'Absent' : !p.heure_sortie ? 'In progress' : 'Complete'
+    ];
+  });
+  
+  // Create CSV content
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+  
+  // Add BOM for Excel UTF-8 compatibility
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  
+  // Generate filename with date
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `${userName.replace(/\s+/g, '_')}_attendance_${date}.csv`;
+  
+  // Download file
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+};

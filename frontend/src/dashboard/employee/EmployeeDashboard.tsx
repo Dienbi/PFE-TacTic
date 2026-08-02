@@ -18,8 +18,8 @@ const EmployeeDashboard: React.FC = () => {
   const { user, displayName } = useAuth();
   const { isLoading, error } = useEmployeeDashboard();
 
-  const userName = user ? displayName : "Employé";
-  const userRole = user?.role ?? "Employé";
+  const userName = user ? displayName : "Employee";
+  const userRole = user?.role ?? "Employee";
 
   if (isLoading) {
     return (
@@ -70,8 +70,6 @@ const EmployeeDashboard: React.FC = () => {
           </div>
 
           <SalarySection />
-
-          <BottomActions />
         </div>
       </div>
     </div>

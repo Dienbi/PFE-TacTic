@@ -51,19 +51,22 @@ class JobRequestService
         $demandeur = $this->utilisateurRepository->findOrFail($demandeurId);
 
         if (! $demandeur->isChefEquipe()) {
-            return ['error' => 'Seuls les chefs d\'équipe peuvent créer des demandes de poste.'];
+            return ['error' => 'Only team managers can create job requests'];
         }
 
+        // Auto-use manager's equipe_id if not provided
+        $equipeId = $data['equipe_id'] ?? $demandeur->equipe_id;
+
         // Validate that the manager belongs to the equipe
-        if ($demandeur->equipe_id !== $data['equipe_id']) {
-            return ['error' => 'Vous ne pouvez créer une demande que pour votre propre équipe.'];
+        if ($demandeur->equipe_id !== $equipeId) {
+            return ['error' => 'You can only create a request for your own team'];
         }
 
         // Create the job request
         $jobRequest = $this->jobRequestRepository->create([
             'titre' => $data['titre'],
             'description' => $data['description'],
-            'equipe_id' => $data['equipe_id'],
+            'equipe_id' => $equipeId,
             'demandeur_id' => $demandeurId,
             'statut' => JobRequestStatus::PENDING,
         ]);
@@ -96,7 +99,7 @@ class JobRequestService
 
         // Only pending requests can be updated
         if (! $jobRequest->isPending()) {
-            return ['error' => 'Seules les demandes en attente peuvent être modifiées.'];
+            return ['error' => 'Only pending requests can be modified'];
         }
 
         return $this->jobRequestRepository->update($id, [
@@ -110,18 +113,18 @@ class JobRequestService
         $jobRequest = $this->jobRequestRepository->findWithRelations($id);
 
         if (! $jobRequest) {
-            return ['error' => 'Demande de poste introuvable.'];
+            return ['error' => 'Job request not found'];
         }
 
         if (! $jobRequest->isPending()) {
-            return ['error' => 'Cette demande a déjà été traitée.'];
+            return ['error' => 'This request has already been processed'];
         }
 
         // Approve the request
         $success = $jobRequest->approve();
 
         if (! $success) {
-            return ['error' => 'Échec de l\'approbation de la demande.'];
+            return ['error' => 'Failed to approve the request'];
         }
 
         // Auto-create a draft JobPost from this request
@@ -166,11 +169,11 @@ class JobRequestService
         $jobRequest = $this->jobRequestRepository->findWithRelations($id);
 
         if (! $jobRequest) {
-            return ['error' => 'Demande de poste introuvable.'];
+            return ['error' => 'Job request not found'];
         }
 
         if (! $jobRequest->isPending()) {
-            return ['error' => 'Cette demande a déjà été traitée.'];
+            return ['error' => 'This request has already been processed'];
         }
 
         // Reject the request
@@ -207,7 +210,7 @@ class JobRequestService
 
         // Only pending requests can be deleted
         if (! $jobRequest->isPending()) {
-            return ['error' => 'Seules les demandes en attente peuvent être supprimées.'];
+            return ['error' => 'Only pending requests can be deleted'];
         }
 
         return $this->jobRequestRepository->delete($id);

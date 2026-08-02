@@ -7,6 +7,7 @@
 .main-content {
     flex: 1;
     margin-left: 260px; /* Sidebar width */
+    width: calc(100% - 260px);
     min-width: 0;
     padding: 28px;
     padding-top: 98px;

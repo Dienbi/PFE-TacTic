@@ -96,58 +96,46 @@ const JobBoard: React.FC = () => {
             </div>
           ) : (
             <div className="jobs-grid-layout">
-              {filteredPosts.map((post: JobPost) => {
-                const hasApplied = post.applications?.some(
-                  (app: any) => app.candidat?.id === user.id,
-                );
-
-                return (
-                  <div key={post.id} className="job-card-modern">
-                    <div className="job-card-top">
-                      <div className="job-badge">
-                        {post.equipe?.nom || "General"}
-                      </div>
-                      <span className="job-date">
-                        Posted {new Date(post.created_at).toLocaleDateString()}
-                      </span>
+              {filteredPosts.map((post: JobPost) => (
+                <div key={post.id} className="job-card-modern">
+                  <div className="job-card-top">
+                    <div className="job-badge">
+                      {post.equipe?.nom || "General"}
                     </div>
-
-                    <h3>{post.titre}</h3>
-
-                    <div className="job-tags">
-                      {post.competences?.slice(0, 3).map((comp: any, idx: number) => (
-                        <span key={idx} className="tag">
-                          {comp.nom}
-                        </span>
-                      ))}
-                      {post.competences && post.competences.length > 3 && (
-                        <span className="tag-more">
-                          +{post.competences.length - 3}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="job-excerpt">
-                      {post.description.substring(0, 120)}...
-                    </p>
-
-                    <div className="job-card-footer">
-                      {hasApplied ? (
-                        <button className="btn-applied" disabled>
-                          ✓ Applied
-                        </button>
-                      ) : (
-                        <button
-                          className="btn-apply"
-                          onClick={() => handleApply(post)}
-                        >
-                          Apply Now
-                        </button>
-                      )}
-                    </div>
+                    <span className="job-date">
+                      Posted {new Date(post.created_at).toLocaleDateString()}
+                    </span>
                   </div>
-                );
-              })}
+
+                  <h3>{post.titre}</h3>
+
+                  <div className="job-tags">
+                    {post.competences?.slice(0, 3).map((comp: any, idx: number) => (
+                      <span key={idx} className="tag">
+                        {comp.nom}
+                      </span>
+                    ))}
+                    {post.competences && post.competences.length > 3 && (
+                      <span className="tag-more">
+                        +{post.competences.length - 3}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="job-excerpt">
+                    {post.description.substring(0, 120)}...
+                  </p>
+
+                  <div className="job-card-footer">
+                    <button
+                      className="btn-apply"
+                      onClick={() => handleApply(post)}
+                    >
+                      Apply Now
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

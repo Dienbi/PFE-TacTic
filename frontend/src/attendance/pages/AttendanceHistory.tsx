@@ -13,6 +13,7 @@ import {
   getMesPointages,
   getStats,
   Pointage,
+  exportAttendanceToExcel,
 } from "../api/attendanceApi";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "../../api/queryKeys";
@@ -124,6 +125,15 @@ const AttendanceHistory: React.FC = () => {
     month: "long",
     year: "numeric",
   });
+
+  // Handle export to Excel
+  const handleExport = () => {
+    if (filteredPointages.length === 0) {
+      alert("No attendance records to export for this period");
+      return;
+    }
+    exportAttendanceToExcel(filteredPointages, userName);
+  };
 
   return (
     <div className="dashboard-container">
@@ -256,7 +266,7 @@ const AttendanceHistory: React.FC = () => {
                   <option value="active">In Progress</option>
                 </select>
               </div>
-              <button className="export-btn">
+              <button className="export-btn" onClick={handleExport}>
                 <Download size={16} />
                 Export
               </button>

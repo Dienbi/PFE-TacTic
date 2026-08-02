@@ -276,7 +276,7 @@ const SocialStatusManager: React.FC<SocialStatusManagerProps> = ({ currentStatus
         <div>
           <h4 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#6B7280' }}>Status History</h4>
           <div style={{ display: 'grid', gap: '0.5rem' }}>
-            {history.map((record) => (
+            {history.slice(0, 3).map((record) => (
               <div
                 key={record.id}
                 style={{

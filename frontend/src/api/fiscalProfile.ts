@@ -9,6 +9,7 @@ export interface FiscalProfileGroup {
   disabled_children_count: number;
   student_non_scholarship_children_count: number;
   label: string;
+  employees_count: number;
 }
 
 export interface EmployeeFiscalProfileAssignment {

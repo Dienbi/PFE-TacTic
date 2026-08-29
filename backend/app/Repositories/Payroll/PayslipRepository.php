@@ -157,4 +157,41 @@ class PayslipRepository
         
         return $payslip->delete();
     }
+
+    public function getGlobalStats(): array
+    {
+        $currentMonth = now();
+
+        // Get current month aggregates
+        $currentMonthStats = Payslip::whereYear('pay_period_start', $currentMonth->year)
+            ->whereMonth('pay_period_start', $currentMonth->month)
+            ->latestVersion()
+            ->selectRaw('
+                COUNT(*) as payslips_count,
+                COALESCE(SUM(gross_salary), 0) as total_gross,
+                COALESCE(SUM(net_salary), 0) as total_net
+            ')
+            ->first();
+
+        // Get status counts
+        $statusCounts = Payslip::whereYear('pay_period_start', $currentMonth->year)
+            ->whereMonth('pay_period_start', $currentMonth->month)
+            ->latestVersion()
+            ->selectRaw('
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as draft_count,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as validated_count,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as locked_count
+            ', ['draft', 'validated', 'locked'])
+            ->first();
+
+        return [
+            'total_paies' => $currentMonthStats->payslips_count ?? 0,
+            'total_masse_salariale' => round($currentMonthStats->total_gross ?? 0, 2),
+            'total_net_mensuel' => round($currentMonthStats->total_net ?? 0, 2),
+            'paies_en_attente' => $statusCounts->draft_count ?? 0,
+            'paies_validees' => $statusCounts->validated_count ?? 0,
+            'paies_payees' => $statusCounts->locked_count ?? 0,
+            'paies_mois_courant' => $currentMonthStats->payslips_count ?? 0,
+        ];
+    }
 }

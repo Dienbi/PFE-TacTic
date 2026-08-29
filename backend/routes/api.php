@@ -296,6 +296,7 @@ Route::middleware('jwt.auth')->group(function () {
         // Manager routes
         Route::middleware('role:rh,chef_equipe')->group(function () {
             Route::get('/team', [PaieController::class, 'teamPayroll']);
+            Route::get('/utilisateur/{id}', [PaieController::class, 'byUtilisateur'])->where('id', '[0-9]+');
         });
 
         // RH only routes
@@ -311,7 +312,6 @@ Route::middleware('jwt.auth')->group(function () {
             Route::post('/configurer-salaire', [PaieController::class, 'configurerSalaire']);
             Route::post('/simuler', [PaieController::class, 'simuler']);
             Route::post('/preview', [PaieController::class, 'preview']);
-            Route::get('/utilisateur/{utilisateurId}', [PaieController::class, 'byUtilisateur']);
             Route::get('/{id}', [PaieController::class, 'show'])->where('id', '[0-9]+');
             Route::post('/generer', [PaieController::class, 'generer']);
             Route::post('/generer-tous', [PaieController::class, 'genererPourTous']);
@@ -492,6 +492,7 @@ Route::middleware('jwt.auth')->group(function () {
         // Payslip Generation
         Route::prefix('payslips')->group(function () {
             Route::get('/', [PayslipGenerationController::class, 'index']);
+            Route::get('/global-stats', [PayslipGenerationController::class, 'globalStats']);
             Route::post('/single', [PayslipGenerationController::class, 'generateSingle']);
             Route::post('/batch', [PayslipGenerationController::class, 'generateBatch']);
             Route::get('/period', [PayslipGenerationController::class, 'getByPeriod']);

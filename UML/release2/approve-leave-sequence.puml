@@ -3,11 +3,11 @@ title Detailed Sequence Diagram — Approve Leave Request
 
 actor "Manager\n(Team Leader / HR)" as Manager
 participant "LeaveManagement Page\n(React)" as UI
-participant "CongeController" as Controller
-participant "CongeService" as Service
-participant "LeaveConflictService" as ConflictSvc
-participant "CongeRepository" as CongeRepo
-participant "UtilisateurRepository" as UserRepo
+participant "useLeaveMutations\n(React Query)" as Mutations
+participant "LeaveController" as Controller
+participant "LeaveService" as Service
+participant "LeaveRepository" as LeaveRepo
+participant "UserRepository" as UserRepo
 participant "CacheService" as Cache
 participant "LeaveStatusNotification\n(Event)" as Event
 database "PostgreSQL" as DB
@@ -17,17 +17,17 @@ database "PostgreSQL" as DB
 Manager -> UI : Open leave management page
 
 alt Team Leader
-  UI -> Controller : GET /api/conges/en-attente/equipe
-  Controller -> Service : getEnAttenteByEquipe(equipeId)
+  UI -> Controller : GET /api/leaves/pending/team
+  Controller -> Service : getPendingByTeam(teamId)
 else HR Administrator
-  UI -> Controller : GET /api/conges/en-attente
-  Controller -> Service : getEnAttente()
+  UI -> Controller : GET /api/leaves/pending
+  Controller -> Service : getPending()
 end
 
-Service -> CongeRepo : getEnAttente[ByEquipe]()
-CongeRepo -> DB : SELECT pending conges\nWITH utilisateur
-DB --> CongeRepo : pending leaves
-CongeRepo --> Service : collection
+Service -> LeaveRepo : getPending[ByTeam]()
+LeaveRepo -> DB : SELECT pending leaves\nWITH user
+DB --> LeaveRepo : pending leaves
+LeaveRepo --> Service : collection
 
 Service -> ConflictSvc : checkConflictsForMany(leaves)
 ConflictSvc -> DB : Batch team capacity\nand overlap queries
@@ -40,34 +40,56 @@ UI --> Manager : Display pending list\nwith conflict warnings
 == Approve request ==
 
 Manager -> UI : Click Approve on request
-UI -> Controller : POST /api/conges/{id}/approuver
-Controller -> Service : approuver(congeId, managerId)
+UI -> UI : setProcessing(id) - Show loading state
+UI -> Mutations : approveLeave.mutateAsync(id)
+Mutations -> Controller : POST /api/leaves/{id}/approve\n(Authorization: Bearer token)
+Controller -> Service : approve(leaveId, managerId)
 
 Service -> Cache : invalidateDashboard()
-Service -> CongeRepo : findOrFail(congeId)
-CongeRepo -> DB : SELECT conge
-DB --> CongeRepo : conge
+Service -> LeaveRepo : findOrFail(leaveId)
+LeaveRepo -> DB : SELECT leave WHERE id = ?
+DB --> LeaveRepo : leave object
+LeaveRepo --> Service : leave
 
-alt Status is not EN_ATTENTE
+alt Status is not PENDING
   Service --> Controller : false
-  Controller --> UI : 400 Bad Request
+  Controller --> Mutations : 400 Bad Request\n{"message": "Error during approval."}
+  Mutations --> UI : Error response
+  UI -> UI : Show error message\n"Error during approval."
+  UI -> UI : setProcessing(null)
   UI --> Manager : Display error
-else Status is EN_ATTENTE
-  alt Type != SANS_SOLDE
-    Service -> UserRepo : updateSoldeConge(userId, days)
-    UserRepo -> DB : UPDATE solde_conge
+else Status is PENDING
+  alt Type != UNPAID
+    Service -> UserRepo : updateLeaveBalance(userId, number_of_days)
+    UserRepo -> DB : UPDATE users\nSET leave_balance = leave_balance - ?\nWHERE id = ?
+    DB --> UserRepo : success
+    UserRepo --> Service : balance updated
   end
 
-  Service -> UserRepo : updateStatus(userId, EN_CONGE)
-  UserRepo -> DB : UPDATE utilisateur.status
+  Service -> UserRepo : updateStatus(userId, ON_LEAVE)
+  UserRepo -> DB : UPDATE users\nSET status = 'ON_LEAVE'\nWHERE id = ?
+  DB --> UserRepo : success
+  UserRepo --> Service : status updated
 
-  Service -> CongeRepo : approuver(congeId, managerId)
-  CongeRepo -> DB : UPDATE statut = APPROUVE,\napprouve_par = managerId
+  Service -> LeaveRepo : approve(leaveId, managerId)
+  LeaveRepo -> DB : UPDATE leaves\nSET status = 'APPROVED',\napproved_by = ?\nWHERE id = ?
+  DB --> LeaveRepo : success
+  LeaveRepo --> Service : approval saved
 
-  Service -> Event : dispatch(LeaveStatusNotification)
+  Service -> Event : dispatch(LeaveStatusNotification\nuserId, 'success',\n'Leave Approved', message, {leave_id})
+  note right of Event
+    Broadcast notification to employee
+    with leave details and approval status
+  end note
+
   Service --> Controller : true
-  Controller --> UI : 200 OK
-  UI --> Manager : Success message
+  Controller --> Mutations : 200 OK\n{"message": "Leave approved successfully."}
+  Mutations --> UI : Success response
+  UI -> UI : Show success message\n"Request approved successfully!"
+  UI -> UI : refetch() - Refresh leave list
+  UI -> UI : setSelectedLeave(null)
+  UI -> UI : setProcessing(null)
+  UI --> Manager : Success confirmation
 end
 
 @enduml

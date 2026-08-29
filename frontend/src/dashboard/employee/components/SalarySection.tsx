@@ -1,12 +1,11 @@
 import React from "react";
-// import { Link } from "react-router-dom";
-// import client from "../../../api/client";
-// import { useMesPaies } from "../../../hooks/queries";
+import { Link } from "react-router-dom";
+import { useEmployeeDashboard } from "../../../hooks/queries";
 import "./SalarySection.css";
 
 const SalarySection: React.FC = () => {
-  // const { data: payslips = [], isLoading: loading } = useMesPaies();
-  // const latestPay = payslips.length > 0 ? payslips[0] : null;
+  const { data } = useEmployeeDashboard();
+  const latestPayslip = data?.latest_payslip;
 
   const formatCurrency = (val: string | number) => {
     return (
@@ -17,46 +16,52 @@ const SalarySection: React.FC = () => {
     );
   };
 
-  // const handleDownload = async () => {
-  //   if (!latestPay) return;
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("fr-TN", {
+      year: "numeric",
+      month: "long",
+    });
+  };
 
-  //   const printWindow = window.open("", "_blank");
-  //   if (printWindow) {
-  //     printWindow.document.write("Chargement...");
-  //   } else {
-  //     alert("Activation des pop-ups requise");
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await client.get(`/paies/${latestPay.id}/download`);
-  //     if (printWindow) {
-  //       printWindow.document.open();
-  //       printWindow.document.write(response.data);
-  //       printWindow.document.close();
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //     if (printWindow) printWindow.close();
-  //   }
-  // };
-
-  // if (!latestPay && !loading)
-  //   return (
-  //     <div className="salary-section-full">
-  //       <h3 className="section-title">Information Salariale</h3>
-  //       <p style={{ color: "#666" }}>Aucune fiche de paie disponible.</p>
-  //     </div>
-  //   );
-
-  // if (loading) return <div className="salary-section-full">Chargement...</div>;
+  if (!latestPayslip) {
+    return (
+      <div className="salary-section-full">
+        <h3 className="section-title">Salary Information</h3>
+        <p style={{ color: "#666" }}>No payslip available yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="salary-section-full">
-      <h3 className="section-title">Salary Information</h3>
-      <p style={{ color: "#666" }}>
-        Payroll module is being migrated to the new Tunisian system.
-      </p>
+      <div className="card-header">
+        <h3 className="section-title">Salary Information</h3>
+        <Link to="/employee/payslips" className="view-all-link">
+          View History
+        </Link>
+      </div>
+      
+      <div className="salary-cards-row">
+        <div className="salary-card">
+          <span className="salary-label">Gross Salary</span>
+          <span className="salary-amount black">{formatCurrency(latestPayslip.salaire_brut)}</span>
+        </div>
+        
+        <div className="salary-card">
+          <span className="salary-label">Deductions</span>
+          <span className="salary-amount black">{formatCurrency(latestPayslip.deductions)}</span>
+        </div>
+        
+        <div className="salary-card green-bg">
+          <span className="salary-label">Net Salary</span>
+          <span className="salary-amount green">{formatCurrency(latestPayslip.salaire_net)}</span>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "1rem", color: "#64748b", fontSize: "0.875rem" }}>
+        Period: {formatDate(latestPayslip.periode_debut)} - {formatDate(latestPayslip.periode_fin)}
+      </div>
     </div>
   );
 };

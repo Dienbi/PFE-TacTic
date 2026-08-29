@@ -1,0 +1,99 @@
+@startuml payslip_correction_sequence
+title Detailed Sequence Diagram — Payslip Correction
+
+actor "HR Administrator" as HR
+participant "PayslipCorrection\n(React)" as UI
+participant "usePayslipCorrectionMutations\n(React Query)" as Mutations
+participant "PayslipCorrectionController" as Controller
+participant "PayslipCorrectionService" as Service
+participant "PayrollCalculationEngine" as Engine
+database "PostgreSQL" as DB
+
+== View payslip details and correction history ==
+
+HR -> UI : Open payslip details page
+UI -> Controller : GET /api/payroll/payslips/{id}
+Controller -> Service : getPayslipDetails(payslipId)
+Service -> DB : SELECT payslip WITH relations\n(employee, ruleSet, supersedes, supersededBy)
+DB --> Service : payslip data
+Service --> Controller : payslip details
+Controller --> UI : JSON response
+UI --> HR : Display payslip with version history
+
+HR -> UI : Click "View Correction History"
+UI -> Controller : GET /api/payroll/corrections/{payslipId}/history
+Controller -> Service : getCorrectionHistory(payslipId)
+Service -> DB : SELECT correction chain\nWHERE supersedes_payslip_id = ?
+DB --> Service : correction history
+Service --> Controller : history data
+Controller --> UI : JSON response
+UI --> HR : Display correction history with changes
+
+== Create payslip correction ==
+
+HR -> UI : Click "Create Correction" on locked payslip
+HR -> UI : Enter correction reason, modify base salary, pay items
+UI -> Mutations : createCorrection.mutateAsync({originalPayslipId, reason, base_salary, pay_items, is_regularization})
+Mutations -> Controller : POST /api/payroll/corrections/{originalPayslipId}\n(Authorization: Bearer token)
+Controller -> Service : createCorrection(originalPayslipId, correctionData, Auth::id())
+
+Service -> DB : Validate original payslip exists, is locked, and has no payments
+DB --> Service : validation result
+
+alt Validation fails (not found, not locked, or has payments)
+  Service --> Controller : error message
+  Controller --> Mutations : 400 Bad Request
+  Mutations --> UI : Error response
+  UI --> HR : Display error message
+else Validation succeeds
+  Service -> Service : recalculatePayslip with new data
+  Service -> Engine : calculatePayslip(updated input)
+  Engine -> Engine : Recalculate gross, CNSS, CSS, IRPP, net salary
+  Engine --> Service : recalculated results
+
+  Service -> DB : BEGIN TRANSACTION
+  Service -> DB : UPDATE original payslip SET status='superseded'
+  Service -> DB : INSERT correction payslip\n{version=old+1, supersedes_payslip_id, is_regularization_adjustment, calculated values}
+  Service -> DB : INSERT payslip_pay_items (if provided)
+  Service -> DB : COMMIT TRANSACTION
+
+  Service -> Service : calculateChanges(original vs correction)
+  Service -> DB : INSERT audit_logs\n{actor_id, action='payslip_correction', details: changes}
+
+  Service -> DB : Refresh correction payslip WITH relations
+  DB --> Service : complete correction payslip
+
+  Service --> Controller : {correction_payslip, original_payslip, changes, success message}
+  Controller --> Mutations : 201 Created
+  Mutations --> UI : Success response
+  UI -> UI : refetch() - Refresh payslip details
+  UI --> HR : Display correction payslip with version increment and changes
+end
+
+== Compare payslip versions ==
+
+HR -> UI : Select two payslip versions to compare
+UI -> Controller : POST /api/payroll/corrections/compare\n{payslip_id_1, payslip_id_2}
+Controller -> Service : compareVersions(payslip_id_1, payslip_id_2)
+Service -> DB : SELECT both payslips WITH relations
+DB --> Service : payslips data
+Service -> Service : Calculate differences between versions
+Service --> Controller : comparison results with detailed changes
+Controller --> UI : JSON response
+UI --> HR : Display side-by-side comparison with highlighted differences
+
+== Revert to previous version ==
+
+HR -> UI : Click "Revert to Version" on correction payslip
+UI -> UI : Select target version to revert to
+UI -> Controller : POST /api/payroll/corrections/{currentPayslipId}/revert\n{target_version_id}
+Controller -> Service : revertToVersion(currentPayslipId, target_version_id, Auth::id())
+Service -> DB : Validate target version in correction chain
+Service -> DB : Create new correction from target version (supersedes current)
+Service -> DB : INSERT audit_logs with revert action
+Service --> Controller : revert result
+Controller --> UI : JSON response
+UI -> UI : refetch() - Refresh payslip details
+UI --> HR : Display reverted payslip as new correction version
+
+@enduml

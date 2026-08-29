@@ -9,7 +9,9 @@ import {
   regularizationApi,
   ruleImportApi,
   auditLogsApi,
+  legacyPayrollApi,
   type CorrectionHistory,
+  type GlobalStats,
 } from '../../api/payrollApi';
 
 // ── Fiscal Rules Queries ───────────────────────────────────────────
@@ -293,6 +295,19 @@ export const useAuditTrail = (entityType: string, entityId: string) =>
     staleTime: 5 * 60_000,
     gcTime: 10 * 60_000,
     enabled: !!entityType && !!entityId,
+  });
+
+// ── Legacy Payroll Global Stats ─────────────────────────────────────
+
+export const usePayrollGlobalStats = () =>
+  useQuery({
+    queryKey: ['payroll', 'global-stats'],
+    queryFn: async () => {
+      const response = await legacyPayrollApi.getGlobalStats();
+      return response.data;
+    },
+    staleTime: 2 * 60_000,
+    gcTime: 5 * 60_000,
   });
 
 export const useActionLogs = (action: string) =>

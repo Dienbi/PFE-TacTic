@@ -1,0 +1,99 @@
+@startuml fiscal_profile_assignment_sequence
+title Detailed Sequence Diagram — Fiscal Profile Creation and Assignment
+
+actor "HR Administrator" as HR
+participant "FiscalProfileManagement\n(React)" as UI
+participant "useFiscalProfileMutations\n(React Query)" as Mutations
+participant "EmployeeFiscalProfileAssignmentController" as Controller
+participant "FiscalProfileAssignmentService" as Service
+participant "FiscalProfileGroupService" as GroupService
+participant "FiscalProfileAuditService" as AuditService
+database "PostgreSQL" as DB
+
+== View employee fiscal profile history ==
+
+HR -> UI : Open employee fiscal profile page
+UI -> Controller : GET /api/employees/{id}/fiscal-profile-history
+Controller -> Service : getEmployeeHistory(employeeId)
+Service -> DB : SELECT assignments WITH fiscalProfileGroup, assignedBy\nWHERE employee_id = ? ORDER BY effective_from DESC
+DB --> Service : assignment history
+Service --> Controller : history data
+Controller --> UI : JSON response
+UI --> HR : Display fiscal profile history\nwith effective dates and groups
+
+== Assign fiscal profile to employee ==
+
+HR -> UI : Select fiscal profile group and effective date
+UI -> Mutations : assignFiscalProfile.mutateAsync(payload)
+Mutations -> Controller : POST /api/employees/{id}/fiscal-profile-assign\n(Authorization: Bearer token)\n{group_id, effective_from, ai_message_id?}
+Controller -> Controller : Validate RH role
+Controller -> DB : Validate group_id exists
+DB --> Controller : fiscal profile group
+Controller -> Service : assignProfile(employeeId, groupAttributes, effectiveFrom, Auth::id())
+
+Service -> GroupService : findOrCreate(groupAttributes)
+GroupService -> DB : Check existing group with same attributes\n{gender, marital_status, children_count, disabled_children, student_children}
+DB --> GroupService : existing group or null
+
+alt Group already exists
+  GroupService --> Service : return existing group
+else Group does not exist
+  GroupService -> GroupService : compute head_of_family, generate label
+  GroupService -> DB : INSERT fiscal_profile_groups
+  DB --> GroupService : created group
+  GroupService --> Service : return new group
+end
+
+Service -> DB : BEGIN TRANSACTION
+
+Service -> DB : Find current assignment for employee\nWHERE employee_id = ? AND effective_to IS NULL
+DB --> Service : current assignment or null
+
+alt Previous assignment exists
+  Service -> DB : UPDATE assignment SET effective_to = day_before_new_effective_date\nWHERE id = ?
+  DB --> Service : previous assignment closed
+end
+
+Service -> DB : INSERT employee_fiscal_profile_assignments\n{id=UUID, employee_id, fiscal_profile_group_id, effective_from, effective_to=NULL, assigned_by, assigned_at}
+DB --> Service : new assignment created
+
+Service -> DB : COMMIT TRANSACTION
+
+Service -> DB : Refresh assignment WITH fiscalProfileGroup
+DB --> Service : complete assignment data
+
+Service --> Controller : assignment object
+
+Controller -> AuditService : logProfileAssigned(actorId, assignmentId, aiMessageId, details)
+AuditService -> DB : INSERT audit_logs\n{actor_id, action, entity_type, entity_id, details_json, source_ai_chat_message_id?}
+DB --> AuditService : audit log created
+AuditService --> Controller : logging complete
+
+Controller --> Mutations : 200 OK\n{message, assignment}
+Mutations --> UI : Success response
+UI -> UI : refetch() - Refresh fiscal profile history
+UI --> HR : Display updated fiscal profile assignment\nwith new effective date
+
+== Bulk assign fiscal profile (optional) ==
+
+HR -> UI : Select multiple employees and fiscal profile group
+UI -> Mutations : bulkAssignFiscalProfile.mutateAsync(payload)
+Mutations -> Controller : POST /api/fiscal-profile-groups/{id}/bulk-assign\n{employee_ids[], effective_from, ai_message_id?}
+Controller -> Service : bulkAssign(employeeIds, groupId, effectiveFrom, Auth::id())
+
+loop For each employee_id
+  Service -> Service : assignProfile(employeeId, groupAttributes, effectiveFrom, Auth::id())
+  Service -> GroupService : findOrCreate(groupAttributes)
+  Service -> DB : Close previous assignment, create new assignment
+end
+
+Controller -> AuditService : logBulkAssignedViaAi or individual logProfileAssigned
+AuditService -> DB : INSERT audit logs for each assignment
+DB --> AuditService : audit logs created
+
+Controller --> Mutations : 200 OK\n{message, assignment_ids[], count}
+Mutations --> UI : Success response
+UI -> UI : refetch() - Refresh affected employees
+UI --> HR : Display bulk assignment results
+
+@enduml

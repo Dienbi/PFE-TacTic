@@ -3,7 +3,7 @@ left to right direction
 skinparam packageStyle rectangle
 skinparam actorStyle awesome
 
-title Release 2 — Leave Management and Payroll
+title Release 2 — Leave Management and Advanced Payroll System
 
 actor "Employee" as Emp
 actor "Team Leader" as Chef
@@ -18,26 +18,45 @@ rectangle "TAC-TIC HR System\n(Release 2 — Sprint 3 & 4)" as System {
     usecase "Request Leave" as UC_Request
     usecase "View Leave History\nand Balance" as UC_LeaveHistory
     usecase "Cancel Pending\nLeave Request" as UC_Cancel
+    usecase "View All Leave\nRequests" as UC_AllLeaves
+    usecase "View Pending\nLeave Requests" as UC_PendingLeaves
     usecase "View Team Pending\nLeave Requests" as UC_TeamPending
     usecase "Approve Leave Request" as UC_Approve
     usecase "Reject Leave Request" as UC_Reject
-    usecase "Check Team Leave\nConflicts" as UC_Conflicts
+    usecase "Check Leave\nConflicts" as UC_Conflicts
     usecase "Download Medical\nCertificate" as UC_Medical
+    usecase "View Leave by\nPeriod" as UC_LeavePeriod
   }
 
-  package "Sprint 4 — Payroll" {
+  package "Sprint 4 — Advanced Payroll" {
     usecase "View and Download\nPayslip" as UC_ViewPayslip
     usecase "Configure Employee\nBase Salary" as UC_ConfigSalary
-    usecase "Simulate Payroll" as UC_Simulate
-    usecase "Generate Payroll" as UC_Generate
-    usecase "Validate Payroll" as UC_Validate
-    usecase "Mark Payroll as Paid" as UC_Pay
+    usecase "Simulate Payroll\nCalculation" as UC_Simulate
+    usecase "Preview Payroll\nfor Period" as UC_Preview
+    usecase "Generate Single\nPayslip" as UC_GenerateSingle
+    usecase "Generate Batch\nPayslips" as UC_GenerateBatch
+    usecase "Validate Payslip" as UC_Validate
+    usecase "Lock Payslip" as UC_Lock
+    usecase "Record Payment" as UC_RecordPayment
+    usecase "View Payment\nStatistics" as UC_PaymentStats
+    usecase "Compare Payslip\nVersions" as UC_Compare
+    usecase "Create Payslip\nCorrection" as UC_Correction
+    usecase "Revert to Previous\nPayslip" as UC_Revert
+    usecase "Calculate Year-End\nRegularization" as UC_YearEndCalc
+    usecase "Create Year-End\nPayslip" as UC_YearEndCreate
+    usecase "Import Fiscal Rules\nfrom PDF" as UC_ImportRules
+    usecase "Manage Fiscal Rules\nand Brackets" as UC_FiscalRules
+    usecase "View Audit Trail" as UC_AuditTrail
+    usecase "View Payroll\nStatistics" as UC_PayrollStats
   }
 
   UC_Approve ..> UC_Conflicts : <<include>>
   UC_Reject ..> UC_Conflicts : <<include>>
-  UC_Generate ..> UC_Simulate : <<extend>>
-  UC_Pay ..> UC_Validate : <<include>>
+  UC_GenerateBatch ..> UC_Simulate : <<extend>>
+  UC_GenerateSingle ..> UC_Simulate : <<extend>>
+  UC_RecordPayment ..> UC_Validate : <<include>>
+  UC_Correction ..> UC_Compare : <<include>>
+  UC_Revert ..> UC_Compare : <<include>>
 }
 
 Emp --> UC_Request
@@ -48,15 +67,32 @@ Emp --> UC_ViewPayslip
 Chef --> UC_TeamPending
 Chef --> UC_Approve
 Chef --> UC_Reject
+Chef --> UC_ViewPayslip
 
+RH --> UC_AllLeaves
+RH --> UC_PendingLeaves
 RH --> UC_Approve
 RH --> UC_Reject
 RH --> UC_Medical
+RH --> UC_LeavePeriod
 RH --> UC_ConfigSalary
 RH --> UC_Simulate
-RH --> UC_Generate
+RH --> UC_Preview
+RH --> UC_GenerateSingle
+RH --> UC_GenerateBatch
 RH --> UC_Validate
-RH --> UC_Pay
+RH --> UC_Lock
+RH --> UC_RecordPayment
+RH --> UC_PaymentStats
+RH --> UC_Compare
+RH --> UC_Correction
+RH --> UC_Revert
+RH --> UC_YearEndCalc
+RH --> UC_YearEndCreate
+RH --> UC_ImportRules
+RH --> UC_FiscalRules
+RH --> UC_AuditTrail
+RH --> UC_PayrollStats
 RH --> UC_ViewPayslip
 
 @enduml

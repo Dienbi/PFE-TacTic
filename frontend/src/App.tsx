@@ -39,6 +39,8 @@ const YearEndRegularization = lazy(() => import("./payroll/YearEndRegularization
 const RuleImport = lazy(() => import("./payroll/RuleImport"));
 const AuditLogs = lazy(() => import("./payroll/AuditLogs"));
 const FiscalProfilePage = lazy(() => import("./pages/payroll/fiscal-profile/index"));
+const PayslipHistory = lazy(() => import("./payroll/PayslipHistory"));
+const TeamPayslipHistory = lazy(() => import("./payroll/TeamPayslipHistory"));
 const RequestJob = lazy(() => import("./jobmatching/pages/manager/RequestJob"));
 const MyJobRequests = lazy(() => import("./jobmatching/pages/manager/MyJobRequests"));
 const JobRequestsReview = lazy(() => import("./jobmatching/pages/hr/JobRequestsReview"));
@@ -239,7 +241,7 @@ function App() {
             <Route
               path="/dashboard/manager"
               element={
-                <ProtectedRoute allowedRoles={["manager"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
                   <ManagerDashboard />
                 </ProtectedRoute>
               }
@@ -247,7 +249,7 @@ function App() {
             <Route
               path="/dashboard/manager/my-team"
               element={
-                <ProtectedRoute allowedRoles={["manager"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
                   <MyTeam />
                 </ProtectedRoute>
               }
@@ -255,7 +257,7 @@ function App() {
             <Route
               path="/manager/employees/:id"
               element={
-                <ProtectedRoute allowedRoles={["manager"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
                   <UserProfile />
                 </ProtectedRoute>
               }
@@ -263,7 +265,7 @@ function App() {
             <Route
               path="/manager/leave"
               element={
-                <ProtectedRoute allowedRoles={["manager"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
                   <LeaveRequest />
                 </ProtectedRoute>
               }
@@ -271,7 +273,7 @@ function App() {
             <Route
               path="/manager/request-job"
               element={
-                <ProtectedRoute allowedRoles={["manager"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
                   <RequestJob />
                 </ProtectedRoute>
               }
@@ -279,8 +281,16 @@ function App() {
             <Route
               path="/manager/job-requests"
               element={
-                <ProtectedRoute allowedRoles={["manager"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
                   <MyJobRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manager/team-payroll"
+              element={
+                <ProtectedRoute allowedRoles={["chef_equipe"]}>
+                  <TeamPayslipHistory />
                 </ProtectedRoute>
               }
             />
@@ -288,7 +298,7 @@ function App() {
             <Route
               path="/dashboard/employee"
               element={
-                <ProtectedRoute allowedRoles={["employee"]}>
+                <ProtectedRoute allowedRoles={["employe"]}>
                   <EmployeeDashboard />
                 </ProtectedRoute>
               }
@@ -296,7 +306,7 @@ function App() {
             <Route
               path="/employee/leave"
               element={
-                <ProtectedRoute allowedRoles={["employee"]}>
+                <ProtectedRoute allowedRoles={["employe"]}>
                   <LeaveRequest />
                 </ProtectedRoute>
               }
@@ -304,7 +314,7 @@ function App() {
             <Route
               path="/employee/jobs"
               element={
-                <ProtectedRoute allowedRoles={["employee"]}>
+                <ProtectedRoute allowedRoles={["employe"]}>
                   <JobBoard />
                 </ProtectedRoute>
               }
@@ -312,15 +322,23 @@ function App() {
             <Route
               path="/employee/applications"
               element={
-                <ProtectedRoute allowedRoles={["employee"]}>
+                <ProtectedRoute allowedRoles={["employe"]}>
                   <MyApplications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/payslips"
+              element={
+                <ProtectedRoute allowedRoles={["employe"]}>
+                  <PayslipHistory />
                 </ProtectedRoute>
               }
             />
             <Route
               path="/profile"
               element={
-                <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
+                <ProtectedRoute allowedRoles={["rh", "chef_equipe", "employe"]}>
                   <Profile />
                 </ProtectedRoute>
               }
@@ -328,7 +346,7 @@ function App() {
             <Route
               path="/profile/edit"
               element={
-                <ProtectedRoute allowedRoles={["rh", "manager", "employee"]}>
+                <ProtectedRoute allowedRoles={["rh", "chef_equipe", "employe"]}>
                   <EditProfile />
                 </ProtectedRoute>
               }
@@ -336,7 +354,7 @@ function App() {
             <Route
               path="/attendance"
               element={
-                <ProtectedRoute allowedRoles={["manager", "employee"]}>
+                <ProtectedRoute allowedRoles={["chef_equipe", "employe"]}>
                   <AttendanceHistory />
                 </ProtectedRoute>
               }

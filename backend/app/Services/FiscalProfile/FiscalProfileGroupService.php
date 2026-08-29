@@ -125,7 +125,11 @@ class FiscalProfileGroupService
      */
     public function getAll()
     {
-        return FiscalProfileGroup::orderBy('label')->get();
+        return FiscalProfileGroup::orderBy('label')
+            ->withCount(['employees' => function ($query) {
+                $query->whereNull('employee_fiscal_profile_assignments.effective_to');
+            }])
+            ->get();
     }
 
     /**

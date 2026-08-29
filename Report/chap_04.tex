@@ -9,7 +9,7 @@ In the previous chapter, we completed Release 1, which delivered authentication,
 \subsection{Backlog of the Third Sprint}
 Table \ref{tab:leave-backlog} presents the backlog of the third sprint.
 
-\begin{longtable}[c]{
+\begin{longtable}{
     |p{.10\textwidth}
     |p{.20\textwidth}|
     p{.30\textwidth}|
@@ -45,7 +45,7 @@ Table \ref{tab:leave-backlog} presents the backlog of the third sprint.
 \subsection{Backlog of the Fourth Sprint}
 Table \ref{tab:payroll-backlog} presents the backlog of the fourth sprint.
 
-\begin{longtable}[c]{
+\begin{longtable}{
     |p{.10\textwidth}
     |p{.20\textwidth}|
     p{.30\textwidth}|
@@ -76,6 +76,62 @@ Table \ref{tab:payroll-backlog} presents the backlog of the fourth sprint.
     & -Design of sequence diagram\newline
 -Development of US-23 & 3 \\
     \hline
+    US-24 & As HR, I can filter payslips by employee, status, date range, and search query
+    & -Design of sequence diagram\newline
+-Development of US-24 & 2 \\
+    \hline
+    US-25 & As HR, I can paginate payslips with customizable rows per page
+    & -Design of sequence diagram\newline
+-Development of US-25 & 2 \\
+    \hline
+    US-26 & As HR, I can preview payslips in-app before downloading
+    & -Design of sequence diagram\newline
+-Development of US-26 & 3 \\
+    \hline
+    US-27 & As HR, I can generate professional PDF payslips with detailed breakdown
+    & -Design of sequence diagram\newline
+-Development of US-27 & 5 \\
+    \hline
+    US-28 & As HR, I can manage payslip workflow (draft $\rightarrow$ validated $\rightarrow$ locked)
+    & -Design of sequence diagram\newline
+-Development of US-28 & 3 \\
+    \hline
+    US-29 & As HR, I can delete draft payslips
+    & -Design of sequence diagram\newline
+-Development of US-29 & 2 \\
+    \hline
+    US-30 & As HR, I can access guided tour for payroll features
+    & -Design of sequence diagram\newline
+-Development of US-30 & 2 \\
+    \hline
+    US-31 & As HR, I can track payments against generated payslips
+    & -Design of sequence diagram\newline
+-Development of US-31 & 3 \\
+    \hline
+    US-32 & As HR, I can manage payslip corrections and adjustments
+    & -Design of sequence diagram\newline
+-Development of US-32 & 3 \\
+    \hline
+    US-33 & As HR, I can perform year-end tax regularization
+    & -Design of sequence diagram\newline
+-Development of US-33 & 5 \\
+    \hline
+    US-34 & As HR, I can configure fiscal rules and tax brackets
+    & -Design of sequence diagram\newline
+-Development of US-34 & 5 \\
+    \hline
+    US-35 & As HR, I can import fiscal rules from PDF documents using AI
+    & -Design of sequence diagram\newline
+-Development of US-35 & 5 \\
+    \hline
+    US-36 & As HR, I can view system activity logs and audit trails
+    & -Design of sequence diagram\newline
+-Development of US-36 & 3 \\
+    \hline
+    US-37 & As HR, I can manage employee fiscal profiles (marital status, children count)
+    & -Design of sequence diagram\newline
+-Development of US-37 & 3 \\
+    \hline
 \end{longtable}
 
 % ==================================================
@@ -86,10 +142,10 @@ The objective of the functional specification is to accurately describe all the 
 Figure \ref{fig:release2-usecase} represents the use case diagram of Release 2, grouping the functionalities of Sprint 3 and Sprint 4 within the system boundary.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/release2 use case.jpg}{%
-\frame{\includegraphics[width=0.85\columnwidth]{images/release2 use case.jpg}}%
+\IfFileExists{images/Release2 Use Case.drawio.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/Release2 Use Case.drawio.png}}%
 }{%
-\fbox{\parbox{0.85\columnwidth}{\centering Diagram path: images/release2 use case.jpg}}%
+\fbox{\parbox{0.85\columnwidth}{\centering Diagram path: images/Release2 Use Case.drawio.png}}%
 }
 \caption{Use case diagram of Release 2 (Sprint 3 and Sprint 4).}
 \label{fig:release2-usecase}
@@ -179,76 +235,87 @@ Table \ref{tab:approve-leave} presents the textual description of the ``Approve 
 \paragraph{Textual Description of the ``Generate Payroll'' Use Case}
 Table \ref{tab:generate-payroll} presents the textual description of the ``Generate Payroll'' use case.
 
-\begin{table}[H]
-\centering
+\begin{longtable}{|p{.20\textwidth}|p{.60\textwidth}|}
 \caption{Textual description of the ``Generate Payroll'' use case}
-\label{tab:generate-payroll}
-\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+\label{tab:generate-payroll}\\
     \hline
    \textbf{Use Case} & -Generate Payroll \\
     \hline
     \textbf{Actor(s)} & -HR \\
     \hline
-    \textbf{Objective} & -Generate a monthly payslip for one or all employees \\
+    \textbf{Objective} & -Generate a monthly payslip for one or all employees using Tunisian fiscal rules \\
     \hline
     \textbf{Precondition} & -Authenticated HR\newline
 -Employee base salary configured\newline
+-Fiscal rule set confirmed for the year\newline
 -Attendance data available for the selected period \\
     \hline
-    \textbf{Postcondition} & -Payslip created with status \textit{GENERE}\newline
--Gross salary, deductions (CNSS, income tax), and net salary computed \\
+    \textbf{Postcondition} & -Payslip created with status \textit{draft}\newline
+-Gross salary, CNSS (employee + employer), IRPP (progressive tax), CSS, professional expenses, and family deductions computed\newline
+-Net salary calculated with millimes precision (3 decimal places) \\
     \hline
     \textbf{Main Scenario}
     & 1-HR goes to the payroll dashboard\newline
-2-The system displays employee salary configuration and payroll history\newline
-3-HR selects the pay period and chooses individual or bulk generation\newline
-4-The system retrieves attendance hours for the period\newline
-5-The system calculates gross salary (base + overtime), CNSS contribution, and progressive income tax\newline
-6-The system saves the payslip and displays a confirmation message \\ \hline
+2-The system displays fiscal rule sets, employee fiscal profiles, and payroll history\newline
+3-HR selects the pay period, fiscal rule set, and chooses individual or bulk generation\newline
+4-HR optionally adds configurable pay items (bonuses, allowances, deductions)\newline
+5-The system retrieves the employee's fiscal profile (marital status, children count)\newline
+6-The system retrieves attendance hours for the period\newline
+7-The \textit{PayrollCalculationEngine} computes: gross salary, CNSS employee/employer amounts, professional expense deduction, family deductions, annual taxable base, IRPP (progressive tax), CSS amount, and net salary\newline
+8-The system saves the payslip with all pay items and displays a confirmation message \\ \hline
     \textbf{Alternative Scenario}
     & -A payslip already exists for the selected period\newline
--The nominal scenario stops at step 5\newline
+-The nominal scenario stops at step 7\newline
 1-The system displays an error message and blocks duplicate generation\newline
 \newline
 -Employee base salary is not configured\newline
-1-The system displays an error and prompts HR to configure the salary first \\ \hline
-\end{tabular}
-\end{table}
+1-The system displays an error and prompts HR to configure the salary first\newline
+\newline
+-Fiscal rule set is not confirmed for the year\newline
+1-The system displays an error and prompts HR to confirm a fiscal rule set first \\ \hline
+\end{longtable}
 
 \paragraph{Textual Description of the ``View and Download Payslip'' Use Case}
 Table \ref{tab:view-payslip} presents the textual description of the ``View and Download Payslip'' use case.
 
-\begin{table}[H]
-\centering
+\begin{longtable}{|p{.20\textwidth}|p{.60\textwidth}|}
 \caption{Textual description of the ``View and Download Payslip'' use case}
-\label{tab:view-payslip}
-\begin{tabular}{|p{.20\textwidth}|p{.60\textwidth}|}
+\label{tab:view-payslip}\\
     \hline
    \textbf{Use Case} & -View and Download Payslip \\
     \hline
     \textbf{Actor(s)} & -Employee \newline -HR \\
     \hline
-    \textbf{Objective} & -Consult and download a generated payslip \\
+    \textbf{Objective} & -Consult and download a generated payslip with detailed breakdown \\
     \hline
     \textbf{Precondition} & -Authenticated user\newline
 -Existing payslip for the employee \\
     \hline
-    \textbf{Postcondition} & -Payslip details displayed or downloaded \\
+    \textbf{Postcondition} & -Payslip details displayed or downloaded\newline
+-All components visible: base salary, pay items, CNSS, IRPP, CSS, professional expenses, family deductions \\
     \hline
     \textbf{Main Scenario}
     & 1-The employee goes to the salary page\newline
-2-The system displays the list of payslips with period, gross, and net amounts\newline
-3-The employee selects a payslip and clicks download\newline
-4-The system generates the payslip document (HTML/PDF) and opens it in a new window \\ \hline
+2-The system displays the list of payslips with period, status, gross, and net amounts\newline
+3-The employee selects a payslip to view the detailed breakdown\newline
+4-The system displays: base salary, all pay items (earnings/deductions), CNSS employee/employer amounts, professional expense deduction, family deductions, IRPP annual/monthly, CSS amount, and net salary\newline
+5-The employee clicks download to generate the payslip document (HTML/PDF) \\ \hline
     \textbf{Alternative Scenario}
     & -No payslip exists for the employee\newline
 1-The system displays an empty state with an informative message\newline
 \newline
--HR validates and marks a payslip as paid\newline
-1-HR selects a generated payslip and clicks validate, then mark as paid\newline
-2-The system updates the payslip status to \textit{VALIDE} then \textit{PAYE} \\ \hline
-\end{tabular}
-\end{table}
+-HR validates a draft payslip\newline
+1-HR selects a draft payslip and clicks validate\newline
+2-The system updates the payslip status from \textit{draft} to \textit{validated}\newline
+\newline
+-HR locks a validated payslip (prevents further modifications)\newline
+1-HR selects a validated payslip and clicks lock\newline
+2-The system updates the payslip status from \textit{validated} to \textit{locked}\newline
+\newline
+-HR generates a correction for a locked payslip\newline
+1-HR selects a locked payslip and generates a correction\newline
+2-The system creates a new payslip with \texttt{\detokenize{is_regularization_adjustment=true}} and references the original via \texttt{\detokenize{supersedes_payslip_id}} \\ \hline
+\end{longtable}
 
 % ==================================================
 \section{Sprint 3: Leave Management}
@@ -259,10 +326,10 @@ Table \ref{tab:view-payslip} presents the textual description of the ``View and 
 Figure \ref{fig:ds-leave-request} represents the detailed sequence diagram of the ``Request Leave'' use case.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/leave request sequence.drawio.png}{%
-\frame{\includegraphics[width=0.8\columnwidth]{images/leave request sequence.drawio.png}}%
+\IfFileExists{images/Leave-request.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/Leave-request.drawio.png}}%
 }{%
-\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/leave request sequence.drawio.png}}%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/Leave-request.drawio.png}}%
 }
 \caption{Detailed sequence diagram of the ``Request Leave'' use case}
 \label{fig:ds-leave-request}
@@ -273,9 +340,9 @@ Figure \ref{fig:ds-approve-leave} represents the detailed sequence diagram of th
 \begin{figure}[H]
 \centering
 \IfFileExists{images/approve leave sequence.drawio.png}{%
-\frame{\includegraphics[width=0.8\columnwidth]{images/approve leave sequence.drawio.png}}%
+\frame{\includegraphics[width=0.8\columnwidth]{images/Approve leave request.drawio.png}}%
 }{%
-\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/approve leave sequence.drawio.png}}%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/Approve Leave request.drawio.png}}%
 }
 \caption{Detailed sequence diagram of the ``Approve Leave Request'' use case}
 \label{fig:ds-approve-leave}
@@ -288,10 +355,10 @@ After completing the analysis and design of the third sprint, this section prese
 Figure \ref{fig:impl-leave-request} shows the leave request page, which allows employees to submit a new request, view their remaining balance, and consult their request history.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/leave request.png}{%
-\frame{\includegraphics[width=0.85\columnwidth]{images/leave request.png}}%
+\IfFileExists{images/EmployeeLeaveRequest.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/EmployeeLeaveRequest.png}}%
 }{%
-\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/leave request.png}}%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/Leave-request.drawio.png}}%
 }
 \caption{Employee leave request page}
 \label{fig:impl-leave-request}
@@ -301,10 +368,10 @@ Figure \ref{fig:impl-leave-request} shows the leave request page, which allows e
 Figure \ref{fig:impl-leave-management} shows the leave management interface used by HR and team leaders to review pending requests, detect team conflicts, and approve or reject leave demands.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/leave management.png}{%
-\frame{\includegraphics[width=0.85\columnwidth]{images/leave management.png}}%
+\IfFileExists{images/LeaveRequestmanagement.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/LeaveRequestManagement.png}}%
 }{%
-\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/leave management.png}}%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/LeaveRequestManagement.png}}%
 }
 \caption{HR leave management page}
 \label{fig:impl-leave-management}
@@ -319,10 +386,10 @@ Figure \ref{fig:impl-leave-management} shows the leave management interface used
 Figure \ref{fig:ds-generate-payroll} represents the detailed sequence diagram of the ``Generate Payroll'' use case.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/generate payroll sequence.drawio.png}{%
-\frame{\includegraphics[width=0.8\columnwidth]{images/generate payroll sequence.drawio.png}}%
+\IfFileExists{images/GeneratePayroll.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/GeneratePayroll.drawio.png}}%
 }{%
-\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/generate payroll sequence.drawio.png}}%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/GeneratePayroll.drawio.png}}%
 }
 \caption{Detailed sequence diagram of the ``Generate Payroll'' use case}
 \label{fig:ds-generate-payroll}
@@ -332,10 +399,10 @@ Figure \ref{fig:ds-generate-payroll} represents the detailed sequence diagram of
 Figure \ref{fig:ds-view-payslip} represents the detailed sequence diagram of the ``View and Download Payslip'' use case.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/view payslip sequence.drawio.png}{%
-\frame{\includegraphics[width=0.8\columnwidth]{images/view payslip sequence.drawio.png}}%
+\IfFileExists{images/View and download payslip.drawio.png}{%
+\frame{\includegraphics[width=0.8\columnwidth]{images/View and download payslip.drawio.png}}%
 }{%
-\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/view payslip sequence.drawio.png}}%
+\fbox{\parbox{0.8\columnwidth}{\centering Diagram path: images/View and download payslip.drawio.png}}%
 }
 \caption{Detailed sequence diagram of the ``View and Download Payslip'' use case}
 \label{fig:ds-view-payslip}
@@ -361,14 +428,14 @@ Figure \ref{fig:impl-employee-payslip} shows the employee salary page, where sta
 Figure \ref{fig:impl-payroll-dashboard} shows the HR payroll dashboard used to configure salaries, simulate payroll, generate payslips in bulk, and manage the validation and payment workflow.
 \begin{figure}[H]
 \centering
-\IfFileExists{images/payroll dashboard.png}{%
-\frame{\includegraphics[width=0.85\columnwidth]{images/payroll dashboard.png}}%
+\IfFileExists{images/Payroll management.png}{%
+\frame{\includegraphics[width=0.85\columnwidth]{images/Payroll management.png}}%
 }{%
-\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/payroll dashboard.png}}%
+\fbox{\parbox{0.85\columnwidth}{\centering Screenshot path: images/Payroll management.png}}%
 }
 \caption{HR payroll dashboard}
 \label{fig:impl-payroll-dashboard}
 \end{figure}
 
 \section*{Conclusion}
-In this chapter, we completed Release 2 by delivering Sprint 3 (leave management) and Sprint 4 (payroll management). The platform now supports the full HR operational cycle: leave validation integrated with employee status, and automated salary calculation based on attendance hours, CNSS contributions, and progressive income tax. In the following chapter, we will present Release 3, which covers recruitment, job matching, and the AI analytics module.
+In this chapter, we completed Release 2 by delivering Sprint 3 (leave management) and Sprint 4 (payroll management). The platform now supports the full HR operational cycle: leave validation integrated with employee status, and a sophisticated payroll system implementing Tunisian fiscal regulations. The new payroll module features a \textit{PayrollCalculationEngine} that computes CNSS employee and employer contributions, progressive IRPP (income tax) using annual brackets, CSS (social security fund), professional expense deductions, and family deductions based on employee fiscal profiles. The system supports configurable pay items, fiscal rule sets for different years, and a payslip workflow (draft $\rightarrow$ validated $\rightarrow$ locked) with correction capabilities. All monetary values are stored with millimes precision (3 decimal places). In the following chapter, we will present Release 3, starting with Sprint 5, which covers the recruitment and job matching module.

@@ -126,28 +126,54 @@ class PaieRepository extends BaseRepository implements PaieRepositoryInterface
 
     public function getStatsByUtilisateur(int $utilisateurId): array
     {
-        $stats = $this->model->where('utilisateur_id', $utilisateurId)
+        $currentMonth = Carbon::now();
+
+        // Get current month aggregates for the user
+        $currentMonthStats = $this->model
+            ->where('utilisateur_id', $utilisateurId)
+            ->whereYear('periode_debut', $currentMonth->year)
+            ->whereMonth('periode_debut', $currentMonth->month)
             ->selectRaw('
+                COUNT(*) as paies_count,
                 COALESCE(SUM(salaire_brut), 0) as total_brut,
                 COALESCE(SUM(salaire_net), 0) as total_net,
-                COALESCE(SUM(deductions), 0) as total_deductions,
                 COALESCE(SUM(cnss_employe), 0) as total_cnss,
                 COALESCE(SUM(impot_mensuel), 0) as total_impot,
-                COALESCE(AVG(salaire_net), 0) as moyenne_net,
-                COUNT(*) as nombre_paies
+                COALESCE(SUM(deductions), 0) as total_deductions
             ')
+            ->first();
+
+        // Get status counts and paid amount for the user in current month
+        $statusCounts = $this->model
+            ->where('utilisateur_id', $utilisateurId)
+            ->whereYear('periode_debut', $currentMonth->year)
+            ->whereMonth('periode_debut', $currentMonth->month)
+            ->selectRaw('
+                SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_en_attente,
+                SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_validees,
+                SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_payees,
+                COALESCE(SUM(CASE WHEN statut = ? THEN salaire_net ELSE 0 END), 0) as total_net_paye
+            ', [
+                StatutPaie::GENERE->value,
+                StatutPaie::VALIDE->value,
+                StatutPaie::PAYE->value,
+                StatutPaie::PAYE->value,
+            ])
             ->first();
 
         $dernierePaie = $this->getLastPaie($utilisateurId);
 
         return [
-            'total_brut' => round($stats->total_brut, 2),
-            'total_net' => round($stats->total_net, 2),
-            'total_deductions' => round($stats->total_deductions, 2),
-            'total_cnss' => round($stats->total_cnss, 2),
-            'total_impot' => round($stats->total_impot, 2),
-            'moyenne_net' => round($stats->moyenne_net, 2),
-            'nombre_paies' => $stats->nombre_paies,
+            'total_paies' => (int) ($currentMonthStats->paies_count ?? 0),
+            'total_masse_salariale' => (float) round($currentMonthStats->total_brut ?? 0, 2),
+            'total_net_mensuel' => (float) round($statusCounts->total_net_paye ?? 0, 2),
+            'total_cnss_mensuel' => (float) round($currentMonthStats->total_cnss ?? 0, 2),
+            'total_impot_mensuel' => (float) round($currentMonthStats->total_impot ?? 0, 2),
+            'total_deductions_mensuel' => (float) round($currentMonthStats->total_deductions ?? 0, 2),
+            'paies_en_attente' => (int) ($statusCounts->paies_en_attente ?? 0),
+            'paies_validees' => (int) ($statusCounts->paies_validees ?? 0),
+            'paies_payees' => (int) ($statusCounts->paies_payees ?? 0),
+            'paies_mois_courant' => (int) ($currentMonthStats->paies_count ?? 0),
             'derniere_paie' => $dernierePaie,
         ];
     }
@@ -217,28 +243,27 @@ class PaieRepository extends BaseRepository implements PaieRepositoryInterface
             ')
             ->first();
 
-        // Get status counts in a single query using conditional aggregation
+        // Get status counts and paid amount in a single query using conditional aggregation
         $statusCounts = $this->model
             ->whereYear('periode_debut', $currentMonth->year)
             ->whereMonth('periode_debut', $currentMonth->month)
             ->selectRaw('
                 SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_en_attente,
                 SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_validees,
-                SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_payees
+                SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as paies_payees,
+                COALESCE(SUM(CASE WHEN statut = ? THEN salaire_net ELSE 0 END), 0) as total_net_paye
             ', [
                 StatutPaie::GENERE->value,
                 StatutPaie::VALIDE->value,
                 StatutPaie::PAYE->value,
+                StatutPaie::PAYE->value,
             ])
             ->first();
 
-        // Get total count across all time
-        $totalPaies = $this->model->count();
-
         return [
-            'total_paies' => $totalPaies,
+            'total_paies' => $currentMonthStats->paies_count ?? 0,
             'total_masse_salariale' => round($currentMonthStats->total_brut ?? 0, 2),
-            'total_net_mensuel' => round($currentMonthStats->total_net ?? 0, 2),
+            'total_net_mensuel' => round($statusCounts->total_net_paye ?? 0, 2),
             'total_cnss_mensuel' => round($currentMonthStats->total_cnss ?? 0, 2),
             'total_impot_mensuel' => round($currentMonthStats->total_impot ?? 0, 2),
             'total_deductions_mensuel' => round($currentMonthStats->total_deductions ?? 0, 2),

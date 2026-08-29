@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../shared/components/Sidebar';
 import Navbar from '../shared/components/Navbar';
 import { useAuth } from '../hooks/useAuth';
-import { useAuditLogs } from '../hooks/queries/useTunisianPayroll';
+import { useAuditLogs, usePayrollGlobalStats } from '../hooks/queries/useTunisianPayroll';
 import { Card, CardHeader, CardBody } from '../shared/components/ui/Card';
 import Button from '../shared/components/ui/Button';
 import Badge from '../shared/components/ui/Badge';
@@ -28,26 +28,36 @@ const TunisianPayrollDashboard: React.FC = () => {
   const { user, displayName } = useAuth();
   const navigate = useNavigate();
   const { data: auditLogs, isLoading: auditLoading } = useAuditLogs();
+  const { data: globalStats, isLoading: statsLoading } = usePayrollGlobalStats();
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-TN', {
+      style: 'currency',
+      currency: 'TND',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const stats = [
     {
       title: 'Total Payslips',
-      value: '156',
-      change: '+12%',
+      value: globalStats?.total_paies?.toString() || '0',
+      change: globalStats?.paies_mois_courant ? `This month: ${globalStats.paies_mois_courant}` : 'N/A',
       icon: <FileText className="w-6 h-6" />,
       color: 'blue',
     },
     {
       title: 'Pending Payments',
-      value: '23',
-      change: '+5%',
+      value: globalStats?.paies_en_attente?.toString() || '0',
+      change: `${globalStats?.paies_validees || 0} validated`,
       icon: <Clock className="w-6 h-6" />,
       color: 'yellow',
     },
     {
       title: 'Total Paid (MTD)',
-      value: '45,230 TND',
-      change: '+8%',
+      value: formatCurrency(globalStats?.total_net_mensuel || 0),
+      change: `${globalStats?.paies_payees || 0} paid`,
       icon: <DollarSign className="w-6 h-6" />,
       color: 'green',
     },
@@ -137,28 +147,32 @@ const TunisianPayrollDashboard: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-tour="dashboard-kpis">
-            {stats.map((stat) => (
-              <Card 
-                key={stat.title} 
-                hover
-                className="border-2 border-blue-200 shadow-[0_-2px_4px_rgba(0,0,0,0.05),-2px_0_4px_rgba(0,0,0,0.05),2px_0_4px_rgba(0,0,0,0.05)] hover:shadow-[0_-4px_8px_rgba(0,0,0,0.08),-4px_0_8px_rgba(0,0,0,0.08),4px_0_8px_rgba(0,0,0,0.08)] transition-shadow"
-              >
-                <CardBody>
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-600 text-left">{stat.title}</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1 text-left">{stat.value}</p>
-                      <p className="text-xs text-gray-500 mt-1 text-left">{stat.change}</p>
-                    </div>
-                    <div className={`p-3 rounded-lg ${iconBgClasses[stat.color as keyof typeof iconBgClasses]}`}>
-                      <div className={colorClasses[stat.color as keyof typeof colorClasses]}>
-                        {stat.icon}
+            {statsLoading ? (
+              <div className="col-span-4 text-center py-8 text-gray-500">Loading payroll statistics...</div>
+            ) : (
+              stats.map((stat) => (
+                <Card 
+                  key={stat.title} 
+                  hover
+                  className="border-2 border-blue-200 shadow-[0_-2px_4px_rgba(0,0,0,0.05),-2px_0_4px_rgba(0,0,0,0.05),2px_0_4px_rgba(0,0,0,0.05)] hover:shadow-[0_-4px_8px_rgba(0,0,0,0.08),-4px_0_8px_rgba(0,0,0,0.08),4px_0_8px_rgba(0,0,0,0.08)] transition-shadow"
+                >
+                  <CardBody>
+                    <div className="flex items-center justify-between">
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-gray-600 text-left">{stat.title}</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1 text-left">{stat.value}</p>
+                        <p className="text-xs text-gray-500 mt-1 text-left">{stat.change}</p>
+                      </div>
+                      <div className={`p-3 rounded-lg ${iconBgClasses[stat.color as keyof typeof iconBgClasses]}`}>
+                        <div className={colorClasses[stat.color as keyof typeof colorClasses]}>
+                          {stat.icon}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
+                  </CardBody>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Quick Actions */}

@@ -9,7 +9,7 @@ class Payslip extends Model
 {
     use HasFactory;
 
-    protected $keyType = 'uuid';
+    protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
@@ -26,6 +26,8 @@ class Payslip extends Model
         'irpp_annual',
         'irpp_monthly',
         'css_amount',
+        'family_deduction_total',
+        'prof_expense_deduction',
         'net_salary',
         'status',
         'version',

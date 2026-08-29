@@ -10,7 +10,26 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: #1e293b;
+  margin: 0;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.25rem;
+}
+
+.view-all-link {
+  font-size: 0.875rem;
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.view-all-link:hover {
+  color: #2563eb;
 }
 
 .salary-cards-row {

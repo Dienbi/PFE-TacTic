@@ -52,13 +52,41 @@ class PaieController extends Controller
     }
 
     /**
-     * Get payrolls by user ID (RH)
+     * Get payrolls by user ID (RH and Manager for their team)
      */
-    public function byUtilisateur(int $utilisateurId): JsonResponse
+    public function byUtilisateur(Request $request, int $utilisateurId): JsonResponse
     {
-        return response()->json(
-            $this->paieService->getByUtilisateur($utilisateurId)
-        );
+        $user = $request->user();
+
+        // RH can view any employee's payslips
+        if ($user->hasRole(Role::RH)) {
+            return response()->json(
+                $this->paieService->getByUtilisateur($utilisateurId)
+            );
+        }
+
+        // Managers can only view their team members' payslips
+        if ($user->hasRole(Role::CHEF_EQUIPE)) {
+            $teamPayroll = $this->paieService->getTeamPayroll($user->id);
+            
+            if (isset($teamPayroll['error'])) {
+                return response()->json(['message' => $teamPayroll['error']], 400);
+            }
+
+            // Check if the requested user is in the manager's team
+            $isTeamMember = collect($teamPayroll['membres'] ?? [])
+                ->contains(fn($member) => $member['utilisateur']['id'] === $utilisateurId);
+
+            if (!$isTeamMember) {
+                return response()->json(['message' => 'Accès interdit. Cet employé ne fait pas partie de votre équipe.'], 403);
+            }
+
+            return response()->json(
+                $this->paieService->getByUtilisateur($utilisateurId)
+            );
+        }
+
+        return response()->json(['message' => 'Accès interdit.'], 403);
     }
 
     // ── Salary Configuration ──────────────────────────────────────────
@@ -276,7 +304,7 @@ class PaieController extends Controller
     }
 
     /**
-     * Download the payslip as a PDF/View (RH & User)
+     * Download the payslip as a PDF/View (RH, Manager & User)
      */
     public function download(int $id)
     {
@@ -292,11 +320,37 @@ class PaieController extends Controller
 
         // Ensure user can only download their own payslip or have RH permission
         $user = request()->user();
-        if ($user->id !== $paie->utilisateur_id && ! $user->hasRole(Role::RH)) {
-            abort(403, 'Accès interdit.');
+        
+        // User can download their own payslip
+        if ($user->id === $paie->utilisateur_id) {
+            return view('paie.bulletin', ['paie' => $paie]);
         }
 
-        return view('paie.bulletin', ['paie' => $paie]);
+        // RH can download any payslip
+        if ($user->hasRole(Role::RH)) {
+            return view('paie.bulletin', ['paie' => $paie]);
+        }
+
+        // Managers can download their team members' payslips
+        if ($user->hasRole(Role::CHEF_EQUIPE)) {
+            $teamPayroll = $this->paieService->getTeamPayroll($user->id);
+            
+            if (isset($teamPayroll['error'])) {
+                abort(403, 'Accès interdit.');
+            }
+
+            // Check if the payslip owner is in the manager's team
+            $isTeamMember = collect($teamPayroll['membres'] ?? [])
+                ->contains(fn($member) => $member['utilisateur']['id'] === $paie->utilisateur_id);
+
+            if (!$isTeamMember) {
+                abort(403, 'Accès interdit. Cet employé ne fait pas partie de votre équipe.');
+            }
+
+            return view('paie.bulletin', ['paie' => $paie]);
+        }
+
+        abort(403, 'Accès interdit.');
     }
 
     /**

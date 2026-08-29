@@ -53,12 +53,12 @@ class PayslipGenerationService
         // Get employee's fiscal profile
         $fiscalProfile = $this->fiscalProfileRepository->findEffectiveForDate($employeeId, $payPeriodStart);
         if (!$fiscalProfile) {
-            // Create default profile if none exists
+            // Create default profile if none exists, using employee's actual marital status and children count
             $fiscalProfile = $this->fiscalProfileRepository->create([
                 'employee_id' => $employeeId,
                 'effective_from' => $employee->date_embauche ?? $payPeriodStart,
-                'marital_status' => 'single',
-                'children_count' => 0,
+                'marital_status' => $employee->marital_status ?? 'single',
+                'children_count' => $employee->children_count ?? 0,
                 'disabled_children_count' => 0,
                 'student_non_scholarship_children_count' => 0,
             ]);
@@ -112,6 +112,8 @@ class PayslipGenerationService
             'irpp_annual' => $calculationResult['irpp_annual'],
             'irpp_monthly' => $calculationResult['irpp_monthly'],
             'css_amount' => $calculationResult['css_amount'],
+            'family_deduction_total' => $calculationResult['family_deduction_total'],
+            'prof_expense_deduction' => $calculationResult['prof_expense_deduction'],
             'net_salary' => $calculationResult['net_salary'],
             'status' => 'draft',
             'version' => 1,
@@ -138,6 +140,8 @@ class PayslipGenerationService
                 'irpp_annual' => $payslip->irpp_annual,
                 'irpp_monthly' => $payslip->irpp_monthly,
                 'css_amount' => $payslip->css_amount,
+                'family_deduction_total' => $payslip->family_deduction_total,
+                'prof_expense_deduction' => $payslip->prof_expense_deduction,
                 'net_salary' => $payslip->net_salary,
                 'status' => $payslip->status,
                 'version' => $payslip->version,
@@ -288,6 +292,8 @@ class PayslipGenerationService
             'irpp_annual' => $payslip->irpp_annual,
             'irpp_monthly' => $payslip->irpp_monthly,
             'css_amount' => $payslip->css_amount,
+            'family_deduction_total' => $payslip->family_deduction_total,
+            'prof_expense_deduction' => $payslip->prof_expense_deduction,
             'net_salary' => $payslip->net_salary,
             'status' => $payslip->status,
             'version' => $payslip->version,
@@ -303,6 +309,14 @@ class PayslipGenerationService
                 'nom' => $payslip->employee->nom,
                 'prenom' => $payslip->employee->prenom,
                 'email' => $payslip->employee->email,
+                'telephone' => $payslip->employee->telephone,
+                'adresse' => $payslip->employee->adresse,
+                'date_embauche' => $payslip->employee->date_embauche,
+                'type_contrat' => $payslip->employee->type_contrat,
+                'salaire_base' => $payslip->employee->salaire_base,
+                'solde_conge' => $payslip->employee->solde_conge,
+                'marital_status' => $payslip->employee->marital_status,
+                'children_count' => $payslip->employee->children_count,
             ] : null,
             'generated_by_user' => $payslip->generatedBy ? [
                 'id' => $payslip->generatedBy->id,
@@ -422,6 +436,8 @@ class PayslipGenerationService
                 'irpp_annual' => $payslip->irpp_annual,
                 'irpp_monthly' => $payslip->irpp_monthly,
                 'css_amount' => $payslip->css_amount,
+                'family_deduction_total' => $payslip->family_deduction_total,
+                'prof_expense_deduction' => $payslip->prof_expense_deduction,
                 'net_salary' => $payslip->net_salary,
                 'status' => $payslip->status,
                 'version' => $payslip->version,
@@ -437,6 +453,14 @@ class PayslipGenerationService
                     'nom' => $payslip->employee->nom,
                     'prenom' => $payslip->employee->prenom,
                     'email' => $payslip->employee->email,
+                    'telephone' => $payslip->employee->telephone,
+                    'adresse' => $payslip->employee->adresse,
+                    'date_embauche' => $payslip->employee->date_embauche,
+                    'type_contrat' => $payslip->employee->type_contrat,
+                    'salaire_base' => $payslip->employee->salaire_base,
+                    'solde_conge' => $payslip->employee->solde_conge,
+                    'marital_status' => $payslip->employee->marital_status,
+                    'children_count' => $payslip->employee->children_count,
                 ] : null,
                 'generated_by_user' => $payslip->generatedBy ? [
                     'id' => $payslip->generatedBy->id,
@@ -450,5 +474,10 @@ class PayslipGenerationService
         return [
             'payslips' => $payslips,
         ];
+    }
+
+    public function getGlobalStats(): array
+    {
+        return $this->payslipRepository->getGlobalStats();
     }
 }

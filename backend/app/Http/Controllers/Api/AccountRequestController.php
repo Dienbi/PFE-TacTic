@@ -158,6 +158,8 @@ class AccountRequestController extends Controller
             'role' => $request->role,
             'status' => 'DISPONIBLE',
             'actif' => true,
+            'salaire_base' => 0,
+            'date_embauche' => now()->toDateString(),
         ]);
 
         // Send welcome email with token link

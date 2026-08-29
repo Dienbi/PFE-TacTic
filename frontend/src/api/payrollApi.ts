@@ -448,3 +448,26 @@ export const auditLogsApi = {
     };
   }>('/payroll/audit/statistics', { params }),
 };
+
+// ── Legacy Paie API (Laravel backend) ───────────────────────────────
+
+export interface GlobalStats {
+  total_paies: number;
+  total_masse_salariale: number;
+  total_net_mensuel: number;
+  total_cnss_mensuel: number;
+  total_impot_mensuel: number;
+  total_deductions_mensuel: number;
+  paies_en_attente: number;
+  paies_validees: number;
+  paies_payees: number;
+  paies_mois_courant: number;
+}
+
+export const legacyPayrollApi = {
+  getGlobalStats: () => client.get<GlobalStats>('/payroll/payslips/global-stats'),
+  getUserStats: (userId?: string) => client.get<GlobalStats>('/paies/stats', { params: { utilisateur_id: userId } }),
+  getNonPayees: () => client.get('/paies/non-payees'),
+  getTotalMensuel: (year?: number, month?: number) => 
+    client.get('/paies/total-mensuel', { params: { year, month } }),
+};

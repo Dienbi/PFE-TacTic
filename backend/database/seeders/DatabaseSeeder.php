@@ -24,6 +24,14 @@ class DatabaseSeeder extends Seeder
             job_posts,
             job_requests,
             paies,
+            payslips,
+            payslip_pay_items,
+            payments,
+            children,
+            social_status_proofs,
+            employee_fiscal_profiles,
+            employee_fiscal_profile_assignments,
+            fiscal_profile_groups,
             pointages,
             conges,
             affectations,
@@ -41,6 +49,8 @@ class DatabaseSeeder extends Seeder
             CompetenceSeeder::class,
             EquipeSeeder::class,
             FullDataSeeder::class,
+            FiscalRuleSet2026Seeder::class,
+            ComprehensivePayrollSeeder::class,
         ]);
     }
 }

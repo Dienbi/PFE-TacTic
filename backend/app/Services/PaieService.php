@@ -349,7 +349,7 @@ class PaieService
                     'prenom' => $member->prenom,
                     'role' => $member->role,
                 ],
-                'salaire_base' => $member->salaire_base,
+                'salaire_base' => (float) $member->salaire_base,
                 'derniere_paie' => $lastPaies[$member->id] ?? null,
                 'stats' => $allStats[$member->id] ?? [],
             ];

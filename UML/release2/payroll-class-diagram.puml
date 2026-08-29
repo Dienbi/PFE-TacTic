@@ -1,0 +1,240 @@
+@startuml payroll_class_diagram
+title Release 2 — Payroll Module Class Diagram
+
+class Payslip {
+  - id: UUID
+  - employee_id: UUID
+  - pay_period_start: Date
+  - pay_period_end: Date
+  - rule_set_id: UUID
+  - base_salary_used: Decimal(12,3)
+  - gross_salary: Decimal(12,3)
+  - cnss_employee_amount: Decimal(12,3)
+  - cnss_employer_amount: Decimal(12,3)
+  - taxable_base_annual: Decimal(12,3)
+  - irpp_annual: Decimal(12,3)
+  - irpp_monthly: Decimal(12,3)
+  - css_amount: Decimal(12,3)
+  - net_salary: Decimal(12,3)
+  - status: Enum
+  - version: Integer
+  - supersedes_payslip_id: UUID
+  - is_regularization_adjustment: Boolean
+  - generated_at: Timestamp
+  - generated_by: UUID
+  + employee(): BelongsTo
+  + ruleSet(): BelongsTo
+  + generatedBy(): BelongsTo
+  + supersedes(): BelongsTo
+  + supersededBy(): HasMany
+  + payslipPayItems(): HasMany
+  + payments(): HasMany
+  + scopeDraft(): Scope
+  + scopeValidated(): Scope
+  + scopeLocked(): Scope
+  + scopeLatestVersion(): Scope
+}
+
+class PayslipPayItem {
+  - id: UUID
+  - payslip_id: UUID
+  - pay_item_id: UUID
+  - name_snapshot: String
+  - amount: Decimal(12,3)
+  - was_taxable: Boolean
+  - was_cnss_applicable: Boolean
+  + payslip(): BelongsTo
+  + payItem(): BelongsTo
+}
+
+class PayItem {
+  - id: UUID
+  - name: String
+  - calculation_type: Enum
+  - is_taxable: Boolean
+  - is_cnss_applicable: Boolean
+  - default_value: Decimal(12,3)
+  - active: Boolean
+  + payslipPayItems(): HasMany
+  + scopeActive(): Scope
+}
+
+class FiscalRuleSet {
+  - id: UUID
+  - year: Integer
+  - effective_from: Date
+  - effective_to: Date
+  - status: Enum
+  - cnss_employee_rate: Decimal(6,4)
+  - cnss_employer_rate: Decimal(6,4)
+  - cnss_monthly_ceiling: Decimal(12,3)
+  - css_rate: Decimal(6,4)
+  - css_exempt_annual_net_threshold: Decimal(12,3)
+  - prof_expense_rate: Decimal(6,4)
+  - prof_expense_annual_cap: Decimal(12,3)
+  - min_annual_tax: Decimal(12,3)
+  - source_pdf_ref: Text
+  - confirmed_by: UUID
+  - confirmed_at: Timestamp
+  + irppBrackets(): HasMany
+  + familyDeductionRules(): HasMany
+  + confirmedBy(): BelongsTo
+  + payslips(): HasMany
+  + scopeConfirmed(): Scope
+  + scopeActiveForDate(date): Scope
+}
+
+class FiscalProfileGroup {
+  - id: UUID
+  - gender: Enum
+  - marital_status: Enum
+  - head_of_family: Boolean
+  - children_count: Integer
+  - disabled_children_count: Integer
+  - student_non_scholarship_children_count: Integer
+  - label: Text
+}
+
+class EmployeeFiscalProfileAssignment {
+  - id: UUID
+  - employee_id: BigInt
+  - fiscal_profile_group_id: UUID
+  - effective_from: Date
+  - effective_to: Date
+  - source_change_request_id: UUID
+  - assigned_by: BigInt
+  - assigned_at: Timestamp
+}
+
+class EmployeeFiscalProfile {
+  - id: UUID
+  - employee_id: UUID
+  - effective_from: Date
+  - marital_status: Enum
+  - children_count: Integer
+  - disabled_children_count: Integer
+  - student_non_scholarship_children_count: Integer
+  + employee(): BelongsTo
+  + scopeEffectiveForDate(date): Scope
+}
+
+class Paie {
+  - id: BigInt
+  - utilisateur_id: BigInt
+  - periode_debut: Date
+  - periode_fin: Date
+  - salaire_brut: Decimal(12,3)
+  - taux_horaire: Decimal(12,3)
+  - heures_normales: Decimal(5,2)
+  - heures_supp: Decimal(5,2)
+  - montant_heures_supp: Decimal(12,3)
+  - deductions: Decimal(12,3)
+  - cnss_employe: Decimal(12,3)
+  - cnss_taux: Decimal(6,4)
+  - impot_annuel: Decimal(12,3)
+  - impot_mensuel: Decimal(12,3)
+  - salaire_net: Decimal(12,3)
+  - date_paiement: Date
+  - statut: Enum
+  + utilisateur(): BelongsTo
+  + scopeByPeriod(start, end): Scope
+  + scopePaye(): Scope
+  + scopeNonPaye(): Scope
+  + scopeByStatut(statut): Scope
+  + calculerTauxHoraire(salaireBase): Float
+  + calculerCNSS(salaireBrut): Float
+  + calculerImpotAnnuel(revenuAnnuelImposable): Float
+  + calculerPaie(salaireBase, heuresSupp): Array
+  + isPaye(): Boolean
+  + isValide(): Boolean
+}
+
+class Utilisateur {
+  - id: BigInt
+  - email: String
+  - role: Enum
+  - nom: String
+  - prenom: String
+  - salaire_base: Decimal(12,3)
+  - deleted_at: Timestamp
+  + conges(): HasMany
+  + pointages(): HasMany
+  + equipe(): BelongsTo
+}
+
+class PayrollCalculationEngine {
+  + calculatePayslip(input): Array
+  - sumPayItems(payItems): Float
+  - sumPayItemsByFlag(payItems, flag): Float
+  - calculateFamilyDeduction(profile, deductions): Float
+  - calculateProgressiveTax(annualTaxableBase, brackets): Float
+  - roundCurrency(amount): Float
+}
+
+class PayslipGenerationService {
+  + getAllPayslips(filters): Array
+  + generateSinglePayslip(data, hrId): Array
+  + generateBatchPayslips(data, hrId): Array
+  + validatePayslip(id): Array
+  + lockPayslip(id): Array
+  + deleteDraftPayslip(id): Array
+  + getPayslipDetails(id): Array
+  + getEmployeePayslips(employeeId): Array
+  + getPeriodPayslips(periodStart, periodEnd): Array
+  + getGlobalStats(): Array
+}
+
+Payslip "1" -- "*" PayslipPayItem : contains
+PayslipPayItem "*" -- "1" PayItem : references
+Payslip "*" -- "1" FiscalRuleSet : uses
+Payslip "1" -- "1" Utilisateur : belongs to (employee)
+Payslip "1" -- "1" Utilisateur : generated by
+Payslip "1" -- "0..1" Payslip : supersedes
+Payslip "0..*" -- "1" Payslip : superseded by
+
+FiscalProfileGroup "1" -- "*" EmployeeFiscalProfileAssignment : defines
+EmployeeFiscalProfileAssignment "*" -- "1" Utilisateur : assigned to
+EmployeeFiscalProfile "1" -- "1" Utilisateur : belongs to
+
+Paie "1" -- "1" Utilisateur : belongs to
+Paie "0..1" -- "1" Payslip : references (legacy)
+
+FiscalRuleSet "1" -- "*" Payslip : applies to
+
+PayslipGenerationService ..> PayrollCalculationEngine : uses
+PayslipGenerationService ..> Payslip : creates
+PayslipGenerationService ..> FiscalRuleSet : retrieves
+PayslipGenerationService ..> EmployeeFiscalProfile : retrieves
+
+note right of Payslip
+  New payslip system with:
+  - UUID primary key
+  - Status workflow (draft/validated/locked)
+  - Version tracking
+  - Correction support via supersedes
+  - 3 decimal precision (millimes)
+end note
+
+note right of FiscalRuleSet
+  Tunisian fiscal rules:
+  - CNSS employee/employer rates
+  - IRPP progressive brackets
+  - CSS (social security fund)
+  - Professional expense deductions
+  - Family deduction rules
+end note
+
+note right of PayrollCalculationEngine
+  Pure calculation service:
+  - No database dependencies
+  - Unit-testable
+  - Implements Tunisian tax logic
+  - 3 decimal precision rounding
+end note
+
+note bottom of Paie
+  Legacy model for backward compatibility
+  References new payslips via payslip_id
+end note
+
+@enduml

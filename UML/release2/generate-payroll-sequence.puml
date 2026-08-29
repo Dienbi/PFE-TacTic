@@ -2,62 +2,71 @@
 title Detailed Sequence Diagram — Generate Payroll
 
 actor "HR Administrator" as HR
-participant "PayrollDashboard\n(React)" as UI
-participant "PaieController" as Controller
-participant "PaieService" as Service
-participant "PointageRepository" as PointageRepo
-participant "PayrollCalculator" as Calculator
-participant "PaieRepository" as PaieRepo
-participant "UtilisateurRepository" as UserRepo
+participant "PayslipGeneration\n(React)" as UI
+participant "usePayslipMutations\n(React Query)" as Mutations
+participant "PayslipGenerationController" as Controller
+participant "PayslipGenerationService" as Service
+participant "PayrollCalculationEngine" as Engine
 database "PostgreSQL" as DB
 
+== View existing payslips ==
+
 HR -> UI : Open payroll dashboard
-UI -> Controller : GET /api/paies/employees-config
-Controller -> Service : getEmployeesWithSalaryConfig()
-Service --> Controller : employees + salaries
-Controller --> UI : configuration list
-UI --> HR : Display salary config\nand generation form
+UI -> Controller : GET /api/payroll/payslips (with filters)
+Controller -> Service : getAllPayslips(filters)
+Service -> DB : SELECT payslips WITH relations
+DB --> Service : payslips data
+Service --> Controller : response
+Controller --> UI : JSON response
+UI --> HR : Display payslips list
 
-HR -> UI : Select period and employee(s)\n(individual or bulk)
-UI -> Controller : POST /api/paies/generer\nor /api/paies/generer-tous
-Controller -> Service : generer(userId, periodeDebut, periodeFin)
+== Generate single payslip ==
 
-Service -> PaieRepo : existsForPeriod(userId, dates)
-PaieRepo -> DB : SELECT existing paie
-DB --> PaieRepo : exists?
+HR -> UI : Click "Generate Single Payslip"
+HR -> UI : Select employee, period, optional pay items
+UI -> Mutations : generateSingle.mutateAsync(payload)
+Mutations -> Controller : POST /api/payroll/payslips/single\n(Authorization: Bearer token)
+Controller -> Service : generateSinglePayslip(data, Auth::id())
 
-alt Payslip already exists for period
-  PaieRepo --> Service : true
-  Service --> Controller : { error: duplicate }
-  Controller --> UI : 400 Bad Request
-  UI --> HR : Display error
-else No duplicate
-  Service -> UserRepo : findOrFail(userId)
-  UserRepo -> DB : SELECT utilisateur
-  DB --> UserRepo : user (salaire_base)
+Service -> DB : Validate employee, get active fiscal rule set,\nget/create fiscal profile, check for duplicate payslip
+DB --> Service : validation data
 
-  alt Base salary not configured
-    Service --> Controller : { error: salary not set }
-    Controller --> UI : 400 Bad Request
-    UI --> HR : Display error
-  else Salary configured
-    Service -> PointageRepo : getStatsByPeriod(userId, dates)
-    PointageRepo -> DB : SUM duree_travail
-    DB --> PointageRepo : total hours
-    PointageRepo --> Service : stats
+alt Validation fails (employee/rule set not found, duplicate)
+  Service --> Controller : Exception with error message
+  Controller --> Mutations : 400 Bad Request
+  Mutations --> UI : Error response
+  UI --> HR : Display error message
+else Validation succeeds
+  Service -> Service : Prepare calculation data\n(rule set, fiscal profile, months worked)
+  Service -> Engine : calculatePayslip(input)
+  Engine -> Engine : Calculate gross, CNSS, CSS, IRPP,\nfamily deductions, net salary (14-step process)
+  Engine --> Service : calculation results
 
-    Service -> Service : Compute normal/overtime hours
-    Service -> Calculator : calculatePayroll(base, heuresSupp)
-    Calculator --> Service : gross, CNSS, tax, net
+  Service -> DB : INSERT payslip + payslip_pay_items
+  DB --> Service : created payslip with UUID
 
-    Service -> PaieRepo : create(GENERE)
-    PaieRepo -> DB : INSERT paie
-    DB --> PaieRepo : payslip record
-    PaieRepo --> Service : Paie
-    Service --> Controller : Paie
-    Controller --> UI : 201 Created
-    UI --> HR : Display success +\npayslip in list
-  end
+  Service -> DB : Refresh payslip with relations
+  DB --> Service : complete payslip data
+
+  Service --> Controller : {payslip, calculation_details, success message}
+  Controller --> Mutations : 201 Created
+  Mutations --> UI : Success response
+  UI -> UI : refetch() - Refresh payslips list
+  UI --> HR : Display new draft payslip with breakdown
 end
+
+== Payslip status changes ==
+
+HR -> UI : Action on payslip (Validate/Lock/Delete)
+UI -> Mutations : validate/lock/deleteDraft.mutateAsync(id)
+Mutations -> Controller : POST/DELETE /api/payroll/payslips/{id}/action
+Controller -> Service : updatePayslipStatus(id, new_status)
+Service -> DB : UPDATE/DELETE payslips WHERE id = ?
+DB --> Service : operation result
+Service --> Controller : updated payslip / confirmation
+Controller --> Mutations : 200 OK
+Mutations --> UI : Success response
+UI -> UI : refetch() - Refresh payslips list
+UI --> HR : Display updated payslip status
 
 @enduml

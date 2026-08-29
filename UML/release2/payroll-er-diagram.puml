@@ -1,0 +1,165 @@
+@startuml payroll_er_diagram
+title Release 2 — Payroll Module ER Diagram
+
+entity "utilisateurs" as utilisateurs {
+  * id : BIGINT <<PK>>
+  --
+  * email : VARCHAR(255)
+  * role : ENUM('RH','chef_equipe','employe')
+  nom : VARCHAR(255)
+  prenom : VARCHAR(255)
+  salaire_base : DECIMAL(12,3)
+  deleted_at : TIMESTAMP
+}
+
+entity "payslips" as payslips {
+  * id : UUID <<PK>>
+  --
+  * employee_id : UUID <<FK>>
+  * pay_period_start : DATE
+  * pay_period_end : DATE
+  * rule_set_id : UUID <<FK>>
+  * base_salary_used : DECIMAL(12,3)
+  * gross_salary : DECIMAL(12,3)
+  * cnss_employee_amount : DECIMAL(12,3)
+  * cnss_employer_amount : DECIMAL(12,3)
+  * taxable_base_annual : DECIMAL(12,3)
+  * irpp_annual : DECIMAL(12,3)
+  * irpp_monthly : DECIMAL(12,3)
+  * css_amount : DECIMAL(12,3)
+  * net_salary : DECIMAL(12,3)
+  * status : ENUM('draft','validated','locked','superseded')
+  * version : INTEGER
+  supersedes_payslip_id : UUID <<FK>>
+  is_regularization_adjustment : BOOLEAN
+  * generated_at : TIMESTAMP
+  * generated_by : UUID <<FK>>
+}
+
+entity "payslip_pay_items" as payslip_pay_items {
+  * id : UUID <<PK>>
+  --
+  * payslip_id : UUID <<FK>>
+  * pay_item_id : UUID <<FK>>
+  * name_snapshot : VARCHAR(255)
+  * amount : DECIMAL(12,3)
+  * was_taxable : BOOLEAN
+  * was_cnss_applicable : BOOLEAN
+}
+
+entity "pay_items" as pay_items {
+  * id : UUID <<PK>>
+  --
+  * name : VARCHAR(255)
+  * calculation_type : ENUM('fixed_amount','percentage_of_base','formula')
+  * is_taxable : BOOLEAN
+  * is_cnss_applicable : BOOLEAN
+  default_value : DECIMAL(12,3)
+  * active : BOOLEAN
+}
+
+entity "fiscal_rule_sets" as fiscal_rule_sets {
+  * id : UUID <<PK>>
+  --
+  * year : INTEGER
+  * effective_from : DATE
+  effective_to : DATE
+  * status : ENUM('draft','confirmed','superseded')
+  * cnss_employee_rate : DECIMAL(6,4)
+  * cnss_employer_rate : DECIMAL(6,4)
+  cnss_monthly_ceiling : DECIMAL(12,3)
+  * css_rate : DECIMAL(6,4)
+  * css_exempt_annual_net_threshold : DECIMAL(12,3)
+  * prof_expense_rate : DECIMAL(6,4)
+  * prof_expense_annual_cap : DECIMAL(12,3)
+  * min_annual_tax : DECIMAL(12,3)
+  source_pdf_ref : TEXT
+  confirmed_by : UUID <<FK>>
+  confirmed_at : TIMESTAMP
+}
+
+entity "fiscal_profile_groups" as fiscal_profile_groups {
+  * id : UUID <<PK>>
+  --
+  * gender : ENUM('male','female')
+  * marital_status : ENUM('single','married','divorced','widowed')
+  * head_of_family : BOOLEAN
+  * children_count : INTEGER
+  * disabled_children_count : INTEGER
+  * student_non_scholarship_children_count : INTEGER
+  * label : TEXT
+}
+
+entity "employee_fiscal_profile_assignments" as employee_fiscal_profile_assignments {
+  * id : UUID <<PK>>
+  --
+  * employee_id : BIGINT <<FK>>
+  * fiscal_profile_group_id : UUID <<FK>>
+  * effective_from : DATE
+  effective_to : DATE
+  source_change_request_id : UUID <<FK>>
+  * assigned_by : BIGINT <<FK>>
+  * assigned_at : TIMESTAMP
+}
+
+entity "paies" as paies {
+  * id : BIGINT <<PK>>
+  --
+  payslip_id : UUID <<FK>>
+  * utilisateur_id : BIGINT <<FK>>
+  * periode_debut : DATE
+  * periode_fin : DATE
+  * salaire_brut : DECIMAL(12,3)
+  taux_horaire : DECIMAL(12,3)
+  heures_normales : DECIMAL(5,2)
+  heures_supp : DECIMAL(5,2)
+  montant_heures_supp : DECIMAL(12,3)
+  deductions : DECIMAL(12,3)
+  cnss_employe : DECIMAL(12,3)
+  cnss_taux : DECIMAL(6,4)
+  impot_annuel : DECIMAL(12,3)
+  impot_mensuel : DECIMAL(12,3)
+  * salaire_net : DECIMAL(12,3)
+  date_paiement : DATE
+  statut : ENUM('GENERE','VALIDE','PAYE')
+}
+
+utilisateurs ||--o{ payslips : generates
+utilisateurs ||--o{ employee_fiscal_profile_assignments : has
+utilisateurs ||--o{ paies : has (legacy)
+payslips ||--o{ payslip_pay_items : contains
+payslips }o--|| fiscal_rule_sets : uses
+payslips }o--|| pay_items : references
+payslips ||--o{ payslips : supersedes
+pay_items ||--o{ payslip_pay_items : used in
+fiscal_rule_sets ||--o{ payslips : applies to
+fiscal_profile_groups ||--o{ employee_fiscal_profile_assignments : defines
+employee_fiscal_profile_assignments }o--|| utilisateurs : assigned to
+paies }o--|| payslips : references (legacy)
+
+note right of payslips
+  New payroll system with:
+  - UUID primary keys
+  - Status workflow
+  - Version tracking
+  - Correction support
+end note
+
+note right of fiscal_rule_sets
+  Tunisian fiscal rules:
+  - CNSS rates
+  - IRPP brackets
+  - CSS threshold
+  - Professional expenses
+  - Family deductions
+end note
+
+note right of fiscal_profile_groups
+  Family deduction profiles:
+  - Marital status
+  - Children count
+  - Disabled children
+  - Student children
+end note
+
+@enduml

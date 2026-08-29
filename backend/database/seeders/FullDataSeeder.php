@@ -95,20 +95,32 @@ class FullDataSeeder extends Seeder
         // Preserve existing users: RH Admin (id=1), Equipe Chef (id=2), Test Employee (id=3)
         $preservedEmails = ['admin@tactic.com', 'chef@tactic.com', 'employe@tactic.com'];
         
-        // Update preserved users with gender
+        // Update preserved users with gender, marital status, and children count
         $rhUser = Utilisateur::where('email', 'admin@tactic.com')->first();
         if ($rhUser && !$rhUser->gender) {
-            $rhUser->update(['gender' => 'male']);
+            $rhUser->update([
+                'gender' => 'male',
+                'marital_status' => 'head_of_household',
+                'children_count' => 2,
+            ]);
         }
         
         $chefUser = Utilisateur::where('email', 'chef@tactic.com')->first();
         if ($chefUser && !$chefUser->gender) {
-            $chefUser->update(['gender' => 'male']);
+            $chefUser->update([
+                'gender' => 'male',
+                'marital_status' => 'head_of_household',
+                'children_count' => 3,
+            ]);
         }
         
         $testUser = Utilisateur::where('email', 'employe@tactic.com')->first();
         if ($testUser && !$testUser->gender) {
-            $testUser->update(['gender' => 'male']);
+            $testUser->update([
+                'gender' => 'male',
+                'marital_status' => 'single',
+                'children_count' => 0,
+            ]);
         }
         
         // Delete all other existing users (except the 3 preserved ones)
@@ -166,6 +178,11 @@ class FullDataSeeder extends Seeder
             // Determine gender based on first name
             $gender = $this->genderMap[$firstName] ? 'male' : 'female';
 
+            // Random marital status and children count for realistic data
+            $maritalStatuses = ['single', 'head_of_household'];
+            $maritalStatus = $maritalStatuses[array_rand($maritalStatuses)];
+            $childrenCount = ($maritalStatus === 'head_of_household') ? rand(1, 4) : rand(0, 2);
+
             $user = Utilisateur::create([
                 'matricule' => $matricule,
                 'nom' => $lastName,
@@ -183,6 +200,8 @@ class FullDataSeeder extends Seeder
                 'solde_conge' => 30,
                 'equipe_id' => $equipe->id,
                 'gender' => $gender,
+                'marital_status' => $maritalStatus,
+                'children_count' => $childrenCount,
             ]);
 
             // Assign chef to equipe if slot available

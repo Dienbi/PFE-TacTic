@@ -5,6 +5,7 @@ import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
 import DashboardSkeleton from "../../../shared/components/DashboardSkeleton";
 import { Search } from "lucide-react";
+import CareerCard from "../../components/CareerCard";
 import "./JobPosts.css";
 
 const JobPosts: React.FC = () => {
@@ -155,110 +156,22 @@ const JobPosts: React.FC = () => {
             </div>
           ) : (
             <div className="jobs-grid">
-              {filteredPosts.map((post) => {
-                const badge = getStatusBadge(post.statut);
-                const applicationsCount = post.applications?.length || 0;
-
-                return (
-                  <article key={post.id} className="job-card">
-                    <div className="card-content">
-                      <div className="card-title-section">
-                        <h2>{post.titre}</h2>
-                        <span className={`status-badge ${badge.class}`}>
-                          {badge.label}
-                        </span>
-                      </div>
-
-                      <p className="card-description">{post.description}</p>
-
-                      {post.competences && post.competences.length > 0 && (
-                        <div className="skills-section">
-                          <h3>Required Skills</h3>
-                          <div className="skills-tags">
-                            {post.competences.slice(0, 4).map((comp, idx) => (
-                              <span key={idx} className="skill-tag">
-                                {comp.nom}
-                                {comp.pivot?.niveau_requis && ` (${comp.pivot.niveau_requis})`}
-                              </span>
-                            ))}
-                            {post.competences.length > 4 && (
-                              <span className="skill-tag more">
-                                +{post.competences.length - 4} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="meta-section">
-                        <div className="meta-item">
-                          <svg
-                            className="meta-icon"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                            />
-                          </svg>
-                          <span>{applicationsCount} applications</span>
-                        </div>
-                        <div className="meta-item">
-                          <svg
-                            className="meta-icon"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                          <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="card-actions">
-                      {post.statut === "brouillon" && (
-                        <button
-                          className="action-btn btn-publish"
-                          onClick={() => handlePublish(post.id)}
-                          disabled={actionLoading === post.id}
-                        >
-                          {actionLoading === post.id ? "..." : "Publish"}
-                        </button>
-                      )}
-                      {post.statut === "publiee" && (
-                        <>
-                          <button
-                            className="action-btn btn-view"
-                            onClick={() =>
-                              navigate(`/hr/job-posts/${post.id}/applications`)
-                            }
-                          >
-                            View Apps
-                          </button>
-                          <button
-                            className="action-btn btn-close"
-                            onClick={() => handleClose(post.id)}
-                            disabled={actionLoading === post.id}
-                          >
-                            {actionLoading === post.id ? "..." : "Close"}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
+              {filteredPosts.map((post) => (
+                <CareerCard
+                  key={post.id}
+                  id={post.id}
+                  title={post.titre}
+                  description={post.description}
+                  status={post.statut}
+                  applicationsCount={post.applications?.length || 0}
+                  createdAt={post.created_at}
+                  competences={post.competences || []}
+                  actionLoading={actionLoading === post.id}
+                  onPublish={handlePublish}
+                  onClose={handleClose}
+                  onViewApplications={(id) => navigate(`/hr/job-posts/${id}/applications`)}
+                />
+              ))}
             </div>
           )}
         </div>

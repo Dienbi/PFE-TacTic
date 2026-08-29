@@ -186,6 +186,11 @@ export const FiscalProfileGroups: React.FC = () => {
                     <Badge variant="default">
                       {group.children_count} child{group.children_count === 1 ? '' : 'ren'}
                     </Badge>
+                    <Badge variant="default" style={{ backgroundColor: '#F3F4F6', color: '#374151' }}>
+                      <span className="flex items-center gap-1">
+                        <Users2 className="w-3 h-3" /> {group.employees_count}
+                      </span>
+                    </Badge>
                   </div>
 
                   <div className="pt-3 border-t border-gray-100">

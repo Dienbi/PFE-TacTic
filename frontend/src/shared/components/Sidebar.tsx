@@ -14,6 +14,7 @@ import {
   Search,
   FilePlus,
   FolderOpen,
+  Receipt,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import client from "../../api/client";
@@ -28,7 +29,7 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { mappedRole } = useAuth();
+  const { user } = useAuth();
 
   const handleLogout = () => {
     client.post("/auth/logout").catch(() => {});
@@ -39,8 +40,10 @@ const Sidebar: React.FC = () => {
   };
 
   const getMenuItems = () => {
-    switch (mappedRole) {
-      case "manager":
+    // Use the actual backend role from user object
+    const userRole = user?.role?.toLowerCase() || '';
+
+    if (userRole === 'chef_equipe') {
         return [
           {
             icon: LayoutDashboard,
@@ -56,6 +59,11 @@ const Sidebar: React.FC = () => {
           },
           { icon: FileText, label: "Leave", path: "/manager/leave" },
           {
+            icon: Receipt,
+            label: "Team Payroll",
+            path: "/manager/team-payroll",
+          },
+          {
             icon: FilePlus,
             label: "Request Job",
             path: "/manager/request-job",
@@ -66,7 +74,9 @@ const Sidebar: React.FC = () => {
             path: "/manager/job-requests",
           },
         ];
-      case "employee":
+    }
+
+    if (userRole === 'employe') {
         return [
           {
             icon: LayoutDashboard,
@@ -80,6 +90,11 @@ const Sidebar: React.FC = () => {
             path: "/attendance",
           },
           { icon: FileText, label: "Leave", path: "/employee/leave" },
+          {
+            icon: Receipt,
+            label: "Payslip History",
+            path: "/employee/payslips",
+          },
           { icon: Search, label: "Job Board", path: "/employee/jobs" },
           {
             icon: ClipboardList,
@@ -87,23 +102,24 @@ const Sidebar: React.FC = () => {
             path: "/employee/applications",
           },
         ];
-      default:
-        return [
-          { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
-          { icon: Users, label: "Employees", path: "/employees" },
-          { icon: Briefcase, label: "Teams", path: "/teams" },
-          {
-            icon: CalendarCheck,
-            label: "Attendance",
-            path: "/attendance-dashboard",
-          },
-          { icon: DollarSign, label: "Payroll", path: "/payroll" },
-          { icon: FileText, label: "Leave Management", path: "/leave" },
-          { icon: Target, label: "Job Requests", path: "/hr/job-requests" },
-          { icon: Briefcase, label: "Job Posts", path: "/hr/job-posts" },
-          { icon: BarChart3, label: "Reports", path: "/reports" },
-        ];
     }
+
+    // Default RH role
+    return [
+      { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/rh" },
+      { icon: Users, label: "Employees", path: "/employees" },
+      { icon: Briefcase, label: "Teams", path: "/teams" },
+      {
+        icon: CalendarCheck,
+        label: "Attendance",
+        path: "/attendance-dashboard",
+      },
+      { icon: DollarSign, label: "Payroll", path: "/payroll" },
+      { icon: FileText, label: "Leave Management", path: "/leave" },
+      { icon: Target, label: "Job Requests", path: "/hr/job-requests" },
+      { icon: Briefcase, label: "Job Posts", path: "/hr/job-posts" },
+      { icon: BarChart3, label: "Reports", path: "/reports" },
+    ];
   };
 
   const menuItems = getMenuItems();

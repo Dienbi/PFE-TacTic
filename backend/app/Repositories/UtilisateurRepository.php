@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Models\Utilisateur;
 use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class UtilisateurRepository extends BaseRepository implements UtilisateurRepositoryInterface
@@ -69,7 +70,10 @@ class UtilisateurRepository extends BaseRepository implements UtilisateurReposit
 
     public function getByEquipe(int $equipeId): Collection
     {
-        return $this->model->where('equipe_id', $equipeId)->get();
+        return $this->model
+            ->where('equipe_id', $equipeId)
+            ->select(['id', 'matricule', 'nom', 'prenom', 'email', 'role', 'status', 'actif', 'salaire_base', 'equipe_id'])
+            ->get();
     }
 
     public function getDisponibles(): Collection

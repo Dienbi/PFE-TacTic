@@ -118,4 +118,11 @@ class PayslipGenerationController extends Controller
 
         return response()->json($result);
     }
+
+    public function globalStats()
+    {
+        $result = $this->service->getGlobalStats();
+
+        return response()->json($result);
+    }
 }

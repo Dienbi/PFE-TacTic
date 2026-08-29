@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { jobMatchingApi, JobRequest } from "../../api/jobMatchingApi";
 import Sidebar from "../../../shared/components/Sidebar";
 import Navbar from "../../../shared/components/Navbar";
@@ -14,7 +15,7 @@ const JobRequestsReview: React.FC = () => {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [modalData, setModalData] = useState<{
     request: JobRequest | null;
-    action: "approve" | "reject" | null;
+    action: "approve" | "reject" | "details" | null;
     comment: string;
   }>({
     request: null,
@@ -42,7 +43,7 @@ const JobRequestsReview: React.FC = () => {
     }
   };
 
-  const openModal = (request: JobRequest, action: "approve" | "reject") => {
+  const openModal = (request: JobRequest, action: "approve" | "reject" | "details") => {
     setModalData({ request, action, comment: "" });
   };
 
@@ -51,7 +52,7 @@ const JobRequestsReview: React.FC = () => {
   };
 
   const handleConfirmAction = async () => {
-    if (!modalData.request || !modalData.action) return;
+    if (!modalData.request || !modalData.action || modalData.action === "details") return;
 
     setProcessingId(modalData.request.id);
     try {
@@ -109,74 +110,113 @@ const JobRequestsReview: React.FC = () => {
               </div>
             ) : (
               <div className="requests-list">
-                {requests.map((request) => (
-                  <div key={request.id} className="request-item">
-                    <div className="request-header">
-                      <div className="request-title">
-                        <h3>{request.nom_poste}</h3>
-                        <span className="team-badge">
-                          {request.equipe?.nom || "N/A"}
-                        </span>
-                      </div>
-                      <div className="request-meta">
-                        <span className="meta-label">Requested by:</span>
-                        <span className="meta-value">
-                          {request.demandeur?.nom || "Unknown"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="request-body">
-                      <div className="info-section">
-                        <h4>Description</h4>
-                        <p>{request.description_poste}</p>
-                      </div>
-
-                      <div className="info-section">
-                        <h4>Justification</h4>
-                        <p>{request.justification}</p>
-                      </div>
-
-                      <div className="info-grid">
-                        <div className="info-item">
-                          <span className="info-label">Desired Start Date</span>
-                          <span className="info-value">
-                            {new Date(
-                              request.date_souhaitee,
-                            ).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="info-item">
-                          <span className="info-label">Request Date</span>
-                          <span className="info-value">
-                            {new Date(request.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="request-actions">
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => openModal(request, "reject")}
-                        disabled={processingId === request.id}
+                {requests.map((request) => {
+                  const layoutId = `job-request-${request.id}`;
+                  const managerName = request.demandeur 
+                    ? `${request.demandeur.prenom} ${request.demandeur.nom}` 
+                    : "Unknown Manager";
+                  
+                  return (
+                    <React.Fragment key={request.id}>
+                      <motion.div
+                        layoutId={layoutId}
+                        onClick={() => openModal(request, "details")}
+                        className="cursor-pointer overflow-hidden rounded-xl bg-card border border-border hover:border-primary/30 transition-colors group shadow-sm"
                       >
-                        Reject
-                      </button>
-                      <button
-                        className="btn btn-success"
-                        onClick={() => openModal(request, "approve")}
-                        disabled={processingId === request.id}
-                      >
-                        Approve & Create Post
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                        <div className="p-4 sm:p-5">
+                          <motion.h3 layoutId={`title-${layoutId}`} className="text-base font-medium tracking-tight text-foreground mb-1">{request.nom_poste}</motion.h3>
+                          <motion.p layoutId={`manager-${layoutId}`} className="text-muted-foreground text-xs tracking-wide">Requested by: {managerName}</motion.p>
+                        </div>
+                      </motion.div>
+
+                      <AnimatePresence>
+                        {modalData.request?.id === request.id && modalData.action === "details" && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              onClick={closeModal}
+                              className="absolute inset-0 bg-background/80 backdrop-blur-md"
+                            />
+                            <motion.div
+                              layoutId={layoutId}
+                              className="relative w-full max-w-2xl bg-card rounded-2xl overflow-hidden border border-border z-10 flex flex-col shadow-xl"
+                            >
+                              <button 
+                                onClick={closeModal} 
+                                className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center bg-background/50 hover:bg-accent rounded-full border border-border text-foreground transition-colors backdrop-blur-sm"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                              </button>
+                              
+                              <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar">
+                                <motion.h3 layoutId={`title-${layoutId}`} className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2">{request.nom_poste}</motion.h3>
+                                <motion.p layoutId={`manager-${layoutId}`} className="text-primary text-xs font-medium tracking-wide uppercase mb-6">Requested by: {managerName}</motion.p>
+                                
+                                <motion.div 
+                                  initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+                                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                  exit={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                                  transition={{ type: "spring", duration: 0.3, bounce: 0, delay: 0.1 }}
+                                  className="text-foreground/80 text-sm leading-relaxed space-y-6"
+                                >
+                                  <div>
+                                    <h4 className="text-foreground font-semibold mb-2 tracking-tight">Description</h4>
+                                    <p className="text-muted-foreground">{request.description_poste}</p>
+                                  </div>
+
+                                  <div>
+                                    <h4 className="text-foreground font-semibold mb-2 tracking-tight">Justification</h4>
+                                    <p className="text-muted-foreground">{request.justification}</p>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <span className="text-xs text-muted-foreground block mb-1">Desired Start Date</span>
+                                      <span className="text-sm font-medium">{new Date(request.date_souhaitee).toLocaleDateString()}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-muted-foreground block mb-1">Request Date</span>
+                                      <span className="text-sm font-medium">{new Date(request.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex gap-3 pt-4 border-t border-border">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setModalData({ ...modalData, action: "reject" });
+                                      }}
+                                      disabled={processingId === request.id}
+                                      className="flex-1 px-4 py-2.5 bg-destructive text-destructive-foreground font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    >
+                                      Reject
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setModalData({ ...modalData, action: "approve" });
+                                      }}
+                                      disabled={processingId === request.id}
+                                      className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    >
+                                      Approve & Create Post
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              </div>
+                            </motion.div>
+                          </div>
+                        )}
+                      </AnimatePresence>
+                    </React.Fragment>
+                  );
+                })}
               </div>
             )}
 
-            {modalData.request && (
+            {modalData.request && modalData.action !== "details" && (
               <div className="modal-overlay" onClick={closeModal}>
                 <div
                   className="modal-content"

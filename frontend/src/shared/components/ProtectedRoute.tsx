@@ -28,9 +28,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const userRole = mapRole(user.role);
+  // Check if user's role is in the allowed roles list
+  // allowedRoles can contain either mapped roles (manager, employee) or backend roles (chef_equipe, employe)
+  const userRole = user.role.toLowerCase();
+  const mappedRole = mapRole(user.role);
 
-  if (!allowedRoles.includes(userRole)) {
+  // Allow both the backend role and the mapped role
+  const hasAccess = allowedRoles.includes(userRole) || allowedRoles.includes(mappedRole);
+
+  if (!hasAccess) {
     return <Navigate to={getDefaultDashboard(user.role)} replace />;
   }
 

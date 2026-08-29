@@ -61,7 +61,7 @@ class Utilisateur extends Authenticatable implements JWTSubject
         'date_embauche' => 'date',
         'date_derniere_connexion' => 'datetime',
         'actif' => 'boolean',
-        'salaire_base' => 'decimal:2',
+        'salaire_base' => 'float',
         'type_contrat' => TypeContrat::class,
         'status' => EmployeStatus::class,
         'role' => Role::class,

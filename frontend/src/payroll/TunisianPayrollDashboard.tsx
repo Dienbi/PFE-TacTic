@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../shared/components/Sidebar';
 import Navbar from '../shared/components/Navbar';
@@ -9,6 +9,7 @@ import Button from '../shared/components/ui/Button';
 import Badge from '../shared/components/ui/Badge';
 import PayrollGuideButton from '../guide/PayrollGuideButton';
 import PayrollTourTooltip from '../guide/PayrollTourTooltip';
+import SalaryIncreaseModal from './SalaryIncreaseModal';
 import { 
   FileText, 
   Calculator, 
@@ -21,7 +22,9 @@ import {
   DollarSign,
   CheckCircle,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  TrendingUp as TrendingUpIcon,
+  User
 } from 'lucide-react';
 
 const TunisianPayrollDashboard: React.FC = () => {
@@ -29,6 +32,7 @@ const TunisianPayrollDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { data: auditLogs, isLoading: auditLoading } = useAuditLogs();
   const { data: globalStats, isLoading: statsLoading } = usePayrollGlobalStats();
+  const [isSalaryIncreaseModalOpen, setIsSalaryIncreaseModalOpen] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-TN', {
@@ -86,16 +90,16 @@ const TunisianPayrollDashboard: React.FC = () => {
       color: 'green',
     },
     {
-      title: 'Manage Fiscal Rules',
-      description: 'Configure tax rules and brackets',
-      icon: <FileText className="w-5 h-5" />,
-      onClick: () => navigate('/payroll/fiscal-rules'),
-      color: 'purple',
+      title: 'Increase Salaries',
+      description: 'Apply percentage increase to all salaries',
+      icon: <TrendingUpIcon className="w-5 h-5" />,
+      onClick: () => setIsSalaryIncreaseModalOpen(true),
+      color: 'orange',
     },
     {
       title: 'Fiscal Profile',
       description: 'Manage employee fiscal profiles',
-      icon: <TrendingUp className="w-5 h-5" />,
+      icon: <User className="w-5 h-5" />,
       onClick: () => navigate('/payroll/fiscal-profile'),
       color: 'indigo',
     },
@@ -127,6 +131,10 @@ const TunisianPayrollDashboard: React.FC = () => {
     orange: 'bg-orange-50',
     indigo: 'bg-indigo-50',
     babyblue: 'bg-blue-100',
+  };
+
+  const handleSalaryIncreaseSuccess = () => {
+    // Stats will be refreshed when modal is closed
   };
 
   return (
@@ -178,7 +186,7 @@ const TunisianPayrollDashboard: React.FC = () => {
           {/* Quick Actions */}
           <div className="mb-6" data-tour="dashboard-quick-actions">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-wrap gap-4 justify-center">
               {quickActions.map((action) => (
                 <div 
                   key={action.title} 
@@ -359,6 +367,11 @@ const TunisianPayrollDashboard: React.FC = () => {
         </div>
       </div>
       <PayrollTourTooltip />
+      <SalaryIncreaseModal
+        isOpen={isSalaryIncreaseModalOpen}
+        onClose={() => setIsSalaryIncreaseModalOpen(false)}
+        onSuccess={handleSalaryIncreaseSuccess}
+      />
     </div>
   );
 };

@@ -470,4 +470,6 @@ export const legacyPayrollApi = {
   getNonPayees: () => client.get('/paies/non-payees'),
   getTotalMensuel: (year?: number, month?: number) => 
     client.get('/paies/total-mensuel', { params: { year, month } }),
+  increaseSalaries: (percentage: number) => 
+    client.post<{ message: string; count: number }>('/paies/increase-salaries', { percentage }),
 };

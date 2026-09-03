@@ -1,0 +1,582 @@
+@startuml Global Class Diagram
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor White
+  ArrowColor Black
+  BorderColor Black
+}
+
+title TacTic HR Platform — Global Class Diagram
+
+' ─── Core User Models (Shared) ──────────────────────────────────────────
+
+class Utilisateur {
+  + id: UUID
+  + matricule: String
+  + nom: String
+  + prenom: String
+  + email: String
+  + password: String
+  + role: Enum (RH, CHEF_EQUIPE, EMPLOYE)
+  + date_naissance: Date
+  + date_embauche: Date
+  + salaire_base: Decimal
+  + type_contrat: String
+  + statut: String
+  + equipe_id: UUID
+  + poste_id: UUID
+  + deleted_at: Timestamp
+  + created_at: Timestamp
+  + updated_at: Timestamp
+  + nom_complet(): String
+  + hasRole(role): Boolean
+}
+
+' ─── Authentication & User Management ─────────────────────────────────
+
+package "Authentication & User Management" {
+  class AccountRequest {
+    + id: UUID
+    + email: String
+    + nom: String
+    + prenom: String
+    + token: String
+    + statut: Enum (PENDING, APPROVED, REJECTED)
+    + created_at: Timestamp
+  }
+
+  class ActivityLog {
+    + id: UUID
+    + user_id: UUID
+    + action: String
+    + description: String
+    + entity_type: String
+    + entity_id: String
+    + ip_address: String
+    + created_at: Timestamp
+  }
+}
+
+' ─── Attendance Management ───────────────────────────────────────────────
+
+package "Attendance Management" {
+  class Pointage {
+    + id: UUID
+    + utilisateur_id: UUID
+    + date: Date
+    + heure_entree: Time
+    + heure_sortie: Time
+    + duree_travail: Decimal
+    + statut: Enum (PRESENT, ABSENT, RETARD)
+    + justification: String
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+}
+
+' ─── Leave Management ───────────────────────────────────────────────────
+
+package "Leave Management" {
+  class Conge {
+    + id: UUID
+    + utilisateur_id: UUID
+    + type_conge: String
+    + date_debut: Date
+    + date_fin: Date
+    + duree: Integer
+    + motif: String
+    + statut: Enum (EN_ATTENTE, APPROUVE, REFUSE, ANNULE)
+    + medical_file: String
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+}
+
+' ─── Payroll Management ────────────────────────────────────────────────
+
+package "Payroll Management" {
+  class Paie {
+    + id: UUID
+    + utilisateur_id: UUID
+    + periode_debut: Date
+    + periode_fin: Date
+    + salaire_brut: Decimal
+    + taux_horaire: Decimal
+    + heures_normales: Decimal
+    + heures_supp: Decimal
+    + montant_heures_supp: Decimal
+    + deductions: Decimal
+    + cnss_employe: Decimal
+    + cnss_taux: Decimal
+    + impot_annuel: Decimal
+    + impot_mensuel: Decimal
+    + salaire_net: Decimal
+    + date_paiement: Date
+    + statut: Enum (GENERE, VALIDE, PAYE)
+    + payslip_id: UUID
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class Payslip {
+    + id: UUID
+    + employee_id: UUID
+    + pay_period_start: Date
+    + pay_period_end: Date
+    + rule_set_id: UUID
+    + base_salary_used: Decimal
+    + gross_salary: Decimal
+    + cnss_employee_amount: Decimal
+    + cnss_employer_amount: Decimal
+    + taxable_base_annual: Decimal
+    + irpp_annual: Decimal
+    + irpp_monthly: Decimal
+    + css_amount: Decimal
+    + family_deduction_total: Decimal
+    + prof_expense_deduction: Decimal
+    + net_salary: Decimal
+    + status: Enum (draft, validated, locked, superseded)
+    + version: Integer
+    + supersedes_payslip_id: UUID
+    + is_regularization_adjustment: Boolean
+    + generated_at: Timestamp
+    + generated_by: UUID
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class PayslipPayItem {
+    + id: UUID
+    + payslip_id: UUID
+    + pay_item_id: UUID
+    + name_snapshot: String
+    + amount: Decimal
+    + was_taxable: Boolean
+    + was_cnss_applicable: Boolean
+    + created_at: Timestamp
+  }
+
+  class Payment {
+    + id: UUID
+    + payslip_id: UUID
+    + method: Enum (bank_transfer, cash, check)
+    + amount: Decimal
+    + paid_at: Date
+    + reference: String
+    + created_by: UUID
+    + created_at: Timestamp
+  }
+
+  class PayItem {
+    + id: UUID
+    + name: String
+    + type: Enum (earning, deduction)
+    + amount: Decimal
+    + is_taxable: Boolean
+    + is_cnss_applicable: Boolean
+    + is_active: Boolean
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class FiscalRuleSet {
+    + id: UUID
+    + year: Integer
+    + effective_from: Date
+    + effective_to: Date
+    + cnss_employee_rate: Decimal
+    + cnss_employer_rate: Decimal
+    + cnss_monthly_ceiling: Decimal
+    + css_rate: Decimal
+    + css_exempt_annual_net_threshold: Decimal
+    + prof_expense_rate: Decimal
+    + prof_expense_annual_cap: Decimal
+    + min_annual_tax: Decimal
+    + source_pdf_ref: String
+    + is_confirmed: Boolean
+    + confirmed_by: UUID
+    + confirmed_at: Timestamp
+    + superseded_by: UUID
+    + superseded_at: Timestamp
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class IrppBracket {
+    + id: UUID
+    + rule_set_id: UUID
+    + bracket_order: Integer
+    + min_annual_amount: Decimal
+    + max_annual_amount: Decimal
+    + rate: Decimal
+    + created_at: Timestamp
+  }
+
+  class FamilyDeductionRule {
+    + id: UUID
+    + rule_set_id: UUID
+    + deduction_type: Enum (head_of_household, child, disabled_child, student_child_non_scholarship)
+    + annual_amount: Decimal
+    + max_count: Integer
+    + created_at: Timestamp
+  }
+
+  class EmployeeFiscalProfile {
+    + id: UUID
+    + employee_id: UUID
+    + is_head_of_household: Boolean
+    + spouse_income: Decimal
+    + child_count: Integer
+    + disabled_child_count: Integer
+    + student_child_count: Integer
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class FiscalProfileGroup {
+    + id: UUID
+    + name: String
+    + description: String
+    + criteria_json: JSON
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class EmployeeFiscalProfileAssignment {
+    + id: UUID
+    + employee_id: UUID
+    + fiscal_profile_id: UUID
+    + assigned_by: UUID
+    + assigned_at: Timestamp
+    + effective_from: Date
+    + effective_to: Date
+  }
+
+  class HeadOfFamilyOverride {
+    + id: UUID
+    + employee_id: UUID
+    + is_head_of_household: Boolean
+    + reason: String
+    + approved_by: UUID
+    + approved_at: Timestamp
+    + effective_from: Date
+    + effective_to: Date
+  }
+
+  class RuleImportLog {
+    + id: UUID
+    + rule_set_id: UUID
+    + uploaded_pdf_ref: String
+    + ai_raw_output_json: JSON
+    + proposed_changes_json: JSON
+    + review_decisions_json: JSON
+    + reviewed_by: UUID
+    + status: Enum (pending_review, confirmed, rejected)
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+}
+
+' ─── Recruitment ────────────────────────────────────────────────────────
+
+package "Recruitment" {
+  class JobPost {
+    + id: UUID
+    + titre: String
+    + description: String
+    + exigences: String
+    + salaire_min: Decimal
+    + salaire_max: Decimal
+    + type_contrat: String
+    + lieu: String
+    + statut: Enum (DRAFT, PUBLIE, CLOTURE)
+    + date_publication: Date
+    + date_cloture: Date
+    + created_by: UUID
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class JobApplication {
+    + id: UUID
+    + job_post_id: UUID
+    + utilisateur_id: UUID
+    + date_postulation: Date
+    + statut: Enum (EN_ATTENTE, EN_REVIEW, ACCEPTE, REFUSE)
+    + cv_path: String
+    + lettre_motivation: String
+    + match_score: Decimal
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class JobRequest {
+    + id: UUID
+    + equipe_id: UUID
+    + poste_id: UUID
+    + justification: String
+    + priorite: String
+    + statut: Enum (EN_ATTENTE, APPROUVE, REFUSE)
+    + requested_by: UUID
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class AiRecommendation {
+    + id: UUID
+    + job_application_id: UUID
+    + score: Decimal
+    + criteria_json: JSON
+    + generated_at: Timestamp
+  }
+}
+
+' ─── Performance Management ───────────────────────────────────────────────
+
+package "Performance Management" {
+  class PerformanceReview {
+    + id: UUID
+    + employee_id: UUID
+    + reviewer_id: UUID
+    + periode: String
+    + score: Decimal
+    + commentaires: Text
+    + objectifs: Text
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+}
+
+' ─── Skills & Competences ───────────────────────────────────────────────
+
+package "Skills & Competences" {
+  class Competence {
+    + id: UUID
+    + nom: String
+    + description: String
+    + categorie: String
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class UtilisateurCompetence {
+    + utilisateur_id: UUID
+    + competence_id: UUID
+    + niveau: String
+    + date_acquisition: Date
+    + created_at: Timestamp
+  }
+}
+
+' ─── Team Management ───────────────────────────────────────────────────
+
+package "Team Management" {
+  class Equipe {
+    + id: UUID
+    + nom: String
+    + description: String
+    + chef_id: UUID
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class Poste {
+    + id: UUID
+    + titre: String
+    + description: String
+    + departement: String
+    + salaire_min: Decimal
+    + salaire_max: Decimal
+    + is_actif: Boolean
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class Affectation {
+    + id: UUID
+    + utilisateur_id: UUID
+    + poste_id: UUID
+    + equipe_id: UUID
+    + date_debut: Date
+    + date_fin: Date
+    + statut: String
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+}
+
+' ─── Notifications ─────────────────────────────────────────────────────
+
+package "Notifications" {
+  class Notification {
+    + id: UUID
+    + utilisateur_id: UUID
+    + titre: String
+    + message: String
+    + type: String
+    + is_lu: Boolean
+    + data_json: JSON
+    + created_at: Timestamp
+  }
+}
+
+' ─── Documents ────────────────────────────────────────────────────────
+
+package "Documents" {
+  class CvUpload {
+    + id: UUID
+    + utilisateur_id: UUID
+    + file_path: String
+    + file_name: String
+    + file_size: Integer
+    + mime_type: String
+    + is_confirmed: Boolean
+    + uploaded_at: Timestamp
+    + confirmed_at: Timestamp
+  }
+}
+
+' ─── Family & Social Info ──────────────────────────────────────────────
+
+package "Family & Social Info" {
+  class Child {
+    + id: UUID
+    + utilisateur_id: UUID
+    + nom: String
+    + prenom: String
+    + date_naissance: Date
+    + is_disabled: Boolean
+    + is_student: Boolean
+    + statut: Enum (PENDING, VERIFIED, REJECTED)
+    + verified_by: UUID
+    + verified_at: Timestamp
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class SocialStatusProof {
+    + id: UUID
+    + utilisateur_id: UUID
+    + type: String
+    + file_path: String
+    + statut: Enum (PENDING, VERIFIED, REJECTED)
+    + verified_by: UUID
+    + verified_at: Timestamp
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class PersonalInfoChangeRequest {
+    + id: UUID
+    + utilisateur_id: UUID
+    + field_name: String
+    + old_value: String
+    + new_value: String
+    + reason: String
+    + statut: Enum (PENDING, APPROVED, REJECTED, MORE_INFO)
+    + documents: JSON
+    + reviewed_by: UUID
+    + reviewed_at: Timestamp
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class ChangeRequestDocument {
+    + id: UUID
+    + change_request_id: UUID
+    + file_path: String
+    + file_name: String
+    + statut: Enum (PENDING, VERIFIED, REJECTED)
+    + verified_by: UUID
+    + verified_at: Timestamp
+    + created_at: Timestamp
+  }
+}
+
+' ─── AI & Analytics ────────────────────────────────────────────────────
+
+package "AI & Analytics" {
+  class AiChatSession {
+    + id: UUID
+    + utilisateur_id: UUID
+    + title: String
+    + created_at: Timestamp
+    + updated_at: Timestamp
+  }
+
+  class AiChatMessage {
+    + id: UUID
+    + session_id: UUID
+    + role: Enum (user, assistant)
+    + content: Text
+    + created_at: Timestamp
+  }
+}
+
+' ─── Audit & Logging ───────────────────────────────────────────────────
+
+package "Audit & Logging" {
+  class AuditLog {
+    + id: UUID
+    + actor_id: UUID
+    + action: String
+    + entity_type: String
+    + entity_id: String
+    + details_json: JSON
+    + created_at: Timestamp
+  }
+}
+
+' ─── Relationships ───────────────────────────────────────────────────────
+
+Utilisateur "1" -- "*" Equipe : belongs to
+Utilisateur "1" -- "*" Poste : belongs to
+Utilisateur "1" -- "*" Affectation : has
+Equipe "1" -- "*" Affectation : has
+Poste "1" -- "*" Affectation : has
+Utilisateur "*" -- "*" Competence : many-to-many
+Utilisateur "*" -- "*" UtilisateurCompetence : has
+Competence "*" -- "*" UtilisateurCompetence : has
+
+Utilisateur "1" -- "*" Pointage : has
+Utilisateur "1" -- "*" Conge : has
+Utilisateur "1" -- "*" Paie : has
+Utilisateur "1" -- "*" Payslip : has (as employee)
+Utilisateur "1" -- "*" Payment : created
+Payslip "1" -- "*" Payment : has
+Payslip "1" -- "*" PayslipPayItem : has
+PayItem "1" -- "*" PayslipPayItem : has
+
+FiscalRuleSet "1" -- "*" IrppBracket : has
+FiscalRuleSet "1" -- "*" FamilyDeductionRule : has
+Payslip "1" -- "1" FiscalRuleSet : uses
+
+Utilisateur "1" -- "1" EmployeeFiscalProfile : has
+EmployeeFiscalProfileAssignment "1" -- "1" Utilisateur : assigned to
+EmployeeFiscalProfileAssignment "1" -- "1" EmployeeFiscalProfile : assigns
+FiscalProfileGroup "1" -- "*" EmployeeFiscalProfileAssignment : has
+Utilisateur "1" -- "*" HeadOfFamilyOverride : has
+
+JobPost "1" -- "*" JobApplication : receives
+Utilisateur "1" -- "*" JobApplication : submits
+JobApplication "1" -- "1" AiRecommendation : has
+JobRequest "1" -- "1" Equipe : belongs to
+JobRequest "1" -- "1" Poste : for
+Utilisateur "1" -- "*" PerformanceReview : receives
+Utilisateur "1" -- "*" PerformanceReview : creates
+
+Utilisateur "1" -- "*" Notification : receives
+Utilisateur "1" -- "*" ActivityLog : creates
+Utilisateur "1" -- "*" AuditLog : acts
+Utilisateur "1" -- "*" CvUpload : uploads
+Utilisateur "1" -- "*" Child : has
+Utilisateur "1" -- "*" SocialStatusProof : has
+Utilisateur "1" -- "*" PersonalInfoChangeRequest : creates
+PersonalInfoChangeRequest "1" -- "*" ChangeRequestDocument : has
+
+AiChatSession "1" -- "*" AiChatMessage : has
+Utilisateur "1" -- "*" AiChatSession : has
+RuleImportLog "1" -- "1" FiscalRuleSet : creates
+Utilisateur "1" -- "*" AccountRequest : creates
+
+@enduml

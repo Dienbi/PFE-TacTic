@@ -8,6 +8,7 @@ use App\Contracts\Repositories\UtilisateurRepositoryInterface;
 use App\Enums\StatutPaie;
 use App\Events\SalaryPaid;
 use App\Models\ActivityLog;
+use App\Models\AuditLog;
 use App\Models\Paie;
 use App\Models\Utilisateur;
 use App\Notifications\SalaireNotification;
@@ -367,14 +368,29 @@ class PaieService
     public function augmenterSalaires(float $percentage): int
     {
         $count = 0;
+        $actorId = auth()->id();
         // Use chunk to handle large datasets efficiently
-        Utilisateur::chunk(100, function ($users) use ($percentage, &$count) {
+        Utilisateur::chunk(100, function ($users) use ($percentage, &$count, $actorId) {
             foreach ($users as $user) {
                 if ($user->salaire_base > 0) {
                     $oldSalary = $user->salaire_base;
                     // Increase logic: new = old * (1 + percent/100)
                     $user->salaire_base = round($oldSalary * (1 + $percentage / 100), 2);
                     $user->save();
+
+                    // Log the action
+                    AuditLog::create([
+                        'id' => \Illuminate\Support\Str::uuid(),
+                        'actor_id' => $actorId,
+                        'action' => 'salary.increased',
+                        'entity_type' => 'Utilisateur',
+                        'entity_id' => $user->id,
+                        'details_json' => [
+                            'old_salary' => $oldSalary,
+                            'new_salary' => $user->salaire_base,
+                            'percentage' => $percentage,
+                        ],
+                    ]);
 
                     // Notify user (database notification)
                     try {

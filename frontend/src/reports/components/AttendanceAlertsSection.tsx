@@ -36,22 +36,37 @@ const translateDayName = (dayName: string): string => {
 
 const translatePattern = (pattern: string): string => {
   // Common French patterns from AI service
-  if (pattern.includes("Absent régulièrement le lundi")) {
-    return pattern.replace(/Absent régulièrement le lundi/g, "Regularly absent on Monday");
+  const dayTranslations: Record<string, string> = {
+    "lundi": "Monday",
+    "mardi": "Tuesday",
+    "mercredi": "Wednesday",
+    "jeudi": "Thursday",
+    "vendredi": "Friday",
+    "samedi": "Saturday",
+    "dimanche": "Sunday",
+  };
+
+  let translated = pattern;
+  // Translate "Absent régulièrement le [day]"
+  Object.entries(dayTranslations).forEach(([frenchDay, englishDay]) => {
+    translated = translated.replace(
+      new RegExp(`Absent régulièrement le ${frenchDay}`, "g"),
+      `Regularly absent on ${englishDay}`
+    );
+  });
+  if (translated.includes("absences consécutives")) {
+    translated = translated.replace(/absences consécutives/g, "consecutive absences");
   }
-  if (pattern.includes("absences consécutives")) {
-    return pattern.replace(/absences consécutives/g, "consecutive absences");
+  if (translated.includes("fois sur")) {
+    translated = translated.replace(/fois sur/g, "times out of");
   }
-  if (pattern.includes("fois sur")) {
-    return pattern.replace(/fois sur/g, "times out of");
+  if (translated.includes("semaines")) {
+    translated = translated.replace(/semaines/g, "weeks");
   }
-  if (pattern.includes("semaines")) {
-    return pattern.replace(/semaines/g, "weeks");
+  if (translated.includes("récentes")) {
+    translated = translated.replace(/récentes/g, "recent");
   }
-  if (pattern.includes("récentes")) {
-    return pattern.replace(/récentes/g, "recent");
-  }
-  return pattern;
+  return translated;
 };
 
 const translateRecommendation = (recommendation: string): string => {

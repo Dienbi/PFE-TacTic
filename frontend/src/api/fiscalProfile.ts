@@ -127,4 +127,8 @@ export const fiscalProfileApi = {
 
   getAiChatSessions: () =>
     apiClient.get('/payroll/fiscal-profile/ai-chat/sessions'),
+
+  // Search employees by name
+  searchEmployees: (query: string) =>
+    apiClient.get('/utilisateurs/search', { params: { q: query } }),
 };

@@ -40,6 +40,9 @@ class AccountRequestController extends Controller
             'status' => AccountRequest::STATUS_PENDING,
         ]);
 
+        // Clear dashboard cache so RH sees new requests immediately
+        $this->cacheService->invalidateDashboard();
+
         // Broadcast event for RH notification via Laravel Reverb
         $this->broadcastNewAccountRequest($accountRequest);
 

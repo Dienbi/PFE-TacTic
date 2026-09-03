@@ -57,8 +57,8 @@ class PayslipRepository
     public function findByEmployeeAndPeriod(string $employeeId, string $periodStart, string $periodEnd): ?Payslip
     {
         return Payslip::where('employee_id', $employeeId)
-            ->where('pay_period_start', $periodStart)
-            ->where('pay_period_end', $periodEnd)
+            ->whereDate('pay_period_start', '=', $periodStart)
+            ->whereDate('pay_period_end', '=', $periodEnd)
             ->latestVersion()
             ->first();
     }

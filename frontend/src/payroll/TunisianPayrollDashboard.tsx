@@ -186,7 +186,7 @@ const TunisianPayrollDashboard: React.FC = () => {
           {/* Quick Actions */}
           <div className="mb-6" data-tour="dashboard-quick-actions">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">Quick Actions</h2>
-            <div className="flex flex-wrap gap-4 justify-center">
+            <div className="flex gap-4 justify-center">
               {quickActions.map((action) => (
                 <div 
                   key={action.title} 

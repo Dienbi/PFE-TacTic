@@ -18,6 +18,7 @@ rectangle "TAC-TIC HR System\n(Release 1 — Sprint 1 & 2)" as System {
     usecase "Authenticate" as UC_Auth
     usecase "Create Account" as UC_Register
     usecase "Edit Profile" as UC_Profile
+    usecase "View and Verify Employee Data" as UC_ViewEmp
     usecase "Manage Employee Records" as UC_ManageEmp
     usecase "Assign Roles" as UC_Roles
     usecase "Manage User Status" as UC_Status
@@ -29,7 +30,6 @@ rectangle "TAC-TIC HR System\n(Release 1 — Sprint 1 & 2)" as System {
     usecase "Check Out" as UC_CheckOut
     usecase "View Attendance History" as UC_History
     usecase "Automatic Check-out" as UC_AutoOut
-    usecase "View Attendance Summary" as UC_Summary
     usecase "Check Attendance Anomalies" as UC_Anomalies
   }
 
@@ -46,13 +46,13 @@ Emp --> UC_History
 Emp --> UC_AutoOut
 
 Chef --> UC_History
-Chef --> UC_Summary
+Chef --> UC_ViewEmp
 
+RH --> UC_ViewEmp
 RH --> UC_ManageEmp
 RH --> UC_Roles
 RH --> UC_Status
 RH --> UC_ValidateSignup
-RH --> UC_Summary
 RH --> UC_Anomalies
 
 @enduml

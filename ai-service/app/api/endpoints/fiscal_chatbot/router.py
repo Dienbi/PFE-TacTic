@@ -118,7 +118,7 @@ def parse_intent(message: str) -> Dict[str, Any]:
         }
     
     # Intent: Find employees
-    if "find" in message_lower or "search" in message_lower or "employees" in message_lower:
+    if "find" in message_lower or "search" in message_lower or "employees" in message_lower or "list" in message_lower or "get" in message_lower:
         return {
             "intent": "find_employees",
             "params": extract_employee_criteria(message)
@@ -256,6 +256,7 @@ def extract_employee_criteria(message: str) -> Dict[str, Any]:
     message_lower = message.lower()
     
     print(f"DEBUG: Extracting criteria from message: {message}")
+    print(f"DEBUG: Message lower: {message_lower}")
     
     # Gender extraction - more comprehensive HR language
     if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
@@ -264,6 +265,8 @@ def extract_employee_criteria(message: str) -> Dict[str, Any]:
     elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
         criteria["gender"] = "male"
         print(f"DEBUG: Found gender=male")
+    else:
+        print(f"DEBUG: No gender found in message")
     
     # Marital status extraction - more comprehensive HR language
     if "married" in message_lower:
@@ -303,36 +306,46 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
     params = {}
     message_lower = message.lower()
     
+    print(f"DEBUG: Extracting assignment params from: {message}")
+    
     # Extract employee identifier (name or matricule)
     import re
     # Try to find matricule pattern (EMP00000)
     matricule_match = re.search(r'EMP\d{5}', message, re.IGNORECASE)
     if matricule_match:
         params["employee_id"] = matricule_match.group(0)
+        print(f"DEBUG: Found matricule: {matricule_match.group(0)}")
     else:
-        # Try to extract employee name from patterns like "to employee John Doe"
-        name_pattern = r'(?:to|for)\s+(?:employee\s+)?["\']?([A-Za-z\s]+?)["\']?(?:\s+(?:effective|from|with|to|profile|fiscal|group)?)?$'
-        name_match = re.search(name_pattern, message_lower)
-        if name_match:
-            employee_name = name_match.group(1).strip()
-            # Clean up common trailing words
-            employee_name = re.sub(r'\s+(effective|from|with|to|profile|fiscal|group)\s*$', '', employee_name, flags=re.IGNORECASE)
+        # Pattern: "assign [name] to [profile]" or "assign [name] to [profile] fiscal profile"
+        # Extract employee name between "assign" and "to"
+        assign_pattern = r'assign\s+(.+?)\s+to\s+'
+        assign_match = re.search(assign_pattern, message_lower)
+        if assign_match:
+            employee_name = assign_match.group(1).strip()
+            # Clean up common trailing words from employee name
+            employee_name = re.sub(r'\s+(employee|profile|fiscal)\s*$', '', employee_name, flags=re.IGNORECASE)
             params["employee_name"] = employee_name
+            print(f"DEBUG: Found employee name: {employee_name}")
+        else:
+            print(f"DEBUG: No employee name found")
     
     # Extract fiscal profile label or attributes
     # Try to find quoted label first
     quoted_match = re.search(r'"([^"]+)"', message)
     if quoted_match:
         params["group_label"] = quoted_match.group(1)
+        print(f"DEBUG: Found quoted group label: {quoted_match.group(1)}")
     else:
-        # Try to extract from pattern like "profile Single Female"
-        profile_pattern = r'(?:profile|fiscal\s+profile\s+|group\s+)?["\']?([A-Za-z\s]+?)["\']?(?:\s+(?:to|for|employee|effective|from)?)?$'
+        # Pattern: "to [profile] fiscal profile" or "to [profile]"
+        # Extract profile between "to" and "fiscal profile" or end of string
+        profile_pattern = r'to\s+(.+?)(?:\s+fiscal\s+profile|$)'
         profile_match = re.search(profile_pattern, message_lower)
         if profile_match:
             group_label = profile_match.group(1).strip()
-            # Clean up common trailing words
-            group_label = re.sub(r'\s+(to|for|employee|effective|from)\s*$', '', group_label, flags=re.IGNORECASE)
             params["group_label"] = group_label
+            print(f"DEBUG: Found group label: {group_label}")
+        else:
+            print(f"DEBUG: No group label found")
     
     # Extract fiscal profile attributes (gender, marital_status, children_count) - more comprehensive HR language
     # Gender extraction
@@ -615,6 +628,7 @@ async def handle_assign_profile(params: Dict[str, Any], session_id: Optional[str
                 "employee_matricule": employee_identifier,
                 "group_id": "placeholder",  # Will be resolved by frontend
                 "group_label": group_label or f"{group_params.get('marital_status').capitalize() if group_params.get('marital_status') else ''} {group_params.get('gender').capitalize() if group_params.get('gender') else ''}".strip(),
+                "group_params": group_params,  # Include for attribute-based matching
                 "effective_from": effective_from,
                 "requires_confirmation": True
             }

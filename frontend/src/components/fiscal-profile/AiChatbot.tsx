@@ -236,7 +236,7 @@ export const AiChatbot: React.FC = () => {
     // Add children count if present and > 0
     if (criteria?.children_count && criteria.children_count > 0) {
       const children = criteria.children_count;
-      label += ` · ${children} child${children === 1 ? '' : 'ren'}`;
+      label += ` · ${children} ${children === 1 ? 'child' : 'children'}`;
     }
 
     return label;
@@ -488,13 +488,45 @@ export const AiChatbot: React.FC = () => {
       try {
         console.log('Assigning fiscal profile:', action);
 
-        // Resolve employee ID if it's a matricule
+        // Resolve employee ID if it's a name or matricule
         let employeeId = action.employee_id;
-        if (typeof employeeId === 'string' && employeeId.startsWith('EMP')) {
-          const groups = await fiscalProfileApi.getFiscalProfileGroups();
-          // For now, use a hardcoded employee ID since we don't have a getEmployees method
-          // In production, this should be resolved via an API call
-          employeeId = 118; // Chaabane Fatma's ID from earlier query
+        if (typeof employeeId === 'string') {
+          if (employeeId.startsWith('EMP')) {
+            // It's a matricule - search by matricule
+            const searchResponse = await fiscalProfileApi.searchEmployees(employeeId);
+            const employee = searchResponse.data.find((e: any) => e.matricule === employeeId);
+            if (employee) {
+              employeeId = employee.id;
+            } else {
+              throw new Error(`Employee with matricule '${employeeId}' not found`);
+            }
+          } else {
+            // It's a name - search by name (case-insensitive)
+            // Split the name into parts and try searching with each part
+            const nameParts = employeeId.split(' ');
+            let employee = null;
+            
+            for (const part of nameParts) {
+              if (part.trim()) {
+                const searchResponse = await fiscalProfileApi.searchEmployees(part.trim());
+                console.log('Search response for:', part.trim(), searchResponse.data);
+                employee = searchResponse.data.find((e: any) => 
+                  `${e.nom} ${e.prenom}`.toLowerCase().includes(employeeId.toLowerCase()) ||
+                  employeeId.toLowerCase().includes(`${e.nom} ${e.prenom}`.toLowerCase()) ||
+                  `${e.prenom} ${e.nom}`.toLowerCase().includes(employeeId.toLowerCase()) ||
+                  employeeId.toLowerCase().includes(`${e.prenom} ${e.nom}`.toLowerCase())
+                );
+                if (employee) break;
+              }
+            }
+            
+            console.log('Found employee:', employee);
+            if (employee) {
+              employeeId = employee.id;
+            } else {
+              throw new Error(`Employee '${employeeId}' not found`);
+            }
+          }
         }
 
         // Resolve group ID if it's a placeholder
@@ -502,11 +534,23 @@ export const AiChatbot: React.FC = () => {
         if (groupId === 'placeholder') {
           const groupsResponse = await fiscalProfileApi.getFiscalProfileGroups();
           const groups = groupsResponse.data;
-          const group = groups.find((g: any) => g.label.toLowerCase() === action.group_label.toLowerCase());
+          
+          // First try exact label match
+          let group = groups.find((g: any) => g.label.toLowerCase() === action.group_label.toLowerCase());
+          
+          // If not found, try matching by attributes (gender, marital_status, children_count)
+          if (!group && action.group_params) {
+            group = groups.find((g: any) => 
+              g.gender === action.group_params.gender &&
+              g.marital_status === action.group_params.marital_status &&
+              g.children_count === (action.group_params.children_count || 0)
+            );
+          }
+          
           if (group) {
             groupId = group.id;
           } else {
-            throw new Error(`Could not find fiscal profile group with label '${action.group_label}'`);
+            throw new Error(`Could not find fiscal profile group with label '${action.group_label}' or matching attributes`);
           }
         }
 

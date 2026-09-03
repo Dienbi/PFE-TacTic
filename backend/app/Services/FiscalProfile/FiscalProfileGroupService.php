@@ -102,7 +102,8 @@ class FiscalProfileGroupService
         
         // Children count
         if (($attributes['children_count'] ?? 0) > 0) {
-            $parts[] = $attributes['children_count'] . ' children';
+            $childrenCount = $attributes['children_count'];
+            $parts[] = $childrenCount . ' ' . ($childrenCount === 1 ? 'child' : 'children');
         }
         
         // Disabled children

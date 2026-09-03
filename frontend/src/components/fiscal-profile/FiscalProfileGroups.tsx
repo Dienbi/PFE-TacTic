@@ -184,7 +184,7 @@ export const FiscalProfileGroups: React.FC = () => {
                     <Badge variant="default">{group.gender}</Badge>
                     <Badge variant="default">{group.marital_status}</Badge>
                     <Badge variant="default">
-                      {group.children_count} child{group.children_count === 1 ? '' : 'ren'}
+                      {group.children_count} {group.children_count === 1 ? 'child' : 'children'}
                     </Badge>
                     <Badge variant="default" style={{ backgroundColor: '#F3F4F6', color: '#374151' }}>
                       <span className="flex items-center gap-1">

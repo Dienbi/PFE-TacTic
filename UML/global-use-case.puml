@@ -1,0 +1,270 @@
+@startuml Global Use Case Diagram
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title TacTic HR Platform — Global Use Case Diagram
+
+actor "Employee" as Emp
+actor "Team Leader" as Chef
+actor "HR Administrator" as RH
+
+Emp <|-- Chef
+Chef <|-- RH
+
+rectangle "TAC-TIC HR System" as System {
+
+  package "Authentication & User Management" {
+    usecase "Login" as UC_Login
+    usecase "Register" as UC_Register
+    usecase "Logout" as UC_Logout
+    usecase "View Profile" as UC_ViewProfile
+    usecase "Update Profile" as UC_UpdateProfile
+    usecase "Change Password" as UC_ChangePassword
+    usecase "Manage Employee Data" as UC_ManageEmployee
+    usecase "Assign Roles" as UC_AssignRoles
+    usecase "Manage User Status" as UC_ManageStatus
+    usecase "Validate Account Requests" as UC_ValidateAccounts
+  }
+
+  package "Attendance Management" {
+    usecase "Check In" as UC_CheckIn
+    usecase "Check Out" as UC_CheckOut
+    usecase "Auto Check-out" as UC_AutoCheckout
+    usecase "View Attendance History" as UC_AttendanceHistory
+    usecase "View Attendance Anomalies" as UC_AttendanceAnomalies
+    usecase "View Team Presence" as UC_TeamPresence
+    usecase "Mark Absence" as UC_MarkAbsence
+    usecase "Justify Absence" as UC_JustifyAbsence
+  }
+
+  package "Leave Management" {
+    usecase "Request Leave" as UC_RequestLeave
+    usecase "View Leave History" as UC_LeaveHistory
+    usecase "View Leave Balance" as UC_LeaveBalance
+    usecase "Cancel Leave Request" as UC_CancelLeave
+    usecase "View All Leave Requests" as UC_AllLeaves
+    usecase "View Pending Leave Requests" as UC_PendingLeaves
+    usecase "Approve Leave Request" as UC_ApproveLeave
+    usecase "Reject Leave Request" as UC_RejectLeave
+    usecase "Check Team Conflicts" as UC_CheckConflicts
+    usecase "Upload Medical File" as UC_MedicalFile
+  }
+
+  package "Payroll Management" {
+    usecase "View Payslips" as UC_ViewPayslips
+    usecase "Download Payslip" as UC_DownloadPayslip
+    usecase "Configure Base Salary" as UC_ConfigureSalary
+    usecase "Generate Single Payslip" as UC_GenerateSingle
+    usecase "Generate Batch Payslips" as UC_GenerateBatch
+    usecase "Validate Payslip" as UC_ValidatePayslip
+    usecase "Lock Payslip" as UC_LockPayslip
+    usecase "Mark Payslip as Paid" as UC_MarkPaid
+    usecase "Simulate Payroll" as UC_SimulatePayroll
+    usecase "Preview Payroll" as UC_PreviewPayroll
+    usecase "Record Payment" as UC_RecordPayment
+    usecase "View Payment History" as UC_PaymentHistory
+    usecase "Increase All Salaries" as UC_IncreaseSalaries
+    usecase "View Payroll Statistics" as UC_PayrollStats
+    usecase "Manage Fiscal Rules" as UC_FiscalRules
+    usecase "Create Payslip Correction" as UC_Correction
+    usecase "View Correction History" as UC_CorrectionHistory
+    usecase "Year-End Regularization" as UC_Regularization
+    usecase "Import Fiscal Rules (AI)" as UC_ImportRules
+    usecase "Manage Fiscal Profiles" as UC_FiscalProfiles
+    usecase "View Payroll Audit Logs" as UC_PayrollAudit
+    usecase "View Team Payroll Summary" as UC_TeamPayroll
+  }
+
+  package "Recruitment" {
+    usecase "Create Job Post" as UC_CreateJobPost
+    usecase "Publish Job Post" as UC_PublishJobPost
+    usecase "View Job Posts" as UC_ViewJobPosts
+    usecase "Apply to Job Post" as UC_ApplyJob
+    usecase "Withdraw Application" as UC_WithdrawApp
+    usecase "View Applications" as UC_ViewApplications
+    usecase "Review Application" as UC_ReviewApp
+    usecase "AI Candidate Matching" as UC_AIMatching
+    usecase "Create Job Request" as UC_CreateJobRequest
+    usecase "Approve Job Request" as UC_ApproveJobRequest
+  }
+
+  package "Performance Management" {
+    usecase "Create Performance Review" as UC_CreateReview
+    usecase "View Performance History" as UC_PerfHistory
+    usecase "View Team Feedback" as UC_TeamFeedback
+    usecase "View Latest Feedback" as UC_LatestFeedback
+    usecase "Update Performance Review" as UC_UpdateReview
+  }
+
+  package "Skills & Competences" {
+    usecase "View Competences" as UC_ViewCompetences
+    usecase "Update Skills" as UC_UpdateSkills
+    usecase "Manage Competences" as UC_ManageCompetences
+  }
+
+  package "AI & Analytics" {
+    usecase "View Absence Predictions" as UC_AbsencePred
+    usecase "View Performance Scores" as UC_PerfScores
+    usecase "View KPI Dashboards" as UC_KPI
+    usecase "Trigger AI Training" as UC_AITraining
+    usecase "Monitor Training Status" as UC_TrainingStatus
+  }
+
+  package "Team Management" {
+    usecase "View Teams" as UC_ViewTeams
+    usecase "Create Team" as UC_CreateTeam
+    usecase "Assign Team Leader" as UC_AssignLeader
+    usecase "Add Team Member" as UC_AddMember
+    usecase "Remove Team Member" as UC_RemoveMember
+    usecase "View My Team" as UC_MyTeam
+  }
+
+  package "Notifications" {
+    usecase "View Notifications" as UC_ViewNotif
+    usecase "Mark as Read" as UC_MarkRead
+    usecase "Mark All as Read" as UC_MarkAllRead
+  }
+
+  package "Documents" {
+    usecase "Upload CV" as UC_UploadCV
+    usecase "View Latest CV" as UC_ViewCV
+    usecase "Confirm CV" as UC_ConfirmCV
+  }
+
+  package "Family & Social Info" {
+    usecase "Manage Children" as UC_Children
+    usecase "Manage Social Status" as UC_SocialStatus
+    usecase "Request Info Change" as UC_InfoChange
+    usecase "Verify Children" as UC_VerifyChildren
+    usecase "Verify Social Status" as UC_VerifySocial
+    usecase "Approve Info Change" as UC_ApproveChange
+  }
+}
+
+' Authentication Relationships
+Emp --> UC_Login
+Emp --> UC_Register
+Emp --> UC_Logout
+Emp --> UC_ViewProfile
+Emp --> UC_UpdateProfile
+Emp --> UC_ChangePassword
+RH --> UC_ManageEmployee
+RH --> UC_AssignRoles
+RH --> UC_ManageStatus
+RH --> UC_ValidateAccounts
+
+' Attendance Relationships
+Emp --> UC_CheckIn
+Emp --> UC_CheckOut
+Emp --> UC_AutoCheckout
+Emp --> UC_AttendanceHistory
+Chef --> UC_AttendanceAnomalies
+Chef --> UC_TeamPresence
+RH --> UC_AttendanceAnomalies
+RH --> UC_TeamPresence
+RH --> UC_MarkAbsence
+Chef --> UC_MarkAbsence
+RH --> UC_JustifyAbsence
+Chef --> UC_JustifyAbsence
+
+' Leave Relationships
+Emp --> UC_RequestLeave
+Emp --> UC_LeaveHistory
+Emp --> UC_LeaveBalance
+Emp --> UC_CancelLeave
+Emp --> UC_MedicalFile
+Chef --> UC_PendingLeaves
+Chef --> UC_ApproveLeave
+Chef --> UC_RejectLeave
+RH --> UC_AllLeaves
+RH --> UC_PendingLeaves
+RH --> UC_ApproveLeave
+RH --> UC_RejectLeave
+RH --> UC_CheckConflicts
+
+' Payroll Relationships
+Emp --> UC_ViewPayslips
+Emp --> UC_DownloadPayslip
+Emp --> UC_AttendanceHistory
+RH --> UC_ConfigureSalary
+RH --> UC_GenerateSingle
+RH --> UC_GenerateBatch
+RH --> UC_ValidatePayslip
+RH --> UC_LockPayslip
+RH --> UC_MarkPaid
+RH --> UC_SimulatePayroll
+RH --> UC_PreviewPayroll
+RH --> UC_RecordPayment
+RH --> UC_PaymentHistory
+RH --> UC_IncreaseSalaries
+RH --> UC_PayrollStats
+RH --> UC_FiscalRules
+RH --> UC_Correction
+RH --> UC_CorrectionHistory
+RH --> UC_Regularization
+RH --> UC_ImportRules
+RH --> UC_FiscalProfiles
+RH --> UC_PayrollAudit
+Chef --> UC_TeamPayroll
+Chef --> UC_ViewPayslips
+
+' Recruitment Relationships
+RH --> UC_CreateJobPost
+RH --> UC_PublishJobPost
+Emp --> UC_ViewJobPosts
+Emp --> UC_ApplyJob
+Emp --> UC_WithdrawApp
+RH --> UC_ViewApplications
+RH --> UC_ReviewApp
+RH --> UC_AIMatching
+Chef --> UC_CreateJobRequest
+RH --> UC_ApproveJobRequest
+
+' Performance Relationships
+Chef --> UC_CreateReview
+Chef --> UC_UpdateReview
+Emp --> UC_PerfHistory
+Chef --> UC_TeamFeedback
+Emp --> UC_LatestFeedback
+RH --> UC_AllLeaves
+
+' Skills Relationships
+Emp --> UC_ViewCompetences
+Emp --> UC_UpdateSkills
+RH --> UC_ManageCompetences
+
+' AI Relationships
+RH --> UC_AbsencePred
+RH --> UC_PerfScores
+RH --> UC_KPI
+RH --> UC_AITraining
+RH --> UC_TrainingStatus
+
+' Team Relationships
+RH --> UC_ViewTeams
+RH --> UC_CreateTeam
+RH --> UC_AssignLeader
+RH --> UC_AddMember
+RH --> UC_RemoveMember
+Chef --> UC_MyTeam
+
+' Notifications Relationships
+Emp --> UC_ViewNotif
+Emp --> UC_MarkRead
+Emp --> UC_MarkAllRead
+
+' Documents Relationships
+Emp --> UC_UploadCV
+Emp --> UC_ViewCV
+Emp --> UC_ConfirmCV
+
+' Family & Social Relationships
+Emp --> UC_Children
+Emp --> UC_SocialStatus
+Emp --> UC_InfoChange
+RH --> UC_VerifyChildren
+RH --> UC_VerifySocial
+RH --> UC_ApproveChange
+
+@enduml

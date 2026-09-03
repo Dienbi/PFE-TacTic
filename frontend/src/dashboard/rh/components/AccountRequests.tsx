@@ -53,6 +53,15 @@ const AccountRequests: React.FC<AccountRequestsProps> = ({
     }
   }, []);
 
+  // Poll for new requests every 30 seconds as fallback if socket fails
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchPendingRequests();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchPendingRequests]);
+
   useEffect(() => {
     if (initialData) {
       setRequests(initialData);

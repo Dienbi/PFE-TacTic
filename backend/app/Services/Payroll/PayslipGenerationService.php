@@ -6,6 +6,7 @@ use App\Repositories\Payroll\PayslipRepository;
 use App\Repositories\Payroll\FiscalRuleSetRepository;
 use App\Repositories\Payroll\EmployeeFiscalProfileRepository;
 use App\Repositories\Payroll\PayItemRepository;
+use App\Repositories\Payroll\AuditLogRepository;
 use App\Models\Utilisateur;
 use Illuminate\Support\Str;
 
@@ -16,19 +17,22 @@ class PayslipGenerationService
     private EmployeeFiscalProfileRepository $fiscalProfileRepository;
     private PayItemRepository $payItemRepository;
     private PayrollCalculationEngine $calculationEngine;
+    private AuditLogRepository $auditLogRepository;
 
     public function __construct(
         PayslipRepository $payslipRepository,
         FiscalRuleSetRepository $ruleSetRepository,
         EmployeeFiscalProfileRepository $fiscalProfileRepository,
         PayItemRepository $payItemRepository,
-        PayrollCalculationEngine $calculationEngine
+        PayrollCalculationEngine $calculationEngine,
+        AuditLogRepository $auditLogRepository
     ) {
         $this->payslipRepository = $payslipRepository;
         $this->ruleSetRepository = $ruleSetRepository;
         $this->fiscalProfileRepository = $fiscalProfileRepository;
         $this->payItemRepository = $payItemRepository;
         $this->calculationEngine = $calculationEngine;
+        $this->auditLogRepository = $auditLogRepository;
     }
 
     public function generateSinglePayslip(array $data, string $generatedBy): array
@@ -122,6 +126,20 @@ class PayslipGenerationService
 
         // Create payslip pay items
         $this->createPayslipPayItems($payslip->id, $payItems);
+
+        // Log the action
+        $this->auditLogRepository->create([
+            'actor_id' => $generatedBy,
+            'action' => 'payslip.generated',
+            'entity_type' => 'Payslip',
+            'entity_id' => $payslip->id,
+            'details_json' => [
+                'employee_id' => $employeeId,
+                'pay_period_start' => $payPeriodStart,
+                'pay_period_end' => $payPeriodEnd,
+                'net_salary' => $calculationResult['net_salary'],
+            ],
+        ]);
 
         $payslip = $payslip->fresh(['employee', 'ruleSet', 'generatedBy']);
 
@@ -220,6 +238,18 @@ class PayslipGenerationService
     {
         $payslip = $this->payslipRepository->validate($payslipId);
 
+        // Log the action
+        $this->auditLogRepository->create([
+            'actor_id' => auth()->id(),
+            'action' => 'payslip.validated',
+            'entity_type' => 'Payslip',
+            'entity_id' => $payslipId,
+            'details_json' => [
+                'employee_id' => $payslip->employee_id,
+                'net_salary' => $payslip->net_salary,
+            ],
+        ]);
+
         return [
             'payslip' => $this->serializePayslip($payslip),
             'message' => 'Payslip validated successfully',
@@ -230,6 +260,18 @@ class PayslipGenerationService
     {
         $payslip = $this->payslipRepository->lock($payslipId);
 
+        // Log the action
+        $this->auditLogRepository->create([
+            'actor_id' => auth()->id(),
+            'action' => 'payslip.locked',
+            'entity_type' => 'Payslip',
+            'entity_id' => $payslipId,
+            'details_json' => [
+                'employee_id' => $payslip->employee_id,
+                'net_salary' => $payslip->net_salary,
+            ],
+        ]);
+
         return [
             'payslip' => $this->serializePayslip($payslip),
             'message' => 'Payslip locked successfully',
@@ -238,7 +280,19 @@ class PayslipGenerationService
 
     public function deleteDraftPayslip(string $payslipId): array
     {
+        $payslip = $this->payslipRepository->findById($payslipId);
         $this->payslipRepository->delete($payslipId);
+
+        // Log the action
+        $this->auditLogRepository->create([
+            'actor_id' => auth()->id(),
+            'action' => 'payslip.deleted',
+            'entity_type' => 'Payslip',
+            'entity_id' => $payslipId,
+            'details_json' => [
+                'employee_id' => $payslip->employee_id ?? null,
+            ],
+        ]);
 
         return [
             'message' => 'Draft payslip deleted successfully',

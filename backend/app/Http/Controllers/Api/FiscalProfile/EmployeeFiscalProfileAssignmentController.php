@@ -48,7 +48,7 @@ class EmployeeFiscalProfileAssignmentController extends Controller
         }
 
         $profile = $this->assignmentService->getCurrentProfile($employeeId);
-        
+
         if (!$profile) {
             return response()->json(['message' => 'No fiscal profile assigned'], 404);
         }

@@ -63,8 +63,8 @@ RULES:
         """Format CV text for the prompt."""
         # Clean up the text
         cv_text = cv_text.strip()
-        
+
         # Add context to the prompt
         formatted = f"{self.SYSTEM_PROMPT}\n\nCV TEXT:\n{cv_text}"
-        
+
         return formatted

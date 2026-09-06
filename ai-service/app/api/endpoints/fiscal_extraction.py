@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+import logging
 from pathlib import Path
 from typing import Optional
-import logging
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -37,15 +38,15 @@ async def extract_fiscal_rules(request: FiscalExtractionRequest) -> FiscalExtrac
     """
     try:
         logger.info(f"Received fiscal extraction request for file: {request.file_path}")
-        
+
         # Validate file exists
         file_path = Path(request.file_path)
         if not file_path.exists():
             logger.error(f"File not found: {request.file_path}")
             raise HTTPException(status_code=404, detail=f"File not found: {request.file_path}")
-        
+
         logger.info(f"File exists: {request.file_path}")
-        
+
         # Return mock data for now
         # TODO: Implement actual AI extraction using similar pattern to CV extraction
         return FiscalExtractionResponse(
@@ -70,7 +71,7 @@ async def extract_fiscal_rules(request: FiscalExtractionRequest) -> FiscalExtrac
             ],
             message="Fiscal rules extraction not yet implemented - returning mock data"
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:

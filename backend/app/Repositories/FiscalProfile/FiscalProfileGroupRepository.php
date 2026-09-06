@@ -59,7 +59,7 @@ class FiscalProfileGroupRepository
         if (!$group) {
             return collect();
         }
-        
+
         return $group->employees()->whereNull('employee_fiscal_profile_assignments.effective_to')->get();
     }
 }

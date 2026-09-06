@@ -50,27 +50,27 @@ class RuleImportLogRepository
     public function confirm(string $id, string $ruleSetId, string $reviewedBy, array $decisions): RuleImportLog
     {
         $log = $this->findById($id);
-        
+
         $log->update([
             'rule_set_id' => $ruleSetId,
             'reviewed_by' => $reviewedBy,
             'review_decisions_json' => $decisions,
             'status' => 'confirmed',
         ]);
-        
+
         return $log->fresh();
     }
 
     public function reject(string $id, string $reviewedBy, array $decisions): RuleImportLog
     {
         $log = $this->findById($id);
-        
+
         $log->update([
             'reviewed_by' => $reviewedBy,
             'review_decisions_json' => $decisions,
             'status' => 'rejected',
         ]);
-        
+
         return $log->fresh();
     }
 

@@ -86,7 +86,7 @@ class RuleImportService
 
         // Merge edited data with original proposed changes
         $finalChanges = array_merge($importLog->proposed_changes_json, $reviewDecisions);
-        
+
         // Create draft rule set from merged changes
         $ruleSet = $this->createRuleSetFromChanges($finalChanges);
 

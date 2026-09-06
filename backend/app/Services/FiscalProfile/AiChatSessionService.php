@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 /**
  * AiChatSessionService
- * 
+ *
  * Single Responsibility: Manage AI chat sessions and messages for fiscal profile operations.
  * Handles session creation, message storage, and history retrieval.
  */
@@ -121,11 +121,11 @@ class AiChatSessionService
     public function getOrCreateSession(string $userId, string $contextType = 'profile_group_creation'): AiChatSession
     {
         $existing = $this->getRecentSession($userId, $contextType);
-        
+
         if ($existing) {
             return $existing;
         }
-        
+
         return $this->createSession($userId, $contextType);
     }
 
@@ -141,7 +141,7 @@ class AiChatSessionService
         if (!$session) {
             return false;
         }
-        
+
         return $session->delete();
     }
 
@@ -155,7 +155,7 @@ class AiChatSessionService
     public function formatHistoryForAI(string $sessionId): array
     {
         $messages = $this->getSessionHistory($sessionId);
-        
+
         return $messages->map(function ($message) {
             return [
                 'role' => $message->role,

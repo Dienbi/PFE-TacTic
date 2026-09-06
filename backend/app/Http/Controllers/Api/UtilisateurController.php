@@ -20,7 +20,8 @@ class UtilisateurController extends Controller
         protected UtilisateurService $utilisateurService,
         protected ChildRepository $childRepository,
         protected SocialStatusProofRepository $socialStatusProofRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Get all users

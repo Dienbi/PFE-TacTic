@@ -8,7 +8,8 @@ class VerificationResultDTO
         public readonly bool $success,
         public readonly string $message,
         public readonly ?array $data = null
-    ) {}
+    ) {
+    }
 
     public static function success(string $message, ?array $data = null): self
     {

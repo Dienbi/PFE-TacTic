@@ -1,10 +1,10 @@
+import logging
+import os
+from pathlib import Path
+
+import fitz  # PyMuPDF
 import pdfplumber
 import pytesseract
-import fitz  # PyMuPDF
-import logging
-from typing import Optional
-from pathlib import Path
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -26,26 +26,26 @@ class PdfTextExtractor:
         """Extract text from a PDF file."""
         try:
             logger.info(f"Starting PDF extraction for: {file_path}")
-            
+
             # Check file size
             file_size = os.path.getsize(file_path)
             logger.info(f"PDF file size: {file_size} bytes")
-            
+
             if file_size < 1000:
                 logger.error(f"PDF file is too small ({file_size} bytes), likely corrupted or empty")
                 raise ValueError(f"PDF file is too small ({file_size} bytes), likely corrupted or empty")
-            
+
             text = ""
-            
+
             # First try direct text extraction
             with pdfplumber.open(file_path) as pdf:
                 logger.info(f"PDF opened successfully, pages: {len(pdf.pages)}")
-                
+
                 for page_num, page in enumerate(pdf.pages):
                     logger.info(f"Processing page {page_num + 1}")
                     page_text = page.extract_text()
                     logger.info(f"Page {page_num + 1} text length: {len(page_text) if page_text else 0}")
-                    
+
                     if page_text:
                         text += page_text + "\n"
                     else:
@@ -76,38 +76,38 @@ class PdfTextExtractor:
         """Extract text from PDF using OCR with PyMuPDF."""
         try:
             logger.info(f"Starting OCR extraction for: {file_path}")
-            
+
             # Open PDF with PyMuPDF
             doc = fitz.open(file_path)
             logger.info(f"Opened PDF with {len(doc)} pages")
-            
+
             text = ""
             for page_num in range(len(doc)):
                 logger.info(f"Running OCR on page {page_num + 1}")
                 page = doc[page_num]
-                
+
                 # Render page to pixmap (image) with higher DPI for better OCR
                 pix = page.get_pixmap(dpi=300)
-                
+
                 # Convert pixmap to PIL Image
-                from PIL import Image, ImageEnhance, ImageFilter
+                from PIL import Image, ImageEnhance
                 img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                
+
                 # Save image for debugging
                 debug_path = f"D:\\PFE_TACTIC\\debug_page_{page_num + 1}.png"
                 img.save(debug_path)
                 logger.info(f"Saved debug image to: {debug_path}")
-                
+
                 # Try multiple OCR approaches
                 page_text = ""
-                
+
                 # Approach 1: Basic OCR on original image
                 try:
                     page_text = pytesseract.image_to_string(img, config=r'--oem 3 --psm 3')
                     logger.info(f"Basic OCR extracted {len(page_text)} characters")
                 except Exception as e:
                     logger.warning(f"Basic OCR failed: {e}")
-                
+
                 # Approach 2: Preprocessed image if basic failed
                 if len(page_text.strip()) < 10:
                     logger.info("Basic OCR failed, trying with preprocessing")
@@ -116,13 +116,13 @@ class PdfTextExtractor:
                     img_processed = enhancer.enhance(2.0)
                     enhancer = ImageEnhance.Sharpness(img_processed)
                     img_processed = enhancer.enhance(2.0)
-                    
+
                     try:
                         page_text = pytesseract.image_to_string(img_processed, config=r'--oem 3 --psm 6 -l eng+fra')
                         logger.info(f"Preprocessed OCR extracted {len(page_text)} characters")
                     except Exception as e:
                         logger.warning(f"Preprocessed OCR failed: {e}")
-                
+
                 # Approach 3: Very permissive settings
                 if len(page_text.strip()) < 10:
                     logger.info("Trying with permissive settings")
@@ -131,20 +131,20 @@ class PdfTextExtractor:
                         logger.info(f"Permissive OCR extracted {len(page_text)} characters")
                     except Exception as e:
                         logger.warning(f"Permissive OCR failed: {e}")
-                
+
                 logger.info(f"Final OCR extracted {len(page_text)} characters from page {page_num + 1}")
-                
+
                 if len(page_text) > 0:
                     logger.info(f"OCR text preview: {page_text[:200]}")
                 else:
                     logger.warning(f"No text extracted from page {page_num + 1} despite all OCR attempts")
-                
+
                 text += page_text + "\n"
-                
+
                 # Clean up
                 pix = None
                 img = None
-            
+
             doc.close()
             logger.info(f"OCR total extracted text length: {len(text)}")
             return text

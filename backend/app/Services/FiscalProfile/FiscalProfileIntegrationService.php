@@ -12,7 +12,8 @@ class FiscalProfileIntegrationService
     public function __construct(
         private ChildRepository $childRepository,
         private FiscalProfileAssignmentService $assignmentService
-    ) {}
+    ) {
+    }
 
     public function suggestProfile(int $utilisateurId): ?array
     {
@@ -70,7 +71,7 @@ class FiscalProfileIntegrationService
     {
         try {
             $group = FiscalProfileGroup::findOrFail($groupId);
-            
+
             $attributes = [
                 'gender' => $group->gender,
                 'marital_status' => $group->marital_status,

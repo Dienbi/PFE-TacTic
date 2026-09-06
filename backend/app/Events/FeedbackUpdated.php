@@ -19,7 +19,8 @@ class FeedbackUpdated implements ShouldBroadcastNow
         public int $employeeId,
         public int $chefId,
         public float $score
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

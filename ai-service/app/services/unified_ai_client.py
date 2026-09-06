@@ -1,9 +1,10 @@
-import google.generativeai as genai
-from groq import Groq
 import logging
 import os
-from typing import Dict, Any
 from enum import Enum
+from typing import Any, Dict
+
+import google.generativeai as genai
+from groq import Groq
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +20,11 @@ class UnifiedAIClient:
     def __init__(self):
         self.gemini_api_key = os.getenv("GEMINI_API_KEY")
         self.groq_api_key = os.getenv("GROQ_API_KEY")
-        
+
         # Read model names from environment variables with defaults
         self.groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         self.gemini_model = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
-        
+
         # Initialize Gemini if key is available
         self.gemini_client = None
         if self.gemini_api_key:
@@ -33,7 +34,7 @@ class UnifiedAIClient:
                 logger.info(f"Gemini client initialized with model: {self.gemini_model}")
             except Exception as e:
                 logger.warning(f"Failed to initialize Gemini client: {e}")
-        
+
         # Initialize Groq if key is available
         self.groq_client = None
         if self.groq_api_key:
@@ -42,11 +43,11 @@ class UnifiedAIClient:
                 logger.info(f"Groq client initialized with model: {self.groq_model}")
             except Exception as e:
                 logger.warning(f"Failed to initialize Groq client: {e}")
-        
+
         # Determine primary and fallback providers
         self.primary_provider = AIProvider.GROQ if self.groq_client else AIProvider.GEMINI
         self.fallback_provider = AIProvider.GEMINI if self.primary_provider == AIProvider.GROQ else AIProvider.GROQ
-        
+
         logger.info(f"Primary AI provider: {self.primary_provider.value}")
         logger.info(f"Fallback AI provider: {self.fallback_provider.value}")
 
@@ -61,7 +62,7 @@ class UnifiedAIClient:
                 return await self._extract_with_gemini(cv_text)
         except Exception as e:
             logger.warning(f"Primary provider failed: {e}. Trying fallback provider: {self.fallback_provider.value}")
-            
+
             # Try fallback provider
             try:
                 if self.fallback_provider == AIProvider.GROQ:
@@ -78,7 +79,7 @@ class UnifiedAIClient:
         """Extract skills using Groq."""
         if not self.groq_client:
             raise ValueError("Groq client not initialized")
-        
+
         # Truncate text if too long
         max_words = 8000
         words = cv_text.split()
@@ -102,20 +103,20 @@ class UnifiedAIClient:
             max_tokens=2000,
             response_format={"type": "json_object"}
         )
-        
+
         if not response.choices or not response.choices[0].message.content:
             raise ValueError("Empty response from Groq API")
 
         import json
         result = json.loads(response.choices[0].message.content)
-        logger.info(f"Groq extraction successful")
+        logger.info("Groq extraction successful")
         return result
 
     async def _extract_with_gemini(self, cv_text: str) -> Dict[str, Any]:
         """Extract skills using Gemini."""
         if not self.gemini_client:
             raise ValueError("Gemini client not initialized")
-        
+
         # Truncate text if too long
         max_words = 8000
         words = cv_text.split()
@@ -124,7 +125,7 @@ class UnifiedAIClient:
             logger.warning(f"CV text truncated to {max_words} words for Gemini")
 
         response = await self.gemini_client.generate_content_async(cv_text)
-        
+
         if not response.text:
             raise ValueError("Empty response from Gemini API")
 
@@ -142,8 +143,8 @@ class UnifiedAIClient:
             if text.endswith("```"):
                 text = text[:-3]
             result = json.loads(text.strip())
-        
-        logger.info(f"Gemini extraction successful")
+
+        logger.info("Gemini extraction successful")
         return result
 
     async def extract_with_stricter_prompt(self, cv_text: str, stricter_prompt: str) -> Dict[str, Any]:
@@ -157,7 +158,7 @@ class UnifiedAIClient:
                 return await self._retry_with_gemini(cv_text, stricter_prompt)
         except Exception as e:
             logger.warning(f"Primary provider retry failed: {e}. Trying fallback provider: {self.fallback_provider.value}")
-            
+
             # Try fallback provider
             try:
                 if self.fallback_provider == AIProvider.GROQ:
@@ -189,7 +190,7 @@ class UnifiedAIClient:
             max_tokens=2000,
             response_format={"type": "json_object"}
         )
-        
+
         if not response.choices or not response.choices[0].message.content:
             raise ValueError("Empty response from Groq API on retry")
 
@@ -205,7 +206,7 @@ class UnifiedAIClient:
         import google.generativeai as genai
         model = genai.GenerativeModel(self.gemini_model, system_instruction=stricter_prompt)
         response = await model.generate_content_async(cv_text)
-        
+
         if not response.text:
             raise ValueError("Empty response from Gemini API on retry")
 
@@ -217,7 +218,7 @@ class UnifiedAIClient:
             text = text[3:]
         if text.endswith("```"):
             text = text[:-3]
-        
+
         return json.loads(text.strip())
 
     def _get_mock_data(self) -> Dict[str, Any]:

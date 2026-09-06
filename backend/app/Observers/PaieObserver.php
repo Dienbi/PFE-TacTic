@@ -7,7 +7,9 @@ use App\Services\CacheService;
 
 class PaieObserver
 {
-    public function __construct(protected CacheService $cacheService) {}
+    public function __construct(protected CacheService $cacheService)
+    {
+    }
 
     /**
      * Handle the Paie "created" event.

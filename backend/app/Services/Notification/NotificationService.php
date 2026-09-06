@@ -10,7 +10,8 @@ class NotificationService
 {
     public function __construct(
         private NotificationRepository $notificationRepository
-    ) {}
+    ) {
+    }
 
     public function createNotification(
         int $userId,

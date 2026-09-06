@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 /**
  * FiscalProfileGroupService
- * 
+ *
  * Single Responsibility: Manage fiscal profile group lifecycle including creation,
  * deduplication, and label generation.
  */
@@ -25,7 +25,7 @@ class FiscalProfileGroupService
      * Find or create a fiscal profile group based on attributes.
      * Implements deduplication logic to prevent duplicate groups.
      *
-     * @param array $attributes ['gender', 'marital_status', 'children_count', 
+     * @param array $attributes ['gender', 'marital_status', 'children_count',
      *                          'disabled_children_count', 'student_non_scholarship_children_count']
      * @return FiscalProfileGroup
      */
@@ -33,18 +33,18 @@ class FiscalProfileGroupService
     {
         // Check for existing group with same attributes
         $existing = $this->deduplicationCheck($attributes);
-        
+
         if ($existing) {
             return $existing;
         }
-        
+
         // Compute head_of_family
         $headOfFamily = $this->headOfFamilyComputation->compute(
             $attributes['gender'],
             $attributes['marital_status'],
             $attributes['children_count'] ?? 0
         );
-        
+
         // Generate label
         $label = $this->generateLabel([
             'gender' => $attributes['gender'],
@@ -52,7 +52,7 @@ class FiscalProfileGroupService
             'head_of_family' => $headOfFamily,
             'children_count' => $attributes['children_count'] ?? 0,
         ]);
-        
+
         // Create new group
         return FiscalProfileGroup::create([
             'id' => (string) Str::uuid(),
@@ -91,31 +91,31 @@ class FiscalProfileGroupService
     public function generateLabel(array $attributes): string
     {
         $parts = [];
-        
+
         // Marital status and gender
         $parts[] = ucfirst($attributes['marital_status']) . ' ' . ucfirst($attributes['gender']);
-        
+
         // Head of family indicator
         if ($attributes['head_of_family'] ?? false) {
             $parts[] = 'Head of Family';
         }
-        
+
         // Children count
         if (($attributes['children_count'] ?? 0) > 0) {
             $childrenCount = $attributes['children_count'];
             $parts[] = $childrenCount . ' ' . ($childrenCount === 1 ? 'child' : 'children');
         }
-        
+
         // Disabled children
         if (($attributes['disabled_children_count'] ?? 0) > 0) {
             $parts[] .= $attributes['disabled_children_count'] . ' disabled';
         }
-        
+
         // Student children
         if (($attributes['student_non_scholarship_children_count'] ?? 0) > 0) {
             $parts[] .= $attributes['student_non_scholarship_children_count'] . ' student';
         }
-        
+
         return implode(' · ', $parts);
     }
 
@@ -156,7 +156,7 @@ class FiscalProfileGroupService
         if (!$group) {
             return collect();
         }
-        
+
         return $group->employees()->whereNull('employee_fiscal_profile_assignments.effective_to')->get();
     }
 

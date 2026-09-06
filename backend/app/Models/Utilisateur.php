@@ -43,6 +43,10 @@ class Utilisateur extends Authenticatable implements JWTSubject
         'gender',
         'marital_status',
         'children_count',
+        'disabled_children_count',
+        'student_non_scholarship_children_count',
+        'head_of_family',
+        'role_profile_id',
     ];
 
     protected $hidden = [
@@ -65,6 +69,7 @@ class Utilisateur extends Authenticatable implements JWTSubject
         'type_contrat' => TypeContrat::class,
         'status' => EmployeStatus::class,
         'role' => Role::class,
+        'head_of_family' => 'boolean',
     ];
 
     // JWT Methods
@@ -129,9 +134,19 @@ class Utilisateur extends Authenticatable implements JWTSubject
             ->withTimestamps();
     }
 
-    public function fiscalProfile()
+    public function roleProfile()
     {
-        return $this->hasOne(\App\Models\EmployeeFiscalProfile::class, 'employee_id');
+        return $this->belongsTo(\App\Models\RoleProfile::class, 'role_profile_id');
+    }
+
+    public function roleAssignments()
+    {
+        return $this->hasMany(\App\Models\EmployeeRoleAssignment::class, 'employee_id');
+    }
+
+    public function fiscalStatusHistory()
+    {
+        return $this->hasMany(\App\Models\EmployeeFiscalStatusHistory::class, 'employee_id');
     }
 
     public function children()

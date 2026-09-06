@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import matching, predictions, training, fiscal_extraction, fiscal_chatbot, cv_extraction
+from app.api.endpoints import matching, predictions, training, fiscal_extraction, role_profile_chatbot, cv_extraction
 from app.models.schemas import HealthResponse
 
 # Configure logging
@@ -41,7 +41,7 @@ app.include_router(matching.router, prefix="/api", tags=["matching"])
 app.include_router(predictions.router, prefix="/api", tags=["predictions"])
 app.include_router(training.router, prefix="/api", tags=["training"])
 app.include_router(fiscal_extraction.router, prefix="/api", tags=["fiscal_extraction"])
-app.include_router(fiscal_chatbot.router, prefix="/api/fiscal/chatbot", tags=["fiscal_chatbot"])
+app.include_router(role_profile_chatbot.router, prefix="/api/role-profile/chatbot", tags=["role_profile_chatbot"])
 app.include_router(cv_extraction.router, prefix="/api", tags=["cv_extraction"])
 
 

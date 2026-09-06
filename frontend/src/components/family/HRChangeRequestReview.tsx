@@ -59,7 +59,7 @@ const HRChangeRequestReview: React.FC = () => {
 
     try {
       const result = await approveChangeRequest(selectedRequest.id);
-      setSuccess(`Change request approved. Fiscal profile reassigned: ${result.assignment?.fiscalProfileGroup?.label || 'N/A'}`);
+      setSuccess(`Change request approved. Role profile reassigned: ${result.assignment?.roleProfile?.name || 'N/A'}`);
       await loadRequests();
       setSelectedRequest(null);
     } catch (err: any) {

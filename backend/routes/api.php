@@ -30,10 +30,8 @@ use App\Http\Controllers\Api\SocialStatusController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PersonalInfoChangeRequestController;
 use App\Http\Controllers\Api\UtilisateurController;
-use App\Http\Controllers\Api\FiscalProfile\FiscalProfileGroupController;
-use App\Http\Controllers\Api\FiscalProfile\EmployeeFiscalProfileAssignmentController;
-use App\Http\Controllers\Api\FiscalProfile\HeadOfFamilyOverrideController;
-use App\Http\Controllers\Api\FiscalProfile\AiChatController;
+use App\Http\Controllers\RoleProfileController;
+use App\Http\Controllers\EmployeeRoleAssignmentController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -77,10 +75,6 @@ Route::prefix('account-requests')->group(function () {
     Route::get('/validate-token/{token}', [AccountRequestController::class, 'validateToken']);
     Route::post('/set-password', [AccountRequestController::class, 'setPassword']);
 });
-
-// AI Service endpoint (no auth required - IP whitelisted in production)
-Route::get('/payroll/fiscal-profile/employees/fiscal-search', [EmployeeFiscalProfileAssignmentController::class, 'search']);
-Route::get('/payroll/fiscal-profile/groups/search', [FiscalProfileGroupController::class, 'search']);
 
 // Protected routes
 Route::middleware('jwt.auth')->group(function () {
@@ -552,44 +546,26 @@ Route::middleware('jwt.auth')->group(function () {
             Route::get('/', [AuditLogController::class, 'getAllLogs']);
         });
 
-        // ─── Fiscal Profile Module ─────────────────────────────────
-        Route::prefix('fiscal-profile')->group(function () {
-            // Fiscal Profile Groups
-            Route::prefix('groups')->group(function () {
-                Route::get('/', [FiscalProfileGroupController::class, 'index']);
-                Route::post('/', [FiscalProfileGroupController::class, 'store']);
-                Route::get('/{id}', [FiscalProfileGroupController::class, 'show'])->where('id', '[0-9a-f-]+');
-                Route::get('/{id}/employees', [FiscalProfileGroupController::class, 'employees'])->where('id', '[0-9a-f-]+');
-                Route::get('/match', [FiscalProfileGroupController::class, 'match']);
-                Route::put('/{id}', [FiscalProfileGroupController::class, 'update'])->where('id', '[0-9a-f-]+');
-                Route::delete('/{id}', [FiscalProfileGroupController::class, 'destroy'])->where('id', '[0-9a-f-]+');
-            });
+        // ─── Role Profile Module ─────────────────────────────────────
+        Route::prefix('role-profiles')->group(function () {
+            Route::get('/', [RoleProfileController::class, 'index']);
+            Route::get('/search', [RoleProfileController::class, 'search']);
+            Route::post('/', [RoleProfileController::class, 'store']);
+            Route::post('/bulk-assign', [EmployeeRoleAssignmentController::class, 'bulkAssign']);
+            Route::post('/assignments/{id}/close', [EmployeeRoleAssignmentController::class, 'close'])->where('id', '[0-9a-f-]+');
+            Route::get('/{id}/employees', [RoleProfileController::class, 'getEmployees'])->where('id', '[0-9a-f-]+');
+            Route::put('/{id}', [RoleProfileController::class, 'update'])->where('id', '[0-9a-f-]+');
+            Route::delete('/{id}', [RoleProfileController::class, 'destroy'])->where('id', '[0-9a-f-]+');
+            Route::get('/{id}', [RoleProfileController::class, 'show'])->where('id', '[0-9a-f-]+');
+        });
 
-            // Employee Fiscal Profile Assignments
-            Route::prefix('employees')->group(function () {
-                Route::get('/{employeeId}/fiscal-profile-history', [EmployeeFiscalProfileAssignmentController::class, 'history'])->where('employeeId', '[0-9]+');
-                Route::get('/{employeeId}/fiscal-profile', [EmployeeFiscalProfileAssignmentController::class, 'current'])->where('employeeId', '[0-9]+');
-                Route::post('/{employeeId}/fiscal-profile-assign', [EmployeeFiscalProfileAssignmentController::class, 'assign'])->where('employeeId', '[0-9]+');
-                Route::post('/{employeeId}/fiscal-profile-reassign', [EmployeeFiscalProfileAssignmentController::class, 'reassign'])->where('employeeId', '[0-9]+');
-            });
-
-            Route::prefix('groups')->group(function () {
-                Route::post('/{groupId}/bulk-assign', [EmployeeFiscalProfileAssignmentController::class, 'bulkAssign'])->where('groupId', '[0-9a-f-]+');
-            });
-
-            // Head of Family Overrides
-            Route::prefix('employees')->group(function () {
-                Route::get('/{employeeId}/fiscal-profile-overrides', [HeadOfFamilyOverrideController::class, 'index'])->where('employeeId', '[0-9]+');
-                Route::get('/{employeeId}/fiscal-profile-overrides/active', [HeadOfFamilyOverrideController::class, 'active'])->where('employeeId', '[0-9]+');
-                Route::post('/{employeeId}/fiscal-profile-overrides', [HeadOfFamilyOverrideController::class, 'store'])->where('employeeId', '[0-9]+');
-            });
-
-            // AI Chatbot
-            Route::prefix('ai-chat')->group(function () {
-                Route::post('/message', [AiChatController::class, 'sendMessage']);
-                Route::get('/session/{id}', [AiChatController::class, 'getSession'])->where('id', '[0-9a-f-]+');
-                Route::get('/sessions', [AiChatController::class, 'getSessions']);
-            });
+        // Employee Role Assignments
+        Route::prefix('employees')->group(function () {
+            Route::get('/', [EmployeeRoleAssignmentController::class, 'getAllEmployees']);
+            Route::post('/{id}/role-assign', [EmployeeRoleAssignmentController::class, 'assign'])->where('id', '[0-9]+');
+            Route::post('/{id}/role-reassign', [EmployeeRoleAssignmentController::class, 'reassign'])->where('id', '[0-9]+');
+            Route::get('/{id}/role-current', [EmployeeRoleAssignmentController::class, 'getCurrent'])->where('id', '[0-9]+');
+            Route::get('/{id}/role-history', [EmployeeRoleAssignmentController::class, 'getHistory'])->where('id', '[0-9]+');
         });
     });
 });

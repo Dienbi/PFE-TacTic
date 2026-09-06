@@ -4,17 +4,16 @@ namespace App\Services\Payroll;
 
 use App\Repositories\Payroll\PayslipRepository;
 use App\Repositories\Payroll\FiscalRuleSetRepository;
-use App\Repositories\Payroll\EmployeeFiscalProfileRepository;
 use App\Repositories\Payroll\PayItemRepository;
 use App\Repositories\Payroll\AuditLogRepository;
 use App\Models\Utilisateur;
+use App\Models\EmployeeFiscalStatusHistory;
 use Illuminate\Support\Str;
 
 class PayslipGenerationService
 {
     private PayslipRepository $payslipRepository;
     private FiscalRuleSetRepository $ruleSetRepository;
-    private EmployeeFiscalProfileRepository $fiscalProfileRepository;
     private PayItemRepository $payItemRepository;
     private PayrollCalculationEngine $calculationEngine;
     private AuditLogRepository $auditLogRepository;
@@ -22,14 +21,12 @@ class PayslipGenerationService
     public function __construct(
         PayslipRepository $payslipRepository,
         FiscalRuleSetRepository $ruleSetRepository,
-        EmployeeFiscalProfileRepository $fiscalProfileRepository,
         PayItemRepository $payItemRepository,
         PayrollCalculationEngine $calculationEngine,
         AuditLogRepository $auditLogRepository
     ) {
         $this->payslipRepository = $payslipRepository;
         $this->ruleSetRepository = $ruleSetRepository;
-        $this->fiscalProfileRepository = $fiscalProfileRepository;
         $this->payItemRepository = $payItemRepository;
         $this->calculationEngine = $calculationEngine;
         $this->auditLogRepository = $auditLogRepository;
@@ -54,18 +51,19 @@ class PayslipGenerationService
             throw new \Exception('No active fiscal rule set found for this period');
         }
 
-        // Get employee's fiscal profile
-        $fiscalProfile = $this->fiscalProfileRepository->findEffectiveForDate($employeeId, $payPeriodStart);
-        if (!$fiscalProfile) {
-            // Create default profile if none exists, using employee's actual marital status and children count
-            $fiscalProfile = $this->fiscalProfileRepository->create([
-                'employee_id' => $employeeId,
-                'effective_from' => $employee->date_embauche ?? $payPeriodStart,
+        // Get employee's fiscal status from history for the pay period
+        $fiscalStatus = EmployeeFiscalStatusHistory::forEmployee($employeeId)
+            ->effectiveForDate($payPeriodStart)
+            ->first();
+
+        // If no history entry, use current employee fields
+        if (!$fiscalStatus) {
+            $fiscalStatus = (object) [
                 'marital_status' => $employee->marital_status ?? 'single',
                 'children_count' => $employee->children_count ?? 0,
-                'disabled_children_count' => 0,
-                'student_non_scholarship_children_count' => 0,
-            ]);
+                'disabled_children_count' => $employee->disabled_children_count ?? 0,
+                'student_non_scholarship_children_count' => $employee->student_non_scholarship_children_count ?? 0,
+            ];
         }
 
         // Calculate months worked (for annualization)
@@ -76,10 +74,10 @@ class PayslipGenerationService
 
         // Prepare fiscal profile data
         $fiscalProfileData = [
-            'maritalStatus' => $fiscalProfile->marital_status,
-            'childrenCount' => $fiscalProfile->children_count,
-            'disabledChildrenCount' => $fiscalProfile->disabled_children_count,
-            'studentChildrenCount' => $fiscalProfile->student_non_scholarship_children_count,
+            'maritalStatus' => $fiscalStatus->marital_status,
+            'childrenCount' => $fiscalStatus->children_count,
+            'disabledChildrenCount' => $fiscalStatus->disabled_children_count,
+            'studentChildrenCount' => $fiscalStatus->student_non_scholarship_children_count,
         ];
 
         // Calculate payslip using the engine

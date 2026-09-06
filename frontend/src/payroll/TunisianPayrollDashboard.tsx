@@ -97,10 +97,10 @@ const TunisianPayrollDashboard: React.FC = () => {
       color: 'orange',
     },
     {
-      title: 'Fiscal Profile',
-      description: 'Manage employee fiscal profiles',
+      title: 'Role Profiles',
+      description: 'Manage job function profiles',
       icon: <User className="w-5 h-5" />,
-      onClick: () => navigate('/payroll/fiscal-profile'),
+      onClick: () => navigate('/payroll/role-profiles'),
       color: 'indigo',
     },
   ];

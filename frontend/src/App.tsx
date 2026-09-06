@@ -38,7 +38,8 @@ const PayslipCorrections = lazy(() => import("./payroll/PayslipCorrections"));
 const YearEndRegularization = lazy(() => import("./payroll/YearEndRegularization"));
 const RuleImport = lazy(() => import("./payroll/RuleImport"));
 const AuditLogs = lazy(() => import("./payroll/AuditLogs"));
-const FiscalProfilePage = lazy(() => import("./pages/payroll/fiscal-profile/index"));
+const RoleProfilePage = lazy(() => import("./pages/payroll/role-profile/index"));
+const RoleProfileChatbotPage = lazy(() => import("./pages/payroll/role-profile-chatbot/index"));
 const PayslipHistory = lazy(() => import("./payroll/PayslipHistory"));
 const TeamPayslipHistory = lazy(() => import("./payroll/TeamPayslipHistory"));
 const RequestJob = lazy(() => import("./jobmatching/pages/manager/RequestJob"));
@@ -206,10 +207,18 @@ function App() {
               }
             />
             <Route
-              path="/payroll/fiscal-profile"
+              path="/payroll/role-profiles"
               element={
                 <ProtectedRoute allowedRoles={["rh"]}>
-                  <FiscalProfilePage />
+                  <RoleProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payroll/role-profile-chatbot"
+              element={
+                <ProtectedRoute allowedRoles={["rh"]}>
+                  <RoleProfileChatbotPage />
                 </ProtectedRoute>
               }
             />

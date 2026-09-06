@@ -1,36 +1,46 @@
 import apiClient from './client';
 
-export interface FiscalProfileGroup {
+// Role Profile Interfaces
+export interface RoleProfile {
   id: string;
-  gender: 'male' | 'female';
-  marital_status: 'single' | 'married' | 'divorced' | 'widowed';
-  head_of_family: boolean;
-  children_count: number;
-  disabled_children_count: number;
-  student_non_scholarship_children_count: number;
+  name: string;
+  horaire_type: 'fixed' | 'shift' | 'hourly';
+  salary_type: 'fixed_monthly' | 'hourly' | 'commission' | 'piece_rate';
+  weekly_hours: number | null;
+  overtime_eligible: boolean;
+  overtime_rate_multiplier: number | null;
+  base_salary_min: number | null;
+  base_salary_max: number | null;
+  cnss_regime: string | null;
   label: string;
-  employees_count: number;
+  allowances?: RoleProfileAllowance[];
+  created_at: string;
+  updated_at: string;
 }
 
-export interface EmployeeFiscalProfileAssignment {
+export interface RoleProfileAllowance {
+  id: string;
+  role_profile_id: string;
+  allowance_type: 'transport' | 'meal' | 'housing' | 'other';
+  amount: number;
+  is_percentage: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployeeRoleAssignment {
   id: string;
   employee_id: number;
-  fiscal_profile_group_id: string;
+  role_profile_id: string;
   effective_from: string;
   effective_to: string | null;
   assigned_by: number;
   assigned_at: string;
-  fiscal_profile_group?: FiscalProfileGroup;
-}
-
-export interface HeadOfFamilyOverride {
-  id: string;
-  employee_id: number;
-  overridden_value: boolean;
-  justification_note: string;
-  document_file_path: string | null;
-  approved_by: number;
-  approved_at: string;
+  source_change_request_id: string | null;
+  role_profile?: RoleProfile;
+  assigned_by_user?: Employee;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Employee {
@@ -41,94 +51,83 @@ export interface Employee {
   email: string;
 }
 
-// Fiscal Profile API
-export const fiscalProfileApi = {
-  // Fiscal Profile Groups
-  getFiscalProfileGroups: () =>
-    apiClient.get<FiscalProfileGroup[]>('/payroll/fiscal-profile/groups'),
+// Role Profile API
+export const roleProfileApi = {
+  // Role Profiles
+  getRoleProfiles: () =>
+    apiClient.get<RoleProfile[]>('/payroll/role-profiles'),
 
-  getFiscalProfileGroup: (id: string) =>
-    apiClient.get<FiscalProfileGroup>(`/payroll/fiscal-profile/groups/${id}`),
+  getRoleProfile: (id: string) =>
+    apiClient.get<RoleProfile>(`/payroll/role-profiles/${id}`),
 
-  deleteFiscalProfileGroup: (id: string) =>
-    apiClient.delete(`/payroll/fiscal-profile/groups/${id}`),
-
-  createFiscalProfileGroup: (data: {
-    gender: string;
-    marital_status: string;
-    children_count: number;
-    disabled_children_count?: number;
-    student_non_scholarship_children_count?: number;
+  createRoleProfile: (data: {
+    name: string;
+    horaire_type: string;
+    salary_type: string;
+    weekly_hours?: number;
+    overtime_eligible?: boolean;
+    overtime_rate_multiplier?: number;
+    base_salary_min?: number;
+    base_salary_max?: number;
+    cnss_regime?: string;
   }) =>
-    apiClient.post<{message: string, group: FiscalProfileGroup}>('/payroll/fiscal-profile/groups', data),
+    apiClient.post<RoleProfile>('/payroll/role-profiles', data),
 
-  getGroupEmployees: (id: string) =>
-    apiClient.get<Employee[]>(`/payroll/fiscal-profile/groups/${id}/employees`),
-
-  matchFiscalProfileGroup: (params: {
-    gender: string;
-    marital_status: string;
-    children_count: number;
-    disabled_children_count?: number;
-    student_non_scholarship_children_count?: number;
+  updateRoleProfile: (id: string, data: {
+    name?: string;
+    horaire_type?: string;
+    salary_type?: string;
+    weekly_hours?: number;
+    overtime_eligible?: boolean;
+    overtime_rate_multiplier?: number;
+    base_salary_min?: number;
+    base_salary_max?: number;
+    cnss_regime?: string;
   }) =>
-    apiClient.get('/payroll/fiscal-profile/groups/match', { params }),
+    apiClient.put<RoleProfile>(`/payroll/role-profiles/${id}`, data),
 
-  // Employee Fiscal Profiles
-  getEmployeeFiscalHistory: (employeeId: number) =>
-    apiClient.get<EmployeeFiscalProfileAssignment[]>(`/payroll/fiscal-profile/employees/${employeeId}/fiscal-profile-history`),
+  deleteRoleProfile: (id: string) =>
+    apiClient.delete(`/payroll/role-profiles/${id}`),
 
-  getEmployeeCurrentFiscalProfile: (employeeId: number) =>
-    apiClient.get<EmployeeFiscalProfileAssignment>(`/payroll/fiscal-profile/employees/${employeeId}/fiscal-profile`),
+  getRoleProfileEmployees: (id: string) =>
+    apiClient.get<Employee[]>(`/payroll/role-profiles/${id}/employees`),
 
-  bulkAssignFiscalProfile: (groupId: string, data: {
-    employee_ids: number[];
+  getAllEmployees: () =>
+    apiClient.get<Employee[]>('/payroll/employees'),
+
+  searchRoleProfiles: (query: string) =>
+    apiClient.get<RoleProfile[]>('/payroll/role-profiles/search', { params: { q: query } }),
+
+  // Employee Role Assignments
+  assignRole: (employeeId: number, data: {
+    role_profile_id: string;
     effective_from: string;
-    ai_message_id?: string;
   }) =>
-    apiClient.post(`/payroll/fiscal-profile/groups/${groupId}/bulk-assign`, data),
+    apiClient.post<EmployeeRoleAssignment>(`/payroll/employees/${employeeId}/role-assign`, data),
 
-  assignFiscalProfile: (employeeId: number, groupId: string, effectiveFrom: string) =>
-    apiClient.post(`/payroll/fiscal-profile/employees/${employeeId}/fiscal-profile-assign`, {
-      group_id: groupId,
-      effective_from: effectiveFrom,
+  reassignRole: (employeeId: number, data: {
+    role_profile_id: string;
+    effective_from: string;
+  }) =>
+    apiClient.post<EmployeeRoleAssignment>(`/payroll/employees/${employeeId}/role-reassign`, data),
+
+  getCurrentRoleAssignment: (employeeId: number) =>
+    apiClient.get<EmployeeRoleAssignment>(`/payroll/employees/${employeeId}/role-current`),
+
+  getRoleAssignmentHistory: (employeeId: number) =>
+    apiClient.get<EmployeeRoleAssignment[]>(`/payroll/employees/${employeeId}/role-history`),
+
+  bulkAssignRoles: (data: {
+    assignments: Array<{
+      employee_id: number;
+      role_profile_id: string;
+      effective_from: string;
+    }>;
+  }) =>
+    apiClient.post<EmployeeRoleAssignment[]>('/payroll/role-profiles/bulk-assign', data),
+
+  closeRoleAssignment: (assignmentId: string, effectiveTo: string) =>
+    apiClient.post<EmployeeRoleAssignment>(`/payroll/role-profiles/assignments/${assignmentId}/close`, {
+      effective_to: effectiveTo,
     }),
-
-  searchEmployeesByFiscalCriteria: (params: {
-    gender?: string;
-    marital_status?: string;
-    children_count?: number;
-    disabled_children_count?: number;
-    student_children_count?: number;
-    exclude_group_id?: string;
-  }) =>
-    apiClient.get('/payroll/fiscal-profile/employees/fiscal-search', { params }),
-
-  // Head of Family Overrides
-  getEmployeeOverrides: (employeeId: number) =>
-    apiClient.get<HeadOfFamilyOverride[]>(`/payroll/fiscal-profile/employees/${employeeId}/fiscal-profile-overrides`),
-
-  getEmployeeActiveOverride: (employeeId: number) =>
-    apiClient.get<HeadOfFamilyOverride>(`/payroll/fiscal-profile/employees/${employeeId}/fiscal-profile-overrides/active`),
-
-  createHeadOfFamilyOverride: (employeeId: number, data: {
-    overridden_value: boolean;
-    justification_note: string;
-    document_file_path?: string;
-  }) =>
-    apiClient.post<HeadOfFamilyOverride>(`/payroll/fiscal-profile/employees/${employeeId}/fiscal-profile-overrides`, data),
-
-  // AI Chat
-  sendAiMessage: (message: string, sessionId?: string, authToken?: string) =>
-    apiClient.post('/payroll/fiscal-profile/ai-chat/message', { message, session_id: sessionId, auth_token: authToken }),
-
-  getAiChatSession: (id: string) =>
-    apiClient.get(`/payroll/fiscal-profile/ai-chat/session/${id}`),
-
-  getAiChatSessions: () =>
-    apiClient.get('/payroll/fiscal-profile/ai-chat/sessions'),
-
-  // Search employees by name
-  searchEmployees: (query: string) =>
-    apiClient.get('/utilisateurs/search', { params: { q: query } }),
 };

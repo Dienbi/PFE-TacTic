@@ -6,7 +6,7 @@ use App\Repositories\Payroll\AuditLogRepository;
 
 /**
  * FiscalProfileAuditService
- * 
+ *
  * Single Responsibility: Log all fiscal profile-related actions to the audit log.
  * Provides specialized logging methods for fiscal profile operations.
  */
@@ -37,11 +37,11 @@ class FiscalProfileAuditService
             'entity_id' => $assignmentId,
             'details_json' => $details,
         ];
-        
+
         if ($aiMessageId) {
             $data['source_ai_chat_message_id'] = $aiMessageId;
         }
-        
+
         $this->auditLogRepository->create($data);
     }
 
@@ -58,7 +58,7 @@ class FiscalProfileAuditService
     {
         $details['assignment_ids'] = $assignmentIds;
         $details['count'] = count($assignmentIds);
-        
+
         $this->auditLogRepository->create([
             'actor_id' => $actorId,
             'action' => 'fiscal_profile.bulk_assigned_via_ai',
@@ -135,12 +135,12 @@ class FiscalProfileAuditService
     public function getEmployeeFiscalAuditTrail(string $employeeId): array
     {
         $logs = $this->auditLogRepository->getAll();
-        
+
         $filtered = $logs->filter(function ($log) use ($employeeId) {
             $details = $log['details_json'] ?? [];
             return isset($details['employee_id']) && $details['employee_id'] === $employeeId;
         });
-        
+
         return [
             'logs' => $filtered,
             'count' => $filtered->count(),

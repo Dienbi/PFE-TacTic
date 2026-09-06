@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 /**
  * FiscalProfileAssignmentService
- * 
+ *
  * Single Responsibility: Manage employee fiscal profile assignments including
  * creation, closure of previous assignments, and bulk operations.
  */
@@ -41,12 +41,12 @@ class FiscalProfileAssignmentService
     ): EmployeeFiscalProfileAssignment {
         // Find or create the fiscal profile group
         $group = $this->groupService->findOrCreate($groupAttributes);
-        
+
         DB::beginTransaction();
         try {
             // Close previous assignment if exists
             $this->closePreviousAssignment($employeeId, $effectiveFrom);
-            
+
             // Create new assignment
             $assignment = EmployeeFiscalProfileAssignment::create([
                 'id' => (string) Str::uuid(),
@@ -57,7 +57,7 @@ class FiscalProfileAssignmentService
                 'assigned_by' => $assignedBy,
                 'assigned_at' => now(),
             ]);
-            
+
             DB::commit();
             return $assignment->fresh(['fiscalProfileGroup']);
         } catch (\Exception $e) {
@@ -79,11 +79,11 @@ class FiscalProfileAssignmentService
         $previousAssignment = EmployeeFiscalProfileAssignment::forEmployee($employeeId)
             ->current()
             ->first();
-        
+
         if ($previousAssignment) {
             $newEffectiveDate = \Carbon\Carbon::parse($newEffectiveFrom);
             $previousEffectiveDate = \Carbon\Carbon::parse($previousAssignment->effective_from);
-            
+
             // If same day, set effective_to to same day (end of day)
             if ($newEffectiveDate->isSameDay($previousEffectiveDate)) {
                 $previousAssignment->update([
@@ -168,9 +168,9 @@ class FiscalProfileAssignmentService
             'disabled_children_count' => $group->disabled_children_count,
             'student_non_scholarship_children_count' => $group->student_non_scholarship_children_count,
         ];
-        
+
         $assignmentIds = [];
-        
+
         DB::beginTransaction();
         try {
             foreach ($employeeIds as $employeeId) {
@@ -182,7 +182,7 @@ class FiscalProfileAssignmentService
                 );
                 $assignmentIds[] = $assignment->id;
             }
-            
+
             DB::commit();
             return $assignmentIds;
         } catch (\Exception $e) {
@@ -202,24 +202,24 @@ class FiscalProfileAssignmentService
     {
         $query = \App\Models\Utilisateur::query();
         $query->where('actif', true);
-        
+
         // Filter by gender if provided (direct field on utilisateurs table)
         if (isset($criteria['gender'])) {
             $query->where('gender', $criteria['gender']);
         }
-        
+
         // Filter by marital_status if provided (direct field on utilisateurs table)
         if (isset($criteria['marital_status'])) {
             $query->where('marital_status', $criteria['marital_status']);
         }
-        
+
         // Filter by children_count if provided (direct field on utilisateurs table)
         if (isset($criteria['children_count'])) {
             $query->where('children_count', $criteria['children_count']);
         }
-        
+
         $employees = $query->get();
-        
+
         return $employees->map(function ($employee) {
             return [
                 'id' => $employee->id,

@@ -85,7 +85,7 @@ class AiChatController extends Controller
         }
 
         $session = $this->chatSessionService->getSessionById($id);
-        
+
         if (!$session || $session->user_id !== Auth::id()) {
             return response()->json(['message' => 'Session not found'], 404);
         }
@@ -113,21 +113,21 @@ class AiChatController extends Controller
     private function callAiService(string $sessionId, string $message): array
     {
         $aiServiceUrl = config('services.ai.url', 'http://127.0.0.1:8001');
-        
+
         // Get the JWT token from the request
         $token = request()->bearerToken();
-        
+
         try {
             $response = \Illuminate\Support\Facades\Http::post("{$aiServiceUrl}/api/fiscal/chatbot/message", [
                 'session_id' => $sessionId,
                 'message' => $message,
                 'auth_token' => $token,
             ]);
-            
+
             if ($response->successful()) {
                 return $response->json();
             }
-            
+
             return [
                 'content' => 'AI service returned an error. Please try again.',
                 'proposed_action' => null,

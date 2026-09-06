@@ -14,7 +14,8 @@ class ChildController extends Controller
     public function __construct(
         protected ChildRepository $childRepository,
         protected VerificationService $verificationService
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -41,8 +42,8 @@ class ChildController extends Controller
 
         // Handle document upload
         if ($request->hasFile('document')) {
-            $folder = $request->status === 'disabled' 
-                ? 'documents/medical_certificates' 
+            $folder = $request->status === 'disabled'
+                ? 'documents/medical_certificates'
                 : 'documents/birth_certificates';
             $path = $request->file('document')->store($folder, 'public');
             $data['document_path'] = $path;
@@ -71,14 +72,14 @@ class ChildController extends Controller
         // Handle document upload if provided
         if ($request->hasFile('document')) {
             $child = $this->childRepository->find($id);
-            
+
             // Delete old document if exists
             if ($child && $child->document_path) {
                 Storage::disk('public')->delete($child->document_path);
             }
 
-            $folder = $request->status === 'disabled' 
-                ? 'documents/medical_certificates' 
+            $folder = $request->status === 'disabled'
+                ? 'documents/medical_certificates'
                 : 'documents/birth_certificates';
             $path = $request->file('document')->store($folder, 'public');
             $data['document_path'] = $path;
@@ -94,7 +95,7 @@ class ChildController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $child = $this->childRepository->find($id);
-        
+
         if ($child && $child->document_path) {
             Storage::disk('public')->delete($child->document_path);
         }

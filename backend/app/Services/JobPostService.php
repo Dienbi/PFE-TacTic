@@ -15,7 +15,8 @@ class JobPostService
     public function __construct(
         protected JobPostRepository $jobPostRepository,
         protected CompetenceRepository $competenceRepository
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {

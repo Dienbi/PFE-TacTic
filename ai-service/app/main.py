@@ -4,7 +4,14 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import matching, predictions, training, fiscal_extraction, fiscal_chatbot, cv_extraction
+from app.api.endpoints import (
+    cv_extraction,
+    fiscal_chatbot,
+    fiscal_extraction,
+    matching,
+    predictions,
+    training,
+)
 from app.models.schemas import HealthResponse
 
 # Configure logging

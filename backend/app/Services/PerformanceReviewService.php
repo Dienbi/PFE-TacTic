@@ -13,7 +13,8 @@ class PerformanceReviewService
     public function __construct(
         protected PerformanceReviewRepositoryInterface $repository,
         protected NotificationServiceInterface $notificationService
-    ) {}
+    ) {
+    }
 
     public function create(array $data, int $chefId): PerformanceReview
     {
@@ -50,7 +51,7 @@ class PerformanceReviewService
     public function update(int $id, array $data, $chefId = null): PerformanceReview
     {
         $review = $this->repository->findById($id);
-        
+
         if (!$review) {
             throw new InvalidArgumentException('Performance review not found.');
         }
@@ -93,7 +94,7 @@ class PerformanceReviewService
     public function delete(int $id, $chefId = null): bool
     {
         $review = $this->repository->findById($id);
-        
+
         if (!$review) {
             throw new InvalidArgumentException('Performance review not found.');
         }

@@ -115,19 +115,19 @@ class PaymentTrackingService
     public function updatePayment(string $paymentId, array $data, string $updatedBy): array
     {
         $payment = $this->paymentRepository->findById($paymentId);
-        
+
         if (!$payment) {
             throw new \Exception('Payment not found');
         }
 
         // Get payslip
         $payslip = $this->payslipRepository->findById($payment->payslip_id);
-        
+
         // Calculate new total if amount is being changed
         if (isset($data['amount']) && $data['amount'] !== $payment->amount) {
             $totalPaid = $this->paymentRepository->getTotalPaidForPayslip($payment->payslip_id) - $payment->amount;
             $newTotal = $totalPaid + $data['amount'];
-            
+
             if ($newTotal > $payslip->net_salary) {
                 throw new \Exception("New payment amount would exceed net salary");
             }
@@ -178,7 +178,7 @@ class PaymentTrackingService
     public function deletePayment(string $paymentId): array
     {
         $payment = $this->paymentRepository->findById($paymentId);
-        
+
         if (!$payment) {
             throw new \Exception('Payment not found');
         }

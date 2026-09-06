@@ -47,7 +47,7 @@ class FiscalProfileGroupController extends Controller
         }
 
         $group = $this->groupService->findById($id);
-        
+
         if (!$group) {
             return response()->json(['message' => 'Group not found'], 404);
         }
@@ -167,7 +167,7 @@ class FiscalProfileGroupController extends Controller
         }
 
         $group = $this->groupService->findById($id);
-        
+
         if (!$group) {
             return response()->json(['message' => 'Group not found'], 404);
         }
@@ -214,7 +214,7 @@ class FiscalProfileGroupController extends Controller
         }
 
         $group = $this->groupService->findById($id);
-        
+
         if (!$group) {
             return response()->json(['message' => 'Group not found'], 404);
         }

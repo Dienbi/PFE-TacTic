@@ -26,7 +26,7 @@ class CvExtractionService
     public function processCvUpload(int $cvUploadId): void
     {
         Log::info("Starting CV extraction for upload ID: {$cvUploadId}");
-        
+
         $cvUpload = $this->cvUploadRepository->findOrFail($cvUploadId);
 
         try {

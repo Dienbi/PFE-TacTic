@@ -19,7 +19,8 @@ class PersonalInfoChangeRequestService
         private FiscalProfileAssignmentService $assignmentService,
         private HeadOfFamilyComputationService $headOfFamilyComputation,
         private NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     /**
      * Submit a new personal info change request.
@@ -253,7 +254,7 @@ class PersonalInfoChangeRequestService
 
         // Check for children count decrease
         $employee = Utilisateur::find($request->employee_id);
-        if ($request->requested_children_count !== null && 
+        if ($request->requested_children_count !== null &&
             $request->requested_children_count < $employee->children_count) {
             throw new \Exception('Children count decrease requires manual review. Please use "Request More Info".');
         }
@@ -282,7 +283,7 @@ class PersonalInfoChangeRequestService
         }
 
         // Children count increase
-        if ($request->requested_children_count !== null && 
+        if ($request->requested_children_count !== null &&
             $request->requested_children_count > $employee->children_count) {
             $newChildren = $request->requested_children_count - $employee->children_count;
             for ($i = 0; $i < $newChildren; $i++) {

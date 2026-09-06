@@ -30,7 +30,7 @@ class FiscalRuleManagementService
     public function getAll(): array
     {
         $ruleSets = $this->ruleSetRepository->getAll();
-        
+
         return [
             'rule_sets' => $ruleSets,
         ];
@@ -51,7 +51,7 @@ class FiscalRuleManagementService
     public function updateDraftRuleSet(string $ruleSetId, array $data): array
     {
         $ruleSet = $this->ruleSetRepository->findById($ruleSetId);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Only draft rule sets can be updated');
         }
@@ -67,7 +67,7 @@ class FiscalRuleManagementService
     public function addIrppBracket(string $ruleSetId, array $bracketData): array
     {
         $ruleSet = $this->ruleSetRepository->findById($ruleSetId);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Brackets can only be added to draft rule sets');
         }
@@ -86,7 +86,7 @@ class FiscalRuleManagementService
     {
         $bracket = $this->bracketRepository->findById($bracketId);
         $ruleSet = $this->ruleSetRepository->findById($bracket->rule_set_id);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Brackets can only be updated in draft rule sets');
         }
@@ -103,7 +103,7 @@ class FiscalRuleManagementService
     {
         $bracket = $this->bracketRepository->findById($bracketId);
         $ruleSet = $this->ruleSetRepository->findById($bracket->rule_set_id);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Brackets can only be deleted from draft rule sets');
         }
@@ -118,7 +118,7 @@ class FiscalRuleManagementService
     public function addFamilyDeduction(string $ruleSetId, array $deductionData): array
     {
         $ruleSet = $this->ruleSetRepository->findById($ruleSetId);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Deductions can only be added to draft rule sets');
         }
@@ -137,7 +137,7 @@ class FiscalRuleManagementService
     {
         $deduction = $this->deductionRepository->findById($deductionId);
         $ruleSet = $this->ruleSetRepository->findById($deduction->rule_set_id);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Deductions can only be updated in draft rule sets');
         }
@@ -154,7 +154,7 @@ class FiscalRuleManagementService
     {
         $deduction = $this->deductionRepository->findById($deductionId);
         $ruleSet = $this->ruleSetRepository->findById($deduction->rule_set_id);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Deductions can only be deleted from draft rule sets');
         }
@@ -169,7 +169,7 @@ class FiscalRuleManagementService
     public function confirmRuleSet(string $ruleSetId, string $actorId): array
     {
         $ruleSet = $this->ruleSetRepository->findById($ruleSetId);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Only draft rule sets can be confirmed');
         }
@@ -205,7 +205,7 @@ class FiscalRuleManagementService
     public function deleteDraftRuleSet(string $ruleSetId): array
     {
         $ruleSet = $this->ruleSetRepository->findById($ruleSetId);
-        
+
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Only draft rule sets can be deleted');
         }
@@ -233,7 +233,7 @@ class FiscalRuleManagementService
     public function getActiveRuleSetForDate(string $date): ?array
     {
         $ruleSet = $this->ruleSetRepository->findActiveForDate($date);
-        
+
         if (!$ruleSet) {
             return null;
         }

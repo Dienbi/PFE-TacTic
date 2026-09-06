@@ -23,7 +23,8 @@ class VerificationService
         private NotificationService $notificationService,
         private FiscalProfileIntegrationService $fiscalProfileService,
         private FiscalProfileAssignmentService $assignmentService
-    ) {}
+    ) {
+    }
 
     /**
      * Check if there are any remaining pending social status proofs or children for the user.

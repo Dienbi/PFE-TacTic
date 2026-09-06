@@ -284,7 +284,7 @@ class AIService
     {
         try {
             Log::info("AI Service POST request to: {$path}", ['data' => $data]);
-            
+
             $response = Http::timeout(300) // Training can be slow
                 ->post($this->baseUrl.$path, $data);
 

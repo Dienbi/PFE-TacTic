@@ -389,9 +389,9 @@ class PayslipGenerationService
 
         $hire = \Carbon\Carbon::parse($hireDate);
         $end = \Carbon\Carbon::parse($periodEnd);
-        
+
         $months = $hire->diffInMonths($end) + 1;
-        
+
         return min($months, 12);
     }
 

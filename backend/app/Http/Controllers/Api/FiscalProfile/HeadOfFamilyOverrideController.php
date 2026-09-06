@@ -93,7 +93,7 @@ class HeadOfFamilyOverrideController extends Controller
         }
 
         $override = $this->overrideRepository->findActiveForEmployee($employeeId);
-        
+
         if (!$override) {
             return response()->json(['message' => 'No active override found'], 404);
         }

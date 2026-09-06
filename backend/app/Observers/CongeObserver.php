@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 class CongeObserver
 {
-    public function __construct(protected CacheService $cacheService) {}
+    public function __construct(protected CacheService $cacheService)
+    {
+    }
 
     /**
      * Handle the Conge "created" event.

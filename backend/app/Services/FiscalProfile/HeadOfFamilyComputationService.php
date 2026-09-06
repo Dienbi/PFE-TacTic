@@ -4,10 +4,10 @@ namespace App\Services\FiscalProfile;
 
 /**
  * HeadOfFamilyComputationService
- * 
+ *
  * Single Responsibility: Compute head-of-family status based on Tunisian fiscal rules.
  * This service isolates the business rule for easy modification when legal requirements change.
- * 
+ *
  * Current Rule (per spec - working assumption pending legal confirmation):
  * - Male: head_of_family = true if marital_status in (married, divorced, widowed)
  * - Female: head_of_family = true if marital_status in (divorced, widowed) AND children_count > 0
@@ -28,12 +28,12 @@ class HeadOfFamilyComputationService
         // Normalize inputs
         $gender = strtolower($gender);
         $maritalStatus = strtolower($maritalStatus);
-        
+
         // Rule for males
         if ($gender === 'male') {
             return in_array($maritalStatus, ['married', 'divorced', 'widowed']);
         }
-        
+
         // Rule for females
         if ($gender === 'female') {
             // Only divorced or widowed females with children qualify
@@ -41,7 +41,7 @@ class HeadOfFamilyComputationService
                 return true;
             }
         }
-        
+
         // Default: not head of family
         return false;
     }

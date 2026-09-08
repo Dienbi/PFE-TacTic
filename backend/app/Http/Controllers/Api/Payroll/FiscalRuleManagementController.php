@@ -98,7 +98,7 @@ class FiscalRuleManagementController extends Controller
     public function addFamilyDeduction(Request $request, string $ruleSetId)
     {
         $request->validate([
-            'deduction_type' => 'required|in:head_of_household,child,disabled_child,student_child_non_scholarship',
+            'deduction_type' => 'required|string|max:255',
             'annual_amount' => 'required|numeric|min:0',
             'max_count' => 'nullable|integer|min:1',
         ]);

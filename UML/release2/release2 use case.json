@@ -1,0 +1,726 @@
+{
+  "version": "31.4.4",
+  "data": "<mxfile host=\"app.diagrams.net\"><diagram name=\"Page-1\" id=\"wDxD9LDdMKNyEMlM36Qf\"><mxGraphModel dx=\"1212\" dy=\"-1572\" grid=\"1\" gridSize=\"10\" guides=\"1\" tooltips=\"1\" connect=\"1\" arrows=\"1\" fold=\"1\" page=\"1\" pageScale=\"1\" pageWidth=\"850\" pageHeight=\"1100\" math=\"0\" shadow=\"0\"><root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/><mxCell id=\"ItO36feMS10k4BUWUBZz-160\" parent=\"1\" style=\"shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=220;height=30;fillColor=#dae8fc;strokeColor=#6c8ebf;\" value=\"&lt;span style=&quot;font-size: 13px; font-weight: 700; text-align: left; white-space: nowrap;&quot;&gt;Sprint 3— Leave Management&lt;/span&gt;\" vertex=\"1\"><mxGeometry height=\"840\" width=\"700\" x=\"340\" y=\"2650\" as=\"geometry\"/></mxCell><UserObject label=\"Request Leave\" plantUmlId=\"uc_23\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Request Leave\" id=\"ItO36feMS10k4BUWUBZz-161\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"154\" x=\"535\" y=\"2750\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Leave History&#10;and Balance\" plantUmlId=\"uc_24\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Leave History&#10;and Balance\" id=\"ItO36feMS10k4BUWUBZz-162\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"277\" x=\"473.5\" y=\"2824\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Cancel Pending&#10;Leave Request\" plantUmlId=\"uc_25\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Cancel Pending&#10;Leave Request\" id=\"ItO36feMS10k4BUWUBZz-163\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"268\" x=\"478\" y=\"2898\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Team Pending&#10;Leave Requests\" plantUmlId=\"uc_26\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Team Pending&#10;Leave Requests\" id=\"ItO36feMS10k4BUWUBZz-164\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"304\" x=\"460\" y=\"2972\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Approve Leave Request\" plantUmlId=\"uc_27\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Approve Leave Request\" id=\"ItO36feMS10k4BUWUBZz-165\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"209\" x=\"507.5\" y=\"3046\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Reject Leave Request\" plantUmlId=\"uc_28\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Reject Leave Request\" id=\"ItO36feMS10k4BUWUBZz-166\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"198\" x=\"513\" y=\"3120\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View All Leave&#10;Requests\" plantUmlId=\"uc_29\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View All Leave&#10;Requests\" id=\"ItO36feMS10k4BUWUBZz-167\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"230\" x=\"497\" y=\"3194\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Pending&#10;Leave Requests\" plantUmlId=\"uc_30\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Pending&#10;Leave Requests\" id=\"ItO36feMS10k4BUWUBZz-168\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"264\" x=\"480\" y=\"3268\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Download Medical&#10;Certificate\" plantUmlId=\"uc_31\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Download Medical&#10;Certificate\" id=\"ItO36feMS10k4BUWUBZz-169\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"258\" x=\"483\" y=\"3342\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Leave by&#10;Period\" plantUmlId=\"uc_32\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Leave by&#10;Period\" id=\"ItO36feMS10k4BUWUBZz-170\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"210\" x=\"507\" y=\"3416\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Check Leave&#10;Conflicts\" plantUmlId=\"uc_33\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Check Leave&#10;Conflicts\" id=\"ItO36feMS10k4BUWUBZz-171\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"214\" x=\"799\" y=\"3083\" as=\"geometry\"/></mxCell></UserObject><mxCell id=\"ItO36feMS10k4BUWUBZz-172\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-165\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.081;entryY=0.392;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;\" target=\"ItO36feMS10k4BUWUBZz-171\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-237\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-172\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;include&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"-0.2231\" y=\"2\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-173\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-166\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.069;entryY=0.824;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;\" target=\"ItO36feMS10k4BUWUBZz-171\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-238\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-173\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;include&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"-0.1637\" y=\"-3\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-174\" parent=\"1\" style=\"shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=200;height=30;fillColor=#dae8fc;strokeColor=#6c8ebf;\" value=\"&lt;span style=&quot;font-size: 13px; font-weight: 700; text-align: left; white-space: nowrap;&quot;&gt;Sprint 4 — Advanced Payroll&lt;/span&gt;\" vertex=\"1\"><mxGeometry height=\"1480\" width=\"700\" x=\"330\" y=\"3540\" as=\"geometry\"/></mxCell><UserObject label=\"View and Download&#10;Payslip\" plantUmlId=\"uc_39\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View and Download&#10;Payslip\" id=\"ItO36feMS10k4BUWUBZz-175\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"249\" x=\"410\" y=\"3670\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Configure Employee&#10;Base Salary\" plantUmlId=\"uc_40\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Configure Employee&#10;Base Salary\" id=\"ItO36feMS10k4BUWUBZz-176\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"277\" x=\"396\" y=\"3755.619834710744\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Preview Payroll&#10;for Period\" plantUmlId=\"uc_41\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Preview Payroll&#10;for Period\" id=\"ItO36feMS10k4BUWUBZz-177\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"235\" x=\"417\" y=\"3841.2396694214876\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Generate Single&#10;Payslip\" plantUmlId=\"uc_42\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Generate Single&#10;Payslip\" id=\"ItO36feMS10k4BUWUBZz-178\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"222\" x=\"423.5\" y=\"3926.8595041322315\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Generate Batch&#10;Payslips\" plantUmlId=\"uc_43\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Generate Batch&#10;Payslips\" id=\"ItO36feMS10k4BUWUBZz-179\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"226\" x=\"421.5\" y=\"4012.4793388429753\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Lock Payslip\" plantUmlId=\"uc_44\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Lock Payslip\" id=\"ItO36feMS10k4BUWUBZz-180\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"143\" x=\"463\" y=\"4098.099173553719\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Record Payment\" plantUmlId=\"uc_45\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Record Payment\" id=\"ItO36feMS10k4BUWUBZz-181\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"162\" x=\"453.5\" y=\"4183.719008264463\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Payment&#10;Statistics\" plantUmlId=\"uc_46\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Payment&#10;Statistics\" id=\"ItO36feMS10k4BUWUBZz-182\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"226\" x=\"421.5\" y=\"4269.338842975207\" as=\"geometry\"/></mxCell></UserObject><mxCell id=\"ItO36feMS10k4BUWUBZz-243\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-183\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" target=\"ItO36feMS10k4BUWUBZz-191\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-246\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-243\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;include&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"0.2387\" y=\"3\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-245\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-183\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" target=\"ItO36feMS10k4BUWUBZz-192\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-247\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-245\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;include&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"0.0435\" y=\"-3\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><UserObject label=\"Create Payslip&#10;Correction\" plantUmlId=\"uc_47\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Create Payslip&#10;Correction\" id=\"ItO36feMS10k4BUWUBZz-183\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"230\" x=\"419.5\" y=\"4354.9586776859505\" as=\"geometry\"/></mxCell></UserObject><mxCell id=\"ItO36feMS10k4BUWUBZz-244\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-184\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" target=\"ItO36feMS10k4BUWUBZz-192\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-248\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-244\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;include&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"-0.0996\" y=\"-1\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><UserObject label=\"Revert to Previous&#10;Payslip\" plantUmlId=\"uc_48\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Revert to Previous&#10;Payslip\" id=\"ItO36feMS10k4BUWUBZz-184\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"238\" x=\"415.5\" y=\"4440.578512396694\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Calculate Year-End&#10;Regularization\" plantUmlId=\"uc_49\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Calculate Year-End&#10;Regularization\" id=\"ItO36feMS10k4BUWUBZz-185\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"289\" x=\"390\" y=\"4526.198347107438\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Create Year-End&#10;Payslip\" plantUmlId=\"uc_50\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Create Year-End&#10;Payslip\" id=\"ItO36feMS10k4BUWUBZz-186\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"226\" x=\"421.5\" y=\"4611.818181818182\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Import Fiscal Rules&#10;from PDF\" plantUmlId=\"uc_51\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Import Fiscal Rules&#10;from PDF\" id=\"ItO36feMS10k4BUWUBZz-187\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"254\" x=\"407.5\" y=\"4697.438016528926\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Manage Fiscal Rules&#10;and Brackets\" plantUmlId=\"uc_52\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Manage Fiscal Rules&#10;and Brackets\" id=\"ItO36feMS10k4BUWUBZz-188\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"293\" x=\"407.5\" y=\"4773.801652892562\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Audit Trail\" plantUmlId=\"uc_53\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Audit Trail\" id=\"ItO36feMS10k4BUWUBZz-189\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"160\" x=\"428\" y=\"4837.825054371466\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"View Payroll&#10;Statistics\" plantUmlId=\"uc_54\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"View Payroll&#10;Statistics\" id=\"ItO36feMS10k4BUWUBZz-190\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"215\" x=\"415.5\" y=\"4890.465941713788\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Validate Payslip\" plantUmlId=\"uc_56\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Validate Payslip\" id=\"ItO36feMS10k4BUWUBZz-191\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"163\" x=\"760\" y=\"4312.148760330579\" as=\"geometry\"/></mxCell></UserObject><UserObject label=\"Compare Payslip&#10;Versions\" plantUmlId=\"uc_57\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Compare Payslip&#10;Versions\" id=\"ItO36feMS10k4BUWUBZz-192\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"39.33884297520661\" width=\"237\" x=\"723\" y=\"4397.768595041322\" as=\"geometry\"/></mxCell></UserObject><mxCell id=\"ItO36feMS10k4BUWUBZz-193\" parent=\"1\" style=\"ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" value=\"Manage Role Profiles\" vertex=\"1\"><mxGeometry height=\"39.33684210526315\" width=\"199.5\" x=\"419.5\" y=\"4953.618964767291\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-239\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-194\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" target=\"ItO36feMS10k4BUWUBZz-178\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-241\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-239\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;extends&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"0.2951\" y=\"-1\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-240\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-194\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" target=\"ItO36feMS10k4BUWUBZz-179\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-242\" connectable=\"0\" parent=\"ItO36feMS10k4BUWUBZz-240\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" value=\"&amp;lt;&amp;lt;extends&amp;gt;&amp;gt;\" vertex=\"1\"><mxGeometry relative=\"1\" x=\"0.19\" y=\"1\" as=\"geometry\"><mxPoint as=\"offset\"/></mxGeometry></mxCell><UserObject label=\"Simulate Payroll&#10;Calculation\" plantUmlId=\"uc_55\" plantUmlBaseStyle=\"ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;\" plantUmlBaseValue=\"Simulate Payroll&#10;Calculation\" id=\"ItO36feMS10k4BUWUBZz-194\"><mxCell parent=\"1\" style=\"ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;fontSize=12;\" vertex=\"1\"><mxGeometry height=\"34\" width=\"251\" x=\"741\" y=\"3958.7768595041325\" as=\"geometry\"/></mxCell></UserObject><mxCell id=\"ItO36feMS10k4BUWUBZz-202\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-195\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.006;entryY=0.349;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;entryPerimeter=0;\" target=\"ItO36feMS10k4BUWUBZz-161\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-203\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-195\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-162\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-218\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-195\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-175\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-195\" parent=\"1\" style=\"shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" value=\"Employee\" vertex=\"1\"><mxGeometry height=\"60\" width=\"30\" x=\"120\" y=\"3006\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-208\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-196\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-161\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-196\" parent=\"1\" style=\"shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" value=\"Team Leader\" vertex=\"1\"><mxGeometry height=\"60\" width=\"30\" x=\"130\" y=\"3329\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-213\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-166\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-217\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-170\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-223\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-178\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-224\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-179\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-225\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-180\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-226\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-181\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-227\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-182\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-230\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-185\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-231\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-186\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-232\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-187\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-233\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-188\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-234\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-189\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-197\" parent=\"1\" style=\"shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;\" value=\"HR Admin\" vertex=\"1\"><mxGeometry height=\"60\" width=\"30\" x=\"130\" y=\"4377.110000000001\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-204\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-195\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.035;entryY=0.582;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-163\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-206\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-196\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.061;entryY=0.673;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-164\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-209\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-196\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.071;entryY=0.728;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-162\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-210\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-196\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.076;entryY=0.731;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-163\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-212\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.049;entryY=0.638;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-165\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-214\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.072;entryY=0.694;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-167\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-215\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.081;entryY=0.717;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-168\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-216\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.082;entryY=0.724;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-169\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-219\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-196\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;entryX=0.118;entryY=0.099;entryDx=0;entryDy=0;entryPerimeter=0;\" target=\"ItO36feMS10k4BUWUBZz-175\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-220\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.054;entryY=0.701;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-175\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-221\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.042;entryY=0.655;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-176\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-222\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.049;entryY=0.629;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-177\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-228\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.009;entryY=0.405;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-183\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-229\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.021;entryY=0.389;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-184\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-235\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.035;entryY=0.404;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-190\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"ItO36feMS10k4BUWUBZz-236\" edge=\"1\" parent=\"1\" source=\"ItO36feMS10k4BUWUBZz-197\" style=\"edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;entryX=0.03;entryY=0.337;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;\" target=\"ItO36feMS10k4BUWUBZz-193\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell></root></mxGraphModel></diagram></mxfile>",
+  "pages": [
+    {
+      "id": "wDxD9LDdMKNyEMlM36Qf",
+      "name": "Page-1",
+      "cells": [
+        {
+          "id": "1",
+          "type": "layer"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-160",
+          "type": "node",
+          "parent": "1",
+          "label": "Sprint 3— Leave Management",
+          "html": "<span style=\"font-size: 13px; font-weight: 700; text-align: left; white-space: nowrap;\">Sprint 3— Leave Management</span>"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-161",
+          "type": "node",
+          "parent": "1",
+          "label": "Request Leave",
+          "metadata": {
+            "plantUmlId": "uc_23",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Request Leave"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-162",
+          "type": "node",
+          "parent": "1",
+          "label": "View Leave History\nand Balance",
+          "metadata": {
+            "plantUmlId": "uc_24",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Leave History\nand Balance"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-163",
+          "type": "node",
+          "parent": "1",
+          "label": "Cancel Pending\nLeave Request",
+          "metadata": {
+            "plantUmlId": "uc_25",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Cancel Pending\nLeave Request"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-164",
+          "type": "node",
+          "parent": "1",
+          "label": "View Team Pending\nLeave Requests",
+          "metadata": {
+            "plantUmlId": "uc_26",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Team Pending\nLeave Requests"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-165",
+          "type": "node",
+          "parent": "1",
+          "label": "Approve Leave Request",
+          "metadata": {
+            "plantUmlId": "uc_27",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Approve Leave Request"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-166",
+          "type": "node",
+          "parent": "1",
+          "label": "Reject Leave Request",
+          "metadata": {
+            "plantUmlId": "uc_28",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Reject Leave Request"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-167",
+          "type": "node",
+          "parent": "1",
+          "label": "View All Leave\nRequests",
+          "metadata": {
+            "plantUmlId": "uc_29",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View All Leave\nRequests"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-168",
+          "type": "node",
+          "parent": "1",
+          "label": "View Pending\nLeave Requests",
+          "metadata": {
+            "plantUmlId": "uc_30",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Pending\nLeave Requests"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-169",
+          "type": "node",
+          "parent": "1",
+          "label": "Download Medical\nCertificate",
+          "metadata": {
+            "plantUmlId": "uc_31",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Download Medical\nCertificate"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-170",
+          "type": "node",
+          "parent": "1",
+          "label": "View Leave by\nPeriod",
+          "metadata": {
+            "plantUmlId": "uc_32",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Leave by\nPeriod"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-171",
+          "type": "node",
+          "parent": "1",
+          "label": "Check Leave\nConflicts",
+          "metadata": {
+            "plantUmlId": "uc_33",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Check Leave\nConflicts"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-172",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-165",
+          "target": "ItO36feMS10k4BUWUBZz-171"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-237",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-172",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-173",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-166",
+          "target": "ItO36feMS10k4BUWUBZz-171"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-238",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-173",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-174",
+          "type": "node",
+          "parent": "1",
+          "label": "Sprint 4 — Advanced Payroll",
+          "html": "<span style=\"font-size: 13px; font-weight: 700; text-align: left; white-space: nowrap;\">Sprint 4 — Advanced Payroll</span>"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-175",
+          "type": "node",
+          "parent": "1",
+          "label": "View and Download\nPayslip",
+          "metadata": {
+            "plantUmlId": "uc_39",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View and Download\nPayslip"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-176",
+          "type": "node",
+          "parent": "1",
+          "label": "Configure Employee\nBase Salary",
+          "metadata": {
+            "plantUmlId": "uc_40",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Configure Employee\nBase Salary"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-177",
+          "type": "node",
+          "parent": "1",
+          "label": "Preview Payroll\nfor Period",
+          "metadata": {
+            "plantUmlId": "uc_41",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Preview Payroll\nfor Period"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-178",
+          "type": "node",
+          "parent": "1",
+          "label": "Generate Single\nPayslip",
+          "metadata": {
+            "plantUmlId": "uc_42",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Generate Single\nPayslip"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-179",
+          "type": "node",
+          "parent": "1",
+          "label": "Generate Batch\nPayslips",
+          "metadata": {
+            "plantUmlId": "uc_43",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Generate Batch\nPayslips"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-180",
+          "type": "node",
+          "parent": "1",
+          "label": "Lock Payslip",
+          "metadata": {
+            "plantUmlId": "uc_44",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Lock Payslip"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-181",
+          "type": "node",
+          "parent": "1",
+          "label": "Record Payment",
+          "metadata": {
+            "plantUmlId": "uc_45",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Record Payment"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-182",
+          "type": "node",
+          "parent": "1",
+          "label": "View Payment\nStatistics",
+          "metadata": {
+            "plantUmlId": "uc_46",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Payment\nStatistics"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-243",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-183",
+          "target": "ItO36feMS10k4BUWUBZz-191"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-246",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-243",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-245",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-183",
+          "target": "ItO36feMS10k4BUWUBZz-192"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-247",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-245",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-183",
+          "type": "node",
+          "parent": "1",
+          "label": "Create Payslip\nCorrection",
+          "metadata": {
+            "plantUmlId": "uc_47",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Create Payslip\nCorrection"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-244",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-184",
+          "target": "ItO36feMS10k4BUWUBZz-192"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-248",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-244",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-184",
+          "type": "node",
+          "parent": "1",
+          "label": "Revert to Previous\nPayslip",
+          "metadata": {
+            "plantUmlId": "uc_48",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Revert to Previous\nPayslip"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-185",
+          "type": "node",
+          "parent": "1",
+          "label": "Calculate Year-End\nRegularization",
+          "metadata": {
+            "plantUmlId": "uc_49",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Calculate Year-End\nRegularization"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-186",
+          "type": "node",
+          "parent": "1",
+          "label": "Create Year-End\nPayslip",
+          "metadata": {
+            "plantUmlId": "uc_50",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Create Year-End\nPayslip"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-187",
+          "type": "node",
+          "parent": "1",
+          "label": "Import Fiscal Rules\nfrom PDF",
+          "metadata": {
+            "plantUmlId": "uc_51",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Import Fiscal Rules\nfrom PDF"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-188",
+          "type": "node",
+          "parent": "1",
+          "label": "Manage Fiscal Rules\nand Brackets",
+          "metadata": {
+            "plantUmlId": "uc_52",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Manage Fiscal Rules\nand Brackets"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-189",
+          "type": "node",
+          "parent": "1",
+          "label": "View Audit Trail",
+          "metadata": {
+            "plantUmlId": "uc_53",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Audit Trail"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-190",
+          "type": "node",
+          "parent": "1",
+          "label": "View Payroll\nStatistics",
+          "metadata": {
+            "plantUmlId": "uc_54",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "View Payroll\nStatistics"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-191",
+          "type": "node",
+          "parent": "1",
+          "label": "Validate Payslip",
+          "metadata": {
+            "plantUmlId": "uc_56",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Validate Payslip"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-192",
+          "type": "node",
+          "parent": "1",
+          "label": "Compare Payslip\nVersions",
+          "metadata": {
+            "plantUmlId": "uc_57",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Compare Payslip\nVersions"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-193",
+          "type": "node",
+          "parent": "1",
+          "label": "Manage Role Profiles"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-239",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-194",
+          "target": "ItO36feMS10k4BUWUBZz-178"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-241",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-239",
+          "label": "&lt;&lt;extends&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-240",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-194",
+          "target": "ItO36feMS10k4BUWUBZz-179"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-242",
+          "type": "node",
+          "parent": "ItO36feMS10k4BUWUBZz-240",
+          "label": "&lt;&lt;extends&gt;&gt;"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-194",
+          "type": "node",
+          "parent": "1",
+          "label": "Simulate Payroll\nCalculation",
+          "metadata": {
+            "plantUmlId": "uc_55",
+            "plantUmlBaseStyle": "ellipse;fillColor=#F1F1F1;strokeColor=#181818;whiteSpace=wrap;fontColor=#000000;fontSize=12;",
+            "plantUmlBaseValue": "Simulate Payroll\nCalculation"
+          }
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-202",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-195",
+          "target": "ItO36feMS10k4BUWUBZz-161"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-203",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-195",
+          "target": "ItO36feMS10k4BUWUBZz-162"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-218",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-195",
+          "target": "ItO36feMS10k4BUWUBZz-175"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-195",
+          "type": "node",
+          "parent": "1",
+          "label": "Employee"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-208",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-196",
+          "target": "ItO36feMS10k4BUWUBZz-161"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-196",
+          "type": "node",
+          "parent": "1",
+          "label": "Team Leader"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-213",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-166"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-217",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-170"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-223",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-178"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-224",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-179"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-225",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-180"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-226",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-181"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-227",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-182"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-230",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-185"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-231",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-186"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-232",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-187"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-233",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-188"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-234",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-189"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-197",
+          "type": "node",
+          "parent": "1",
+          "label": "HR Admin"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-204",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-195",
+          "target": "ItO36feMS10k4BUWUBZz-163"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-206",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-196",
+          "target": "ItO36feMS10k4BUWUBZz-164"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-209",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-196",
+          "target": "ItO36feMS10k4BUWUBZz-162"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-210",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-196",
+          "target": "ItO36feMS10k4BUWUBZz-163"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-212",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-165"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-214",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-167"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-215",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-168"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-216",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-169"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-219",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-196",
+          "target": "ItO36feMS10k4BUWUBZz-175"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-220",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-175"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-221",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-176"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-222",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-177"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-228",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-183"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-229",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-184"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-235",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-190"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-236",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-197",
+          "target": "ItO36feMS10k4BUWUBZz-193"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-249",
+          "type": "node",
+          "parent": "1",
+          "label": "AI Chatbot"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-250",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-249",
+          "target": "ItO36feMS10k4BUWUBZz-187"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-251",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-249",
+          "target": "ItO36feMS10k4BUWUBZz-188"
+        },
+        {
+          "id": "ItO36feMS10k4BUWUBZz-252",
+          "type": "edge",
+          "parent": "1",
+          "source": "ItO36feMS10k4BUWUBZz-249",
+          "target": "ItO36feMS10k4BUWUBZz-193"
+        }
+      ]
+    }
+  ]
+}

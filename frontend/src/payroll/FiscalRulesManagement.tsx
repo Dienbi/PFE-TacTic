@@ -1118,21 +1118,6 @@ const FiscalRulesManagement: React.FC = () => {
             onClose={() => setIsDeductionModalOpen(false)}
             title="Add Family Deduction"
             size="md"
-            footer={
-              <div className="flex justify-end gap-2">
-                <Button variant="secondary" onClick={() => setIsDeductionModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={addFamilyDeduction.isPending}
-                  className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
-                  style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
-                >
-                  Add Deduction
-                </Button>
-              </div>
-            }
           >
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -1162,17 +1147,13 @@ const FiscalRulesManagement: React.FC = () => {
             }} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Deduction Type</label>
-                <select
+                <input
+                  type="text"
                   name="deduction_type"
                   required
+                  placeholder="e.g., Head of Household, Child, Disabled Child"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select type</option>
-                  <option value="head_of_household">Head of Household - Primary breadwinner deduction</option>
-                  <option value="child">Child - General child deduction</option>
-                  <option value="disabled_child">Disabled Child - Additional deduction for disabled children</option>
-                  <option value="student_child_non_scholarship">Student Child (Non-Scholarship) - For students not receiving scholarships</option>
-                </select>
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Annual Amount (TND)</label>
@@ -1197,6 +1178,23 @@ const FiscalRulesManagement: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">Maximum number of dependents this deduction applies to. Leave empty for unlimited.</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsDeductionModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={addFamilyDeduction.isPending}
+                  className="!bg-[#1E2258] hover:!bg-[#1E2258]/90 !border-[#1E2258] !text-white"
+                  style={{ backgroundColor: '#1E2258', borderColor: '#1E2258', color: 'white' }}
+                >
+                  Add Deduction
+                </Button>
               </div>
             </form>
           </Modal>

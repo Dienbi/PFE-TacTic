@@ -12,7 +12,8 @@ class EquipeController extends Controller
 {
     public function __construct(
         protected EquipeService $equipeService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all teams

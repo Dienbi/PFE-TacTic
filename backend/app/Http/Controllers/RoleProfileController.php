@@ -10,7 +10,8 @@ class RoleProfileController extends Controller
 {
     public function __construct(
         protected RoleProfileService $roleProfileService
-    ) {}
+    ) {
+    }
 
     public function index(): JsonResponse
     {

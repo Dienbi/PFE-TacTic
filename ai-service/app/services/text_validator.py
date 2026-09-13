@@ -14,8 +14,8 @@ class TextValidator:
         """Clean and normalize text."""
         # Remove excessive whitespace
         text = " ".join(text.split())
-        
+
         # Remove null characters
         text = text.replace("\x00", "")
-        
+
         return text.strip()

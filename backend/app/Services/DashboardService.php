@@ -16,7 +16,8 @@ class DashboardService
         private UtilisateurRepositoryInterface $utilisateurRepository,
         private PointageRepositoryInterface $pointageRepository,
         private CongeRepositoryInterface $congeRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Get RH dashboard KPI statistics

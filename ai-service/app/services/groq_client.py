@@ -1,7 +1,8 @@
-from groq import Groq
 import logging
 import os
-from typing import Dict, Any
+from typing import Any, Dict
+
+from groq import Groq
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class GroqClient:
         self.api_key = os.getenv("GROQ_API_KEY")
         if not self.api_key:
             raise ValueError("GROQ_API_KEY environment variable is not set")
-        
+
         self.client = Groq(api_key=self.api_key)
         self.model = "llama3-70b-8192"
 
@@ -43,7 +44,7 @@ class GroqClient:
                 max_tokens=2000,
                 response_format={"type": "json_object"}
             )
-            
+
             if not response.choices or not response.choices[0].message.content:
                 raise ValueError("Empty response from Groq API")
 

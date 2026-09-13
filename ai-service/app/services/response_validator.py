@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
+
 from app.models.cv_extraction import CvExtractionResponse
 
 logger = logging.getLogger(__name__)

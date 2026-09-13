@@ -14,7 +14,8 @@ class PaieController extends Controller
 {
     public function __construct(
         protected PaieService $paieService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all payrolls (RH) - paginated
@@ -68,14 +69,14 @@ class PaieController extends Controller
         // Managers can only view their team members' payslips
         if ($user->hasRole(Role::CHEF_EQUIPE)) {
             $teamPayroll = $this->paieService->getTeamPayroll($user->id);
-            
+
             if (isset($teamPayroll['error'])) {
                 return response()->json(['message' => $teamPayroll['error']], 400);
             }
 
             // Check if the requested user is in the manager's team
             $isTeamMember = collect($teamPayroll['membres'] ?? [])
-                ->contains(fn($member) => $member['utilisateur']['id'] === $utilisateurId);
+                ->contains(fn ($member) => $member['utilisateur']['id'] === $utilisateurId);
 
             if (!$isTeamMember) {
                 return response()->json(['message' => 'Accès interdit. Cet employé ne fait pas partie de votre équipe.'], 403);
@@ -320,7 +321,7 @@ class PaieController extends Controller
 
         // Ensure user can only download their own payslip or have RH permission
         $user = request()->user();
-        
+
         // User can download their own payslip
         if ($user->id === $paie->utilisateur_id) {
             return view('paie.bulletin', ['paie' => $paie]);
@@ -334,14 +335,14 @@ class PaieController extends Controller
         // Managers can download their team members' payslips
         if ($user->hasRole(Role::CHEF_EQUIPE)) {
             $teamPayroll = $this->paieService->getTeamPayroll($user->id);
-            
+
             if (isset($teamPayroll['error'])) {
                 abort(403, 'Accès interdit.');
             }
 
             // Check if the payslip owner is in the manager's team
             $isTeamMember = collect($teamPayroll['membres'] ?? [])
-                ->contains(fn($member) => $member['utilisateur']['id'] === $paie->utilisateur_id);
+                ->contains(fn ($member) => $member['utilisateur']['id'] === $paie->utilisateur_id);
 
             if (!$isTeamMember) {
                 abort(403, 'Accès interdit. Cet employé ne fait pas partie de votre équipe.');

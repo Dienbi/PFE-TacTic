@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 class PointageObserver
 {
-    public function __construct(protected CacheService $cacheService) {}
+    public function __construct(protected CacheService $cacheService)
+    {
+    }
 
     /**
      * Handle the Pointage "created" event.

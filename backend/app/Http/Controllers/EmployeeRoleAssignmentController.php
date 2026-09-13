@@ -10,7 +10,8 @@ class EmployeeRoleAssignmentController extends Controller
 {
     public function __construct(
         protected RoleAssignmentService $roleAssignmentService
-    ) {}
+    ) {
+    }
 
     public function getAllEmployees(): JsonResponse
     {

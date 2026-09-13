@@ -1,7 +1,8 @@
-import google.generativeai as genai
 import logging
 import os
-from typing import Dict, Any
+from typing import Any, Dict
+
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class GeminiClient:
         self.api_key = os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
-        
+
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel('gemini-pro')
 
@@ -28,7 +29,7 @@ class GeminiClient:
                 logger.warning(f"CV text truncated to {max_words} words")
 
             response = await self.model.generate_content_async(cv_text)
-            
+
             if not response.text:
                 raise ValueError("Empty response from Gemini API")
 

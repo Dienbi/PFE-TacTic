@@ -26,7 +26,8 @@ class PointageService
     public function __construct(
         protected PointageRepositoryInterface $pointageRepository,
         protected UtilisateurRepositoryInterface $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function getSummary(Carbon $date): array
     {
@@ -374,7 +375,7 @@ class PointageService
 
         // Check if already checked in today
         $existing = $this->pointageRepository->getTodayPointage($utilisateurId);
-        
+
         // If already checked in today (has entry time), don't auto check-in again
         if ($existing && $existing->heure_entree) {
             return false;

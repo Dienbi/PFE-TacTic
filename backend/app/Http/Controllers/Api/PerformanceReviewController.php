@@ -12,7 +12,8 @@ class PerformanceReviewController extends Controller
 {
     public function __construct(
         protected PerformanceReviewService $performanceReviewService
-    ) {}
+    ) {
+    }
 
     /**
      * Create a new performance review

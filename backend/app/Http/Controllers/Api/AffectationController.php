@@ -13,7 +13,8 @@ class AffectationController extends Controller
 {
     public function __construct(
         protected AffectationService $affectationService
-    ) {}
+    ) {
+    }
 
     /**
      * Get all assignments

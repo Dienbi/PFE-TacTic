@@ -12,7 +12,8 @@ class JobRequestController extends Controller
 {
     public function __construct(
         protected JobRequestService $jobRequestService
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): JsonResponse
     {

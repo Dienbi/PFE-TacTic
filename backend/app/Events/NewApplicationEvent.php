@@ -20,7 +20,8 @@ class NewApplicationEvent implements ShouldBroadcastNow
         public string $jobPostTitre,
         public string $candidatNom,
         public string $candidatMatricule
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

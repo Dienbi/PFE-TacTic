@@ -11,7 +11,8 @@ class UtilisateurObserver
 {
     public function __construct(
         protected CacheService $cacheService
-    ) {}
+    ) {
+    }
 
     /**
      * Handle the Utilisateur "created" event.
@@ -51,7 +52,7 @@ class UtilisateurObserver
             $gender = $utilisateur->gender ?? 'male';
             $maritalStatus = $utilisateur->marital_status ?? 'single';
             $childrenCount = $utilisateur->children_count ?? 0;
-            
+
             // Head of family logic: male married with children, or female married with disabled children
             $newHeadOfFamily = ($gender === 'male' && $maritalStatus === 'married' && $childrenCount > 0) ||
                               ($gender === 'female' && $maritalStatus === 'married' && $utilisateur->disabled_children_count > 0);

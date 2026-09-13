@@ -14,7 +14,8 @@ class SocialStatusController extends Controller
     public function __construct(
         protected SocialStatusProofRepository $socialStatusProofRepository,
         protected VerificationService $verificationService
-    ) {}
+    ) {
+    }
 
     public function store(Request $request): JsonResponse
     {

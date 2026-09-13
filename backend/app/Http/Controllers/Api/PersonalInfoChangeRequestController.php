@@ -16,7 +16,8 @@ class PersonalInfoChangeRequestController extends Controller
         protected PersonalInfoChangeRequestRepository $changeRequestRepository,
         protected ChangeRequestDocumentRepository $documentRepository,
         protected PersonalInfoChangeRequestService $changeRequestService
-    ) {}
+    ) {
+    }
 
     /**
      * Submit a new personal info change request.

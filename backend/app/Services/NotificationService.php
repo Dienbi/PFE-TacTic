@@ -33,7 +33,7 @@ class NotificationService implements NotificationServiceInterface
         // This will be handled within the FeedbackCreated event
         // The event will broadcast to HR channel with appropriate type
         $type = $score >= 7.0 ? 'success' : 'warning';
-        
+
         // The FeedbackCreated event already handles HR notification
         // This method is kept for future extensibility
     }

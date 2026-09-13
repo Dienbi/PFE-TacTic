@@ -1,7 +1,7 @@
-from docx import Document
 import logging
-from typing import Optional
 from pathlib import Path
+
+from docx import Document
 
 logger = logging.getLogger(__name__)
 

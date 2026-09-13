@@ -14,7 +14,8 @@ class PointageController extends Controller
 {
     public function __construct(
         protected PointageService $pointageService
-    ) {}
+    ) {
+    }
 
     /**
      * Get today's attendance for current user

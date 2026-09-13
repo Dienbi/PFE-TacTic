@@ -14,7 +14,8 @@ class AffectationService
     public function __construct(
         protected AffectationRepository $affectationRepository,
         protected UtilisateurRepository $utilisateurRepository
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {

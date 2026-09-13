@@ -20,7 +20,8 @@ class FeedbackCreated implements ShouldBroadcastNow
         public int $chefId,
         public float $score,
         public string $message
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): array
     {
@@ -33,7 +34,7 @@ class FeedbackCreated implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         $type = $this->score >= 7.0 ? 'success' : 'warning';
-        
+
         return [
             'type' => $type,
             'title' => 'Nouveau Feedback',

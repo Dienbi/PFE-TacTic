@@ -132,7 +132,7 @@ class PayslipCorrectionService
         $supersededBy = \App\Models\Payslip::where('supersedes_payslip_id', $payslipId)
             ->with(['supersedes', 'employee', 'ruleSet', 'generatedBy'])
             ->get();
-        
+
         foreach ($supersededBy as $newer) {
             if (!$versions->contains('id', $newer->id)) {
                 $versions->push($newer);
@@ -343,9 +343,9 @@ class PayslipCorrectionService
 
         $hire = \Carbon\Carbon::parse($hireDate);
         $end = \Carbon\Carbon::parse($periodEnd);
-        
+
         $months = $hire->diffInMonths($end) + 1;
-        
+
         return min($months, 12);
     }
 }

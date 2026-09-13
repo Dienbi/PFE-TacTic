@@ -18,7 +18,8 @@ class FeedbackDeleted implements ShouldBroadcastNow
     public function __construct(
         public int $employeeId,
         public int $chefId
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): Channel
     {

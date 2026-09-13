@@ -10,7 +10,8 @@ class RoleAssignmentService
 {
     public function __construct(
         protected EmployeeRoleAssignmentRepository $assignmentRepository
-    ) {}
+    ) {
+    }
 
     public function assignEmployee($employeeId, $roleProfileId, $effectiveFrom, $assignedBy = null)
     {

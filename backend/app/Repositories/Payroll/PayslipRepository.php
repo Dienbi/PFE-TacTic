@@ -74,11 +74,11 @@ class PayslipRepository
     public function validate(string $id): Payslip
     {
         $payslip = $this->findById($id);
-        
+
         if ($payslip->status !== 'draft') {
             throw new \Exception('Only draft payslips can be validated');
         }
-        
+
         $payslip->update(['status' => 'validated']);
         return $payslip->fresh();
     }
@@ -86,11 +86,11 @@ class PayslipRepository
     public function lock(string $id): Payslip
     {
         $payslip = $this->findById($id);
-        
+
         if ($payslip->status !== 'validated') {
             throw new \Exception('Only validated payslips can be locked');
         }
-        
+
         $payslip->update(['status' => 'locked']);
         return $payslip->fresh();
     }
@@ -98,12 +98,12 @@ class PayslipRepository
     public function supersede(string $id): Payslip
     {
         $payslip = $this->findById($id);
-        
+
         // Allow locked, draft, and superseded status for superseding (for correction workflow)
         if (!in_array($payslip->status, ['locked', 'draft', 'superseded'])) {
             throw new \Exception('Only locked, draft, or superseded payslips can be superseded');
         }
-        
+
         $payslip->update(['status' => 'superseded']);
         return $payslip->fresh();
     }
@@ -111,10 +111,10 @@ class PayslipRepository
     public function createCorrection(array $data, string $supersedesId): Payslip
     {
         $oldPayslip = $this->findById($supersedesId);
-        
+
         // Supersede the old payslip
         $this->supersede($supersedesId);
-        
+
         // Create new version
         return $this->create(array_merge($data, [
             'version' => $oldPayslip->version + 1,
@@ -149,12 +149,12 @@ class PayslipRepository
     public function delete(string $id): bool
     {
         $payslip = $this->findById($id);
-        
+
         // Allow deletion of draft and superseded payslips (for correction workflow)
         if (!in_array($payslip->status, ['draft', 'superseded'])) {
             throw new \Exception('Cannot delete non-draft or non-superseded payslips');
         }
-        
+
         return $payslip->delete();
     }
 

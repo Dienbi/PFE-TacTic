@@ -11,7 +11,8 @@ class RoleProfileService
     public function __construct(
         protected RoleProfileRepository $roleProfileRepository,
         protected EmployeeRoleAssignmentRepository $assignmentRepository
-    ) {}
+    ) {
+    }
 
     public function findOrCreate(array $data)
     {

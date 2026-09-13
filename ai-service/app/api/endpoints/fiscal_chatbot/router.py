@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-import httpx
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import httpx
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -24,17 +25,17 @@ WORD_TO_NUMBER = {
 def extract_number_from_text(text: str) -> int:
     """Extract a number from text, handling both digits and number words."""
     import re
-    
+
     # First try to find a digit
     digit_match = re.search(r'\d+', text)
     if digit_match:
         return int(digit_match.group(0))
-    
+
     # Then try to find number words
     for word, number in WORD_TO_NUMBER.items():
         if re.search(r'\b' + word + r'\b', text.lower()):
             return number
-    
+
     return 0
 
 # Pydantic models for request/response
@@ -84,7 +85,7 @@ async def chat_message(request: ChatRequest):
     """
     # Parse the user's message to determine intent
     intent = parse_intent(request.message)
-    
+
     # Generate appropriate response based on intent
     response = await generate_response(intent, request.message, request.session_id, request.auth_token)
     return response
@@ -95,70 +96,70 @@ def parse_intent(message: str) -> Dict[str, Any]:
     This is a simplified implementation - in production, use NLP/LLM.
     """
     message_lower = message.lower()
-    
+
     # Intent: Confirm action (yes/proceed)
     if message_lower in ["yes", "y", "proceed", "confirm", "ok", "sure", "do it"]:
         return {
             "intent": "confirm",
             "params": {}
         }
-    
+
     # Intent: Reject action (no/cancel)
     if message_lower in ["no", "n", "cancel", "stop", "don't", "no thanks"]:
         return {
             "intent": "reject",
             "params": {}
         }
-    
+
     # Intent: Create fiscal profile group
     if "create" in message_lower and ("group" in message_lower or "profile" in message_lower):
         return {
             "intent": "create_group",
             "params": extract_group_params(message)
         }
-    
+
     # Intent: Find employees
     if "find" in message_lower or "search" in message_lower or "employees" in message_lower or "list" in message_lower or "get" in message_lower:
         return {
             "intent": "find_employees",
             "params": extract_employee_criteria(message)
         }
-    
+
     # Intent: Assign fiscal profile to employee
     if "assign" in message_lower and ("profile" in message_lower or "fiscal" in message_lower):
         return {
             "intent": "assign_profile",
             "params": extract_assignment_params(message)
         }
-    
+
     # Intent: Reassign employee to different fiscal profile
     if "reassign" in message_lower or "move" in message_lower:
         return {
             "intent": "reassign_profile",
             "params": extract_assignment_params(message)
         }
-    
+
     # Intent: Edit fiscal profile
     if "edit" in message_lower or "update" in message_lower or "modify" in message_lower:
         return {
             "intent": "edit_profile",
             "params": extract_group_params(message)
         }
-    
+
     # Intent: Delete fiscal profile
     if "delete" in message_lower and ("profile" in message_lower or "group" in message_lower):
         return {
             "intent": "delete_profile",
             "params": extract_group_params(message)
         }
-    
+
     # Intent: Bulk assign
     if "bulk" in message_lower and "assign" in message_lower:
         return {
             "intent": "bulk_assign",
             "params": extract_assignment_params(message)
         }
-    
+
     # Default: General query
     return {
         "intent": "general",
@@ -169,7 +170,7 @@ def extract_group_params(message: str) -> Dict[str, Any]:
     """Extract parameters for fiscal profile group operations."""
     params = {}
     message_lower = message.lower()
-    
+
     # Check if this is a delete/edit operation (need label) or create operation (need attributes)
     if "delete" in message_lower or "edit" in message_lower or "update" in message_lower or "modify" in message_lower:
         # Extract label/name for delete/edit operations
@@ -191,18 +192,18 @@ def extract_group_params(message: str) -> Dict[str, Any]:
     else:
         # Extract attributes for create operations
         print(f"DEBUG: Extraction for create operation, message: {message_lower}")
-        
+
         # Gender extraction - more comprehensive HR language
         if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
             params["gender"] = "female"
-            print(f"DEBUG: Extracted gender=female")
+            print("DEBUG: Extracted gender=female")
         elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
             params["gender"] = "male"
-            print(f"DEBUG: Extracted gender=male")
+            print("DEBUG: Extracted gender=male")
         else:
             params["gender"] = "male"  # default
-            print(f"DEBUG: Using default gender=male")
-        
+            print("DEBUG: Using default gender=male")
+
         # Marital status extraction - more comprehensive HR language
         if "married" in message_lower:
             params["marital_status"] = "married"
@@ -214,11 +215,11 @@ def extract_group_params(message: str) -> Dict[str, Any]:
             params["marital_status"] = "widowed"
         else:
             params["marital_status"] = "single"  # default
-        
+
         # Extract children count - more comprehensive patterns for HR language
         import re
         print(f"DEBUG: Extracting children from: {message_lower}")
-        
+
         # Pattern 1: "with X child/children" or "has X child/children"
         children_match = re.search(r'(?:with|has|and)\s+(\d+|\w+)\s*child(?:ren)?', message_lower)
         print(f"DEBUG: Pattern 1 match: {children_match}")
@@ -230,7 +231,7 @@ def extract_group_params(message: str) -> Dict[str, Any]:
             # Pattern 3: standalone number followed by child/children
             children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?', message_lower)
             print(f"DEBUG: Pattern 3 match: {children_match}")
-        
+
         if children_match:
             matched_text = children_match.group(1)
             print(f"DEBUG: Matched text: {matched_text}")
@@ -242,11 +243,11 @@ def extract_group_params(message: str) -> Dict[str, Any]:
             # Check for "no children" or "without children"
             if re.search(r'no\s+children|without\s+children|zero\s+children', message_lower):
                 params["children_count"] = 0
-                print(f"DEBUG: No children detected")
+                print("DEBUG: No children detected")
             else:
                 params["children_count"] = 0
-                print(f"DEBUG: No children match found, defaulting to 0")
-    
+                print("DEBUG: No children match found, defaulting to 0")
+
     print(f"DEBUG: Extracted group params: {params}")
     return params
 
@@ -254,20 +255,20 @@ def extract_employee_criteria(message: str) -> Dict[str, Any]:
     """Extract criteria for finding employees."""
     criteria = {}
     message_lower = message.lower()
-    
+
     print(f"DEBUG: Extracting criteria from message: {message}")
     print(f"DEBUG: Message lower: {message_lower}")
-    
+
     # Gender extraction - more comprehensive HR language
     if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
         criteria["gender"] = "female"
-        print(f"DEBUG: Found gender=female")
+        print("DEBUG: Found gender=female")
     elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
         criteria["gender"] = "male"
-        print(f"DEBUG: Found gender=male")
+        print("DEBUG: Found gender=male")
     else:
-        print(f"DEBUG: No gender found in message")
-    
+        print("DEBUG: No gender found in message")
+
     # Marital status extraction - more comprehensive HR language
     if "married" in message_lower:
         criteria["marital_status"] = "married"
@@ -277,7 +278,7 @@ def extract_employee_criteria(message: str) -> Dict[str, Any]:
         criteria["marital_status"] = "divorced"
     elif "widowed" in message_lower or "widow" in message_lower or "widower" in message_lower:
         criteria["marital_status"] = "widowed"
-    
+
     import re
     # Pattern 1: "with X child/children" or "has X child/children"
     children_match = re.search(r'(?:with|has|and)\s+(\d+|\w+)\s*child(?:ren)?', message_lower)
@@ -287,17 +288,17 @@ def extract_employee_criteria(message: str) -> Dict[str, Any]:
     if not children_match:
         # Pattern 3: standalone number followed by child/children
         children_match = re.search(r'(\d+|\w+)\s*child(?:ren)?', message_lower)
-    
+
     if children_match:
         # Use the new extract_number_from_text function to handle both digits and words
         criteria["children_count"] = extract_number_from_text(children_match.group(1))
-    
+
     if "without" in message_lower and "children" in message_lower:
         criteria["children_count"] = 0
     # Check for "no children" or "zero children"
     if re.search(r'no\s+children|zero\s+children', message_lower):
         criteria["children_count"] = 0
-    
+
     print(f"DEBUG: Extracted criteria: {criteria}")
     return criteria
 
@@ -305,9 +306,9 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
     """Extract parameters for assignment operations."""
     params = {}
     message_lower = message.lower()
-    
+
     print(f"DEBUG: Extracting assignment params from: {message}")
-    
+
     # Extract employee identifier (name or matricule)
     import re
     # Try to find matricule pattern (EMP00000)
@@ -327,8 +328,8 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
             params["employee_name"] = employee_name
             print(f"DEBUG: Found employee name: {employee_name}")
         else:
-            print(f"DEBUG: No employee name found")
-    
+            print("DEBUG: No employee name found")
+
     # Extract fiscal profile label or attributes
     # Try to find quoted label first
     quoted_match = re.search(r'"([^"]+)"', message)
@@ -345,15 +346,15 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
             params["group_label"] = group_label
             print(f"DEBUG: Found group label: {group_label}")
         else:
-            print(f"DEBUG: No group label found")
-    
+            print("DEBUG: No group label found")
+
     # Extract fiscal profile attributes (gender, marital_status, children_count) - more comprehensive HR language
     # Gender extraction
     if "female" in message_lower or "woman" in message_lower or "women" in message_lower:
         params["gender"] = "female"
     elif "male" in message_lower or "man" in message_lower or "men" in message_lower:
         params["gender"] = "male"
-    
+
     # Marital status extraction
     if "married" in message_lower:
         params["marital_status"] = "married"
@@ -363,7 +364,7 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
         params["marital_status"] = "divorced"
     elif "widowed" in message_lower or "widow" in message_lower or "widower" in message_lower:
         params["marital_status"] = "widowed"
-    
+
     # Extract children count - more comprehensive patterns for HR language
     # Pattern 1: "with X child/children" or "has X child/children"
     children_match = re.search(r'(?:with|has|and)\s+(\d+|\w+)\s*child(?:ren)?', message_lower)
@@ -373,20 +374,20 @@ def extract_assignment_params(message: str) -> Dict[str, Any]:
     if not children_match:
         # Pattern 3: standalone number followed by child/children
         children_match = re.search(r'(\d+|\w+)\s+child(?:ren)?', message_lower)
-    
+
     if children_match:
         # Use the new extract_number_from_text function to handle both digits and words
         params["children_count"] = extract_number_from_text(children_match.group(1))
-    
+
     # Check for "no children" or "zero children"
     if re.search(r'no\s+children|without\s+children|zero\s+children', message_lower):
         params["children_count"] = 0
-    
+
     # Extract effective date
     date_match = re.search(r'effective\s+(?:from\s+)?(\d{4}-\d{2}-\d{2})', message_lower)
     if date_match:
         params["effective_from"] = date_match.group(1)
-    
+
     print(f"DEBUG: Extracted assignment params: {params}")
     return params
 
@@ -394,7 +395,7 @@ async def generate_response(intent: Dict[str, Any], user_message: str, session_i
     """Generate AI response based on parsed intent."""
     intent_type = intent["intent"]
     params = intent["params"]
-    
+
     if intent_type == "create_group":
         return await handle_create_group(params, session_id, auth_token)
     elif intent_type == "find_employees":
@@ -440,9 +441,9 @@ async def handle_create_group(params: Dict[str, Any], session_id: Optional[str],
                             }
                         )
                     )
-        except Exception as e:
+        except Exception:
             pass
-    
+
     # Propose creating new group
     return ChatResponse(
         session_id=session_id or "new",
@@ -460,18 +461,18 @@ async def handle_find_employees(criteria: Dict[str, Any], session_id: Optional[s
     """Handle find employees intent."""
     url = f"{LARAVEL_API_URL}/fiscal-profile/employees/fiscal-search"
     print(f"Calling Laravel API: {url} with params: {criteria}")
-    
+
     async with httpx.AsyncClient() as client:
         try:
             # Increased timeout to 30 seconds for diagnostic testing
             response = await client.get(url, params=criteria, timeout=30.0)
             print(f"Laravel API response status: {response.status_code}")
             print(f"Laravel API response body: {response.text}")
-            
+
             if response.status_code == 200:
                 employees = response.json()
                 employee_count = len(employees)
-                
+
                 if employee_count == 0:
                     return ChatResponse(
                         session_id=session_id or "new",
@@ -480,10 +481,10 @@ async def handle_find_employees(criteria: Dict[str, Any], session_id: Optional[s
                             content="No employees match the specified criteria. Would you like to adjust the search criteria?"
                         )
                     )
-                
+
                 employee_names = [f"{emp['nom']} {emp['prenom']} ({emp['matricule']})" for emp in employees[:5]]
                 more_text = f" and {employee_count - 5} more" if employee_count > 5 else ""
-                
+
                 return ChatResponse(
                     session_id=session_id or "new",
                     ai_message=ChatMessage(
@@ -551,7 +552,7 @@ def handle_bulk_assign(params: Dict[str, Any], session_id: Optional[str], auth_t
     employee_ids = params.get("employee_ids", [])
     criteria = params.get("criteria", {})
     count = len(employee_ids)
-    
+
     if not employee_ids:
         return ChatResponse(
             session_id=session_id or "new",
@@ -560,17 +561,17 @@ def handle_bulk_assign(params: Dict[str, Any], session_id: Optional[str], auth_t
                 content="No employees found for bulk assignment. Please search for employees first.",
             )
         )
-    
+
     # Extract group label from criteria
     gender = criteria.get("gender", "")
     marital_status = criteria.get("marital_status", "")
     children_count = criteria.get("children_count", 0)
-    
+
     # Format group label
     group_label = f"{marital_status.capitalize() if marital_status else ''} {gender.capitalize() if gender else ''}".strip()
     if children_count > 0:
         group_label += f" · {children_count} child(ren)"
-    
+
     return ChatResponse(
         session_id=session_id or "new",
         ai_message=ChatMessage(
@@ -596,11 +597,11 @@ def handle_bulk_assign(params: Dict[str, Any], session_id: Optional[str], auth_t
 async def handle_assign_profile(params: Dict[str, Any], session_id: Optional[str], auth_token: Optional[str] = None) -> ChatResponse:
     """Handle assign profile intent."""
     print(f"DEBUG: handle_assign_profile called with auth_token: {auth_token is not None}")
-    
+
     # Extract employee identifier (name or matricule)
     employee_identifier = params.get("employee_id") or params.get("employee_name")
     print(f"DEBUG: employee_identifier: {employee_identifier}")
-    
+
     # Extract fiscal profile label or attributes
     group_label = params.get("group_label")
     group_params = {
@@ -609,11 +610,11 @@ async def handle_assign_profile(params: Dict[str, Any], session_id: Optional[str
         "children_count": params.get("children_count", 0)
     }
     print(f"DEBUG: group_label: {group_label}, group_params: {group_params}")
-    
+
     # Extract effective date (default to today)
     effective_from = params.get("effective_from", datetime.now().strftime("%Y-%m-%d"))
     print(f"DEBUG: effective_from: {effective_from}")
-    
+
     # Return confirmation card with extracted parameters
     # The frontend will handle the actual API call
     return ChatResponse(
@@ -667,7 +668,7 @@ async def handle_edit_profile(params: Dict[str, Any], session_id: Optional[str],
 async def handle_delete_profile(params: Dict[str, Any], session_id: Optional[str], auth_token: Optional[str] = None) -> ChatResponse:
     """Handle delete fiscal profile intent."""
     label = params.get("label")
-    
+
     if not label:
         return ChatResponse(
             session_id=session_id or "new",
@@ -680,16 +681,16 @@ async def handle_delete_profile(params: Dict[str, Any], session_id: Optional[str
                 }
             )
         )
-    
+
     try:
         # Search for the fiscal profile by label
         search_url = f"{LARAVEL_API_URL}/fiscal-profile/groups/search"
         async with httpx.AsyncClient(timeout=30.0) as client:
             search_response = await client.get(search_url, params={"label": label})
-            
+
             if search_response.status_code == 200:
                 search_data = search_response.json()
-                
+
                 if search_data["count"] == 0:
                     return ChatResponse(
                         session_id=session_id or "new",
@@ -698,7 +699,7 @@ async def handle_delete_profile(params: Dict[str, Any], session_id: Optional[str
                             content=f"No fiscal profile found with name containing '{label}'. Please check the name and try again."
                         )
                     )
-                
+
                 if search_data["count"] > 1:
                     groups = search_data["groups"]
                     group_names = "\n".join([f"- {g['label']} (ID: {g['id']})" for g in groups])
@@ -713,19 +714,19 @@ async def handle_delete_profile(params: Dict[str, Any], session_id: Optional[str
                             }
                         )
                     )
-                
+
                 # Found exactly one match
                 group = search_data["groups"][0]
                 group_id = group["id"]
                 group_label = group["label"]
-                
+
                 # Check if group has active assignments (only if auth token is provided)
                 if auth_token:
                     employees_url = f"{LARAVEL_API_URL}/fiscal-profile/groups/{group_id}/employees"
                     headers = {"Authorization": f"Bearer {auth_token}"}
                     try:
                         employees_response = await client.get(employees_url, headers=headers)
-                        
+
                         if employees_response.status_code == 200:
                             employees = employees_response.json()
                             if len(employees) > 0:
@@ -739,7 +740,7 @@ async def handle_delete_profile(params: Dict[str, Any], session_id: Optional[str
                     except httpx.HTTPStatusError:
                         # If we can't check for active assignments, proceed with confirmation
                         pass
-                
+
                 # Return proposed action for deletion (requires confirmation)
                 return ChatResponse(
                     session_id=session_id or "new",
@@ -802,7 +803,7 @@ def handle_confirm_action(session_id: Optional[str], auth_token: Optional[str] =
                 content="Authentication required to execute actions. Please log in and try again."
             )
         )
-    
+
     # In a real implementation, we would retrieve the pending action from session storage
     # For now, return a message indicating the action would be executed
     return ChatResponse(
@@ -830,18 +831,18 @@ def handle_reject_action(session_id: Optional[str]) -> ChatResponse:
 def _format_group_label(criteria: Dict[str, Any]) -> str:
     """Format a group label from criteria."""
     parts = []
-    
+
     if criteria.get('marital_status'):
         parts.append(criteria['marital_status'].capitalize())
-    
+
     if criteria.get('gender'):
         parts.append(criteria['gender'].capitalize())
-    
+
     label = ' '.join(parts)
-    
+
     # Add children count if present and > 0
     if criteria.get('children_count') and criteria['children_count'] > 0:
         children = criteria['children_count']
         label += f" · {children} child" if children == 1 else f" · {children} children"
-    
+
     return label

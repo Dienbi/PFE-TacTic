@@ -73,16 +73,16 @@ class FiscalRuleSetRepository
     public function confirm(string $id, string $confirmedBy): FiscalRuleSet
     {
         $ruleSet = $this->findById($id);
-        
+
         // Check for overlapping confirmed rule sets
         $this->validateNoOverlap($ruleSet);
-        
+
         $ruleSet->update([
             'status' => 'confirmed',
             'confirmed_by' => $confirmedBy,
             'confirmed_at' => now(),
         ]);
-        
+
         return $ruleSet->fresh();
     }
 
@@ -96,12 +96,12 @@ class FiscalRuleSetRepository
     public function delete(string $id): bool
     {
         $ruleSet = $this->findById($id);
-        
+
         // Only allow deletion of draft rule sets
         if ($ruleSet->status !== 'draft') {
             throw new \Exception('Cannot delete non-draft rule sets');
         }
-        
+
         return $ruleSet->delete();
     }
 

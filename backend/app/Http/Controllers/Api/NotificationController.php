@@ -11,7 +11,8 @@ class NotificationController extends Controller
 {
     public function __construct(
         protected NotificationRepository $notificationRepository
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): JsonResponse
     {

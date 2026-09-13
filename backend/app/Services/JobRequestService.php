@@ -18,7 +18,8 @@ class JobRequestService
         protected JobRequestRepository $jobRequestRepository,
         protected UtilisateurRepository $utilisateurRepository,
         protected JobPostRepository $jobPostRepository
-    ) {}
+    ) {
+    }
 
     public function getAll(): Collection
     {
